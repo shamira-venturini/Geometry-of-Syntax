@@ -36,26 +36,39 @@ model.to(DEVICE)
 model.eval()
 
 
-def get_critical_offset(structure_type):
+def get_critical_index_relative(tokenizer, target_text, structure_type):
     """
-    Returns the token index offset for the critical word relative to the target start.
-    Based on Jabberwocky/Core templates.
+    Calculates the token index of the critical word relative to the start of the target.
+    Strategy: Split sentence into words, identify critical word position,
+    tokenize the prefix, and count tokens.
     """
+    # 1. Split into words (simple space split works for this clean corpus)
+    words = target_text.strip().split()
+
+    # 2. Identify which word number is critical (0-indexed)
     if "transitive" in structure_type:
-        # Template: " The(0) boy(1) [kicked](2)..."
-        # Critical: Main Verb (Active) or Aux (Passive)
-        return 2
+        # Template: "The(0) dax(1) [gimbled](2)..." or "The(0) wug(1) [was](2)..."
+        word_idx = 2
     elif "dative" in structure_type:
-        # Template: " The(0) girl(1) gave(2) the(3) boy(4) [to](5)..."
-        # Critical: Preposition (PO) or 2nd Det (DO)
-        return 5
-    return 2
+        # Template: "The(0) dax(1) gimbled(2) the(3) wug(4) [to](5)..."
+        # Template: "The(0) dax(1) gimbled(2) the(3) wug(4) [the](5)..."
+        word_idx = 5
+    else:
+        word_idx = 2  # Fallback
+
+    # 3. Reconstruct the prefix (words BEFORE the critical one)
+    # We add the leading space back because the tokenizer needs to know it's not start-of-sentence
+    prefix_str = " " + " ".join(words[:word_idx])
+
+    # 4. Count tokens in the prefix
+    # The critical token is the NEXT token after this prefix
+    prefix_tokens = tokenizer.encode(prefix_str)
+    return len(prefix_tokens)
 
 
 def calculate_log_probs(batch_primes, batch_targets, structure_type):
     """
     Calculates s-PE (sum of target log probs) and w-PE (critical token log prob).
-    Replicates logic from Jumelet et al. (2024).
     """
     # 1. Prepare Inputs (Prime + Space + Target)
     full_texts = [p + " " + t for p, t in zip(batch_primes, batch_targets)]
@@ -68,28 +81,22 @@ def calculate_log_probs(batch_primes, batch_targets, structure_type):
         outputs = model(**inputs)
         logits = outputs.logits  # [Batch, Seq, Vocab]
 
-    # 3. Shift Logits for Prediction (Standard LM logic)
-    # Logit at [i] predicts Token at [i+1]
+    # 3. Shift Logits for Prediction
     shift_logits = logits[:, :-1, :].contiguous()
     shift_labels = inputs.input_ids[:, 1:].contiguous()
 
-    # Calculate Log Softmax (Probabilities)
+    # Calculate Log Softmax
     log_probs_all = torch.nn.functional.log_softmax(shift_logits, dim=-1)
 
     # Gather the log prob of the actual token that appeared
-    # This matches Jumelet's: token_probs[range(size), token_ids]
     target_log_probs = log_probs_all.gather(2, shift_labels.unsqueeze(2)).squeeze(2)
 
     # 4. Extract Specific Scores
     s_scores = []
     w_scores = []
 
-    offset = get_critical_offset(structure_type)
-
     for i in range(len(batch_primes)):
         # Find where the target starts
-        # We re-tokenize the prime to get its exact length in tokens
-        # Note: We strip the padding from the prime calculation
         prime_tokens = tokenizer.encode(batch_primes[i])
         prime_len = len(prime_tokens)
 
@@ -109,14 +116,14 @@ def calculate_log_probs(batch_primes, batch_targets, structure_type):
         sentence_score = target_log_probs[i, start_idx:end_idx].sum().item()
         s_scores.append(sentence_score)
 
-        # w-PE: Critical Token
-        # The critical token is at `start_idx + offset`
+        # w-PE: Critical Token (DYNAMIC CALCULATION)
+        # We calculate the offset specifically for THIS sentence
+        offset = get_critical_index_relative(tokenizer, batch_targets[i], structure_type)
         crit_idx = start_idx + offset
 
         if crit_idx < end_idx:
             token_score = target_log_probs[i, crit_idx].item()
         else:
-            # Fallback if sentence is unexpectedly short
             token_score = float('nan')
 
         w_scores.append(token_score)
