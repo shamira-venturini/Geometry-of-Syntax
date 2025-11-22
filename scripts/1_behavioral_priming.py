@@ -168,24 +168,33 @@ for filename in FILES:
                     "w_PE_Passive": w_bb[j] - w_ab[j]
                 })
 
+
         else:  # dative
-            p_do, p_po = batch['p_do'].tolist(), batch['p_po'].tolist()
-            t_do, t_po = batch['t_do'].tolist(), batch['t_po'].tolist()
+
+            pdo, ppo = batch['pdo'].tolist(), batch['ppo'].tolist()
+            tdo, tpo = batch['tdo'].tolist(), batch['tpo'].tolist()
 
             # 1. Target DO
-            s_dd, w_dd = calculate_log_probs(p_do, t_do, structure_type)  # Congruent
-            s_pd, w_pd = calculate_log_probs(p_po, t_do, structure_type)  # Incongruent
+            s_dd, w_dd = calculate_log_probs(pdo, tdo, structure_type)  # Congruent
+            s_pd, w_pd = calculate_log_probs(ppo, tdo, structure_type)  # Incongruent
 
             # 2. Target PO
-            s_dp, w_dp = calculate_log_probs(p_do, t_po, structure_type)  # Incongruent
-            s_pp, w_pp = calculate_log_probs(p_po, t_po, structure_type)  # Congruent
+
+            s_dp, w_dp = calculate_log_probs(pdo, tpo, structure_type)  # Incongruent
+
+            s_pp, w_pp = calculate_log_probs(ppo, tpo, structure_type)  # Congruent
 
             for j in range(len(batch)):
                 results.append({
+
                     "s_PE_DO": s_dd[j] - s_pd[j],
+
                     "s_PE_PO": s_pp[j] - s_dp[j],
+
                     "w_PE_DO": w_dd[j] - w_pd[j],
+
                     "w_PE_PO": w_pp[j] - w_dp[j]
+
                 })
 
     # Save Results
