@@ -2,7 +2,7 @@ import random
 import csv
 
 # --- CONFIGURATION ---
-OUTPUT_FILE = "../corpora/ditransitive/jabberwocky_dative.csv"
+OUTPUT_FILE = "../corpora/dative/jabberwocky_dative.csv"
 NUM_SAMPLES = 15000
 random.seed(42)
 
@@ -63,7 +63,7 @@ def generate_dative_row():
 
 
 # --- EXECUTION ---
-print(f"Generating {NUM_SAMPLES} Dative Jabberwocky pairs...")
+print(f"Generating {NUM_SAMPLES} dative Jabberwocky pairs...")
 with open(OUTPUT_FILE, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(["p_do", "p_po", "t_do", "t_po"])
