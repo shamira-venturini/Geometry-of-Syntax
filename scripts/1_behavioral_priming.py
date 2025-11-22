@@ -13,16 +13,16 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 # Files to process
 FILES = [
     # TRANSITIVE
-    "corpora/transitive/ANOMALOUS_chomsky_transitive_15000sampled_10-1.csv",
-    "corpora/transitive/CORE_transitive_15000sampled_10-1.csv",
-    "corpora/transitive/jabberwocky_transitive.csv",
+    "/content/Geometry-of-Syntax/corpora/transitive/ANOMALOUS_chomsky_transitive_15000sampled_10-1.csv",
+    "/content/Geometry-of-Syntax/corpora/transitive/transitive/CORE_transitive_15000sampled_10-1.csv",
+    "/content/Geometry-of-Syntax/corpora/transitive/transitive/jabberwocky_transitive.csv",
     # DITRANSITIVE
-    "corpora/ditransitive/ANOMALOUS_chomsky_ditransitive_15000sampled_10-1.csv",
-    "corpora/ditransitive/CORE_dative_15000sampled_10-1.csv",
-    "jabberwocky_dative.csv"
+    "/content/Geometry-of-Syntax/corpora/dative/ANOMALOUS_chomsky_dative_15000sampled_10-1.csv",
+    "/content/Geometry-of-Syntax/corpora/dative/CORE_dative_15000sampled_10-1.csv",
+    "/content/Geometry-of-Syntax/corpora/dative/jabberwocky_dative.csv"
 ]
 
-OUTPUT_DIR = "results_behavioral"
+OUTPUT_DIR = "results/results_behavioral"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # --- LOAD MODEL ---
@@ -132,6 +132,7 @@ for filename in FILES:
 
     print(f"Processing {filename}...")
     df = pd.read_csv(filename)
+    df.columns = df.columns.str.strip()
     structure_type = "transitive" if "transitive" in filename else "dative"
 
     results = []
@@ -160,7 +161,7 @@ for filename in FILES:
                     "w_PE_Passive": w_bb[j] - w_ab[j]
                 })
 
-        else:  # Dative
+        else:  # dative
             p_do, p_po = batch['p_do'].tolist(), batch['p_po'].tolist()
             t_do, t_po = batch['t_do'].tolist(), batch['t_po'].tolist()
 
