@@ -14,8 +14,8 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 FILES = [
     # TRANSITIVE
     "/content/Geometry-of-Syntax/corpora/transitive/ANOMALOUS_chomsky_transitive_15000sampled_10-1.csv",
-    "/content/Geometry-of-Syntax/corpora/transitive/transitive/CORE_transitive_15000sampled_10-1.csv",
-    "/content/Geometry-of-Syntax/corpora/transitive/transitive/jabberwocky_transitive.csv",
+    "/content/Geometry-of-Syntax/corpora/transitive/CORE_transitive_15000sampled_10-1.csv",
+    "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive.csv",
     # DITRANSITIVE
     "/content/Geometry-of-Syntax/corpora/dative/ANOMALOUS_chomsky_dative_15000sampled_10-1.csv",
     "/content/Geometry-of-Syntax/corpora/dative/CORE_dative_15000sampled_10-1.csv",
@@ -183,7 +183,8 @@ for filename in FILES:
 
     # Save Results
     res_df = pd.DataFrame(results)
-    save_path = os.path.join(OUTPUT_DIR, f"scores_{filename}")
+    base_name = os.path.basename(filename)
+    save_path = os.path.join(OUTPUT_DIR, f"scores_{base_name}")
     res_df.to_csv(save_path, index=False)
     print(f"Saved scores to {save_path}")
 
