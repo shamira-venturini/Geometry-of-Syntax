@@ -3,3 +3,4 @@ pandas
 numpy
 transformers
 tqdm
+statsmodels
