@@ -6,7 +6,7 @@ import os
 OUTPUT_DIR = "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/ergative"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "CORE_ergative.csv")
-NUM_SAMPLES = 3000
+NUM_SAMPLES = 15000
 random.seed(42)
 
 # --- 1. AGENTS (Stripped of "the") ---
