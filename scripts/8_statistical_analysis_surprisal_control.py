@@ -68,7 +68,7 @@ def prepare_data_with_surprisal(structure_type):
             # ASSUMING you can re-run behavioral script to save raw columns:
             # Let's assume df has 's_logprob_cong' and 's_logprob_inc'
             # For now, I will write the code assuming we have them.
-            # IF NOT, YOU MUST MODIFY 1_behavioral_priming.py TO SAVE RAW SCORES.
+            # IF NOT, YOU MUST MODIFY 2_behavioral_priming.py TO SAVE RAW SCORES.
             pass
 
     return pd.DataFrame()
