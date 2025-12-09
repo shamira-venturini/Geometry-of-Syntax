@@ -3,7 +3,7 @@ import csv
 import os
 
 # --- CONFIGURATION ---
-OUTPUT_DIR = "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/ergative"
+OUTPUT_DIR = "/corpora/ergative"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "jabberwocky_ergative.csv")
 NUM_SAMPLES = 15000

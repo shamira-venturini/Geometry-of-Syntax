@@ -2,7 +2,7 @@ import random
 import csv
 import os
 
-OUTPUT_DIR = "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive"
+OUTPUT_DIR = "/corpora/transitive"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "jabberwocky_transitive.csv")
 NUM_SAMPLES = 15000
