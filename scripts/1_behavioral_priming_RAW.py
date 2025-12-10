@@ -55,7 +55,7 @@ def get_critical_index_relative(tokenizer, target_text, structure_type):
 
 def calculate_log_probs(batch_primes, batch_targets, structure_type):
     """
-    Returns raw log probabilities for s-PE (sum) and w-PE (critical token).
+    Returns w-PE log probabilities for s-PE (sum) and w-PE (critical token).
     """
     full_texts = [p + " " + t for p, t in zip(batch_primes, batch_targets)]
     inputs = tokenizer(full_texts, return_tensors="pt", padding=True, truncation=True, max_length=1024).to(DEVICE)
@@ -171,4 +171,4 @@ for filename in FILES:
     base_name = os.path.basename(filename)
     save_path = os.path.join(OUTPUT_DIR, f"scores_raw_{base_name}")
     res_df.to_csv(save_path, index=False)
-    print(f"Saved raw scores to {save_path}")
+    print(f"Saved w-PE scores to {save_path}")
