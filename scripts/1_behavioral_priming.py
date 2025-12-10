@@ -22,7 +22,7 @@ FILES = [
     "/content/Geometry-of-Syntax/corpora/dative/jabberwocky_dative.csv"
 ]
 
-OUTPUT_DIR = "behavioral_results"
+OUTPUT_DIR = "results/results_behavioral"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # --- LOAD MODEL ---
