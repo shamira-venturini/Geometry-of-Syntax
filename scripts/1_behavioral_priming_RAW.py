@@ -11,8 +11,6 @@ BATCH_SIZE = 16
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 
 # Files to process
-# NOTE: I removed the old 'jabberwocky_causative.csv' to avoid duplicates.
-# We use 'jabberwocky_ergative.csv' (The Symmetric one).
 FILES = [
     # TRANSITIVE
     "/content/Geometry-of-Syntax/corpora/transitive/ANOMALOUS_chomsky_transitive_15000sampled_10-1.csv",
@@ -25,9 +23,10 @@ FILES = [
     "/content/Geometry-of-Syntax/corpora/dative/jabberwocky_dative.csv",
     "/content/Geometry-of-Syntax/corpora/dative/jabberwocky_hybrid_dative.csv",
 
-    # ERGATIVE (Causative/Inchoative)
+    # CAUSATIVE / ERGATIVE
     "/content/Geometry-of-Syntax/corpora/transitive/CORE_causative.csv",
-    "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_ergative.csv"
+    "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_causative.csv",
+    "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_ergative.csv"  # Just in case
 ]
 
 OUTPUT_DIR = "results/results_behavioral_raw"
@@ -44,7 +43,7 @@ model.eval()
 
 def get_structure_type(filename):
     if "causative" in filename or "ergative" in filename:
-        return "ergative"
+        return "causative"
     elif "dative" in filename:
         return "dative"
     elif "transitive" in filename:
@@ -54,18 +53,14 @@ def get_structure_type(filename):
 
 def get_critical_index_relative(tokenizer, target_text, structure_type):
     words = target_text.strip().split()
-
     if structure_type == "transitive":
         word_idx = 2
     elif structure_type == "dative":
         word_idx = 5
-    elif structure_type == "ergative":
-        # Transitive: "The(0) boy(1) [broke](2)..."
-        # Intransitive: "The(0) glass(1) [broke](2)..."
+    elif structure_type == "causative":
         word_idx = 2
     else:
         word_idx = 2
-
     prefix_str = " " + " ".join(words[:word_idx])
     prefix_tokens = tokenizer.encode(prefix_str)
     return len(prefix_tokens)
@@ -109,7 +104,6 @@ def calculate_log_probs(batch_primes, batch_targets, structure_type):
 # --- MAIN LOOP ---
 for filename in FILES:
     if not os.path.exists(filename):
-        print(f"Skipping {filename} (not found)")
         continue
 
     print(f"Processing {os.path.basename(filename)}...")
@@ -119,11 +113,10 @@ for filename in FILES:
     df.columns = df.columns.str.strip().str.lower()
 
     # Map everything to standard names
-    # We map 'caus' -> 'trans' and 'inch' -> 'intrans' to match the logic below
     rename_map = {
         'p_do': 'pdo', 'p_po': 'ppo', 't_do': 'tdo', 't_po': 'tpo',
-        'p_caus': 'p_trans', 'p_inch': 'p_intrans',
-        't_caus': 't_trans', 't_inch': 't_intrans'
+        'p_trans': 'p_caus', 'p_intrans': 'p_inch',  # Handle "Ergative" naming
+        't_trans': 't_caus', 't_intrans': 't_inch'
     }
     df.rename(columns=rename_map, inplace=True)
 
@@ -133,16 +126,13 @@ for filename in FILES:
     for i in tqdm(range(0, len(df), BATCH_SIZE)):
         batch = df.iloc[i: i + BATCH_SIZE]
 
-        # --- TRANSITIVE (Active/Passive) ---
+        # --- TRANSITIVE ---
         if structure_type == "transitive":
             pa, pp = batch['pa'].tolist(), batch['pp'].tolist()
             ta, tp = batch['ta'].tolist(), batch['tp'].tolist()
 
-            # 1. Target Active
             s_aa, w_aa = calculate_log_probs(pa, ta, structure_type)
             s_ba, w_ba = calculate_log_probs(pp, ta, structure_type)
-
-            # 2. Target Passive
             s_ab, w_ab = calculate_log_probs(pa, tp, structure_type)
             s_bb, w_bb = calculate_log_probs(pp, tp, structure_type)
 
@@ -156,7 +146,7 @@ for filename in FILES:
                     "s_PE_Passive": s_bb[j] - s_ab[j]
                 })
 
-        # --- DATIVE (DO/PO) ---
+        # --- DATIVE ---
         elif structure_type == "dative":
             p_do, p_po = batch['pdo'].tolist(), batch['ppo'].tolist()
             t_do, t_po = batch['tdo'].tolist(), batch['tpo'].tolist()
@@ -176,35 +166,45 @@ for filename in FILES:
                     "s_PE_PO": s_pp[j] - s_dp[j]
                 })
 
-        # --- ERGATIVE (Causative/Inchoative) ---
-        elif structure_type == "ergative":
-            # We use the renamed columns (p_trans, p_intrans)
-            p_trans = batch['p_trans'].tolist()
-            p_intrans = batch['p_intrans'].tolist()
-            t_trans = batch['t_trans'].tolist()
-            t_intrans = batch['t_intrans'].tolist()
+        # --- CAUSATIVE ---
+        elif structure_type == "causative":
+            p_c = batch['p_caus'].tolist()
+            p_i = batch['p_inch'].tolist()
 
-            # 1. Target Transitive (Causative)
-            # Congruent: Transitive Prime -> Transitive Target
-            s_tt, w_tt = calculate_log_probs(p_trans, t_trans, structure_type)
-            # Incongruent: Intransitive Prime -> Transitive Target
-            s_it, w_it = calculate_log_probs(p_intrans, t_trans, structure_type)
+            # Handle Ambiguous Target (Jabberwocky) vs Separate Targets (Core)
+            if 't_ambiguous' in batch.columns:
+                # Jabberwocky: One target for both
+                t_amb = batch['t_ambiguous'].tolist()
+                s_cc, w_cc = calculate_log_probs(p_c, t_amb, structure_type)  # Congruent
+                s_ic, w_ic = calculate_log_probs(p_i, t_amb, structure_type)  # Incongruent
 
-            # 2. Target Intransitive (Inchoative)
-            # Congruent: Intransitive Prime -> Intransitive Target
-            s_ii, w_ii = calculate_log_probs(p_intrans, t_intrans, structure_type)
-            # Incongruent: Transitive Prime -> Intransitive Target
-            s_ti, w_ti = calculate_log_probs(p_trans, t_intrans, structure_type)
+                for j in range(len(batch)):
+                    results.append({
+                        "s_cong_Caus": s_cc[j], "s_inc_Caus": s_ic[j],
+                        "w_cong_Caus": w_cc[j], "w_inc_Caus": w_ic[j],
+                        "s_PE_Causative": s_cc[j] - s_ic[j],
+                        # Inchoative is N/A for ambiguous target
+                        "s_PE_Inchoative": np.nan
+                    })
+            else:
+                # Core: Separate targets
+                t_c = batch['t_caus'].tolist()
+                t_i = batch['t_inch'].tolist()
 
-            for j in range(len(batch)):
-                results.append({
-                    "s_cong_Trans": s_tt[j], "s_inc_Trans": s_it[j],
-                    "w_cong_Trans": w_tt[j], "w_inc_Trans": w_it[j],
-                    "s_cong_Intrans": s_ii[j], "s_inc_Intrans": s_ti[j],
-                    "w_cong_Intrans": w_ii[j], "w_inc_Intrans": w_ti[j],
-                    "s_PE_Transitive": s_tt[j] - s_it[j],
-                    "s_PE_Intransitive": s_ii[j] - s_ti[j]
-                })
+                s_cc, w_cc = calculate_log_probs(p_c, t_c, structure_type)
+                s_ic, w_ic = calculate_log_probs(p_i, t_c, structure_type)
+                s_ii, w_ii = calculate_log_probs(p_i, t_i, structure_type)
+                s_ci, w_ci = calculate_log_probs(p_c, t_i, structure_type)
+
+                for j in range(len(batch)):
+                    results.append({
+                        "s_cong_Caus": s_cc[j], "s_inc_Caus": s_ic[j],
+                        "w_cong_Caus": w_cc[j], "w_inc_Caus": w_ic[j],
+                        "s_cong_Inch": s_ii[j], "s_inc_Inch": s_ci[j],
+                        "w_cong_Inch": w_ii[j], "w_inc_Inch": w_ci[j],
+                        "s_PE_Causative": s_cc[j] - s_ic[j],
+                        "s_PE_Inchoative": s_ii[j] - s_ci[j]
+                    })
 
     # Save Results
     res_df = pd.DataFrame(results)
