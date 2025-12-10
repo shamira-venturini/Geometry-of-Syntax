@@ -24,11 +24,11 @@ FILES = [
     "/content/Geometry-of-Syntax/corpora/dative/jabberwocky_hybrid_dative.csv",
 
     # ERGATIVE (Causative)
-    "/content/Geometry-of-Syntax/corpora/ergative/CORE_ergative.csv",
-    "/content/Geometry-of-Syntax/corpora/ergative/jabberwocky_ergative.csv"
+    "/content/Geometry-of-Syntax/corpora/transitive/CORE_causative.csv",
+    "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_ergative.csv"
 ]
 
-OUTPUT_DIR = "behavioral_results"
+OUTPUT_DIR = "results/results_behavioral_master"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 # --- LOAD MODEL ---
