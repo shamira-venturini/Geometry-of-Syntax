@@ -4,7 +4,7 @@ from tqdm import tqdm
 
 # --- CONFIGURATION ---
 MODEL_NAME = "gpt2-large"
-FILE_PATH = "corpora/transitive/jabberwocky_transitive.csv"  # Check Transitive verbs
+FILE_PATH = "../corpora/ergative/jabberwocky_transitive.csv"  # Check Transitive verbs
 
 # Common Past Tense Suffixes in GPT-2 BPE
 # Note: GPT-2 tokens often include the leading space if it's not the start

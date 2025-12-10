@@ -1,0 +1,142 @@
+
+MOST USED ERGATIVE VERBS - RANKED BY FREQUENCY
+Based on COCA 5000 Corpus & USF Vocabulary Guidelines
+================================================================
+
+TIER 1: ESSENTIAL ERGATIVE VERBS (COCA Rank 1-1000)
+Must-know verbs for basic English proficiency
+----------------------------------------------------------------
+1.  begin         - The class begins. / She begins the class.
+2.  break         - The glass broke. / He broke the glass.
+3.  change        - Prices changed. / They changed prices.
+4.  close         - The door closed. / I closed the door.
+5.  decrease      - Sales decreased. / They decreased sales.
+6.  develop       - Problems developed. / We developed a plan.
+7.  end           - The show ended. / They ended the show.
+8.  improve       - Health improved. / Exercise improves health.
+9.  increase      - Costs increased. / They increased costs.
+10. move          - The car moved. / He moved the car.
+11. open          - The store opens. / She opens the store.
+12. start         - The movie starts. / He starts the movie.
+13. stop          - The music stopped. / I stopped the music.
+14. turn          - The wheel turned. / She turned the wheel.
+
+TIER 2: HIGH-FREQUENCY VERBS (COCA Rank 1000-2000)
+Common in everyday conversation and writing
+----------------------------------------------------------------
+15. bend          - The branch bent. / Wind bent the branch.
+16. boil          - Water boiled. / She boiled water.
+17. burn          - The toast burned. / I burned the toast.
+18. cook          - Rice cooks slowly. / He cooks rice.
+19. crack         - The ice cracked. / Pressure cracked the ice.
+20. dry           - Clothes dried. / Sun dried the clothes.
+21. explode       - The bomb exploded. / They exploded the bomb.
+22. freeze        - Water froze. / Cold froze the water.
+23. melt          - Ice melted. / Heat melted the ice.
+24. roll          - The ball rolled. / She rolled the ball.
+25. split         - Wood split. / He split the wood.
+26. stretch       - Fabric stretched. / She stretched the fabric.
+27. swing         - The door swung. / Wind swung the door.
+28. tear          - Paper tore. / He tore the paper.
+
+TIER 3: MEDIUM-FREQUENCY VERBS (COCA Rank 2000-3000)
+Important for intermediate proficiency
+----------------------------------------------------------------
+29. drop          - Prices dropped. / They dropped prices.
+30. expand        - Business expanded. / They expanded business.
+31. fall          - Leaves fell. / Wind fell the leaves.
+32. grow          - Plants grow. / She grows plants.
+33. lift          - Fog lifted. / Wind lifted the fog.
+34. lower         - Costs lowered. / They lowered costs.
+35. raise         - Prices raised. / They raised prices.
+36. reduce        - Expenses reduced. / We reduced expenses.
+37. rise          - Temperature rose. / Heat rose the temperature.
+38. shift         - Focus shifted. / They shifted focus.
+39. sink          - The ship sank. / Torpedoes sank the ship.
+40. slow          - Traffic slowed. / Rain slowed traffic.
+41. speed         - Production sped up. / Technology sped production.
+42. spread        - Fire spread. / Wind spread the fire.
+
+TIER 4: ACADEMIC & FORMAL VERBS
+Essential for academic writing and formal contexts
+----------------------------------------------------------------
+43. accumulate    - Dust accumulated. / He accumulated evidence.
+44. adapt         - Species adapt. / Evolution adapted species.
+45. adjust        - Eyes adjust. / She adjusted the settings.
+46. alter         - Plans altered. / They altered plans.
+47. attach        - Labels attach. / She attached labels.
+48. combine       - Elements combine. / They combined elements.
+49. concentrate   - Students concentrate. / Tasks concentrate minds.
+50. connect       - Parts connect. / Wires connect parts.
+51. contrast      - Colors contrast. / Design contrasts colors.
+52. convert       - Energy converts. / Machines convert energy.
+53. emerge        - Patterns emerged. / Data emerged patterns.
+54. evolve        - Languages evolve. / Time evolved languages.
+55. focus         - Attention focused. / She focused attention.
+56. strengthen    - Bonds strengthened. / Exercise strengthened bonds.
+57. vary          - Results vary. / Conditions vary results.
+58. weaken        - Signals weakened. / Distance weakened signals.
+59. worsen        - Conditions worsened. / Stress worsened conditions.
+
+TIER 5: EVERYDAY PRACTICAL VERBS
+Useful for daily life, cooking, and common activities
+----------------------------------------------------------------
+60. bake          - Cake baked. / She baked a cake.
+61. fade          - Colors faded. / Sun faded colors.
+62. fold          - Chair folded. / He folded the chair.
+63. fry           - Fish fried. / She fried fish.
+64. grill         - Meat grilled. / He grilled meat.
+65. heal          - Wounds healed. / Time healed wounds.
+66. lock          - Door locked. / She locked the door.
+67. reverse       - Car reversed. / Driver reversed the car.
+68. ring          - Bell rang. / She rang the bell.
+69. roast         - Chicken roasted. / Oven roasted chicken.
+70. shut          - Door shut. / He shut the door.
+71. slam          - Door slammed. / She slammed the door.
+72. sound         - Alarm sounded. / He sounded the alarm.
+73. unlock        - Gate unlocked. / He unlocked the gate.
+74. wake          - He woke early. / Alarm woke him.
+75. wash          - Fabric washes easily. / She washed the fabric.
+
+TIER 6: SPECIALIZED VERBS
+For science, technology, and specialized fields
+----------------------------------------------------------------
+76. accelerate    - Car accelerated. / Driver accelerated car.
+77. brighten      - Sky brightened. / Lights brightened the room.
+78. compress      - Gas compressed. / Pressure compressed gas.
+79. condense      - Vapor condensed. / Cold condensed vapor.
+80. darken        - Room darkened. / Curtains darkened room.
+81. decelerate    - Vehicle decelerated. / Driver decelerated.
+82. dissolve      - Sugar dissolved. / Water dissolved sugar.
+83. evaporate     - Water evaporated. / Heat evaporated water.
+84. rotate        - Earth rotates. / Motor rotates wheel.
+85. shatter       - Glass shattered. / Impact shattered glass.
+86. shrink        - Fabric shrunk. / Heat shrunk fabric.
+87. solidify      - Mixture solidified. / Cold solidified mixture.
+88. spin          - Wheel spun. / She spun the wheel.
+89. thaw          - Ice thawed. / Sun thawed ice.
+90. widen         - Road widened. / Construction widened road.
+
+================================================================
+TOTAL: 90 Most Common Ergative Verbs from COCA 5000
+================================================================
+
+KEY USAGE PATTERNS:
+
+1. Intransitive (No Agent): [THING] + VERB
+   → The door opened. (Focus on what happened)
+
+2. Transitive (With Agent): [AGENT] + VERB + [THING]  
+   → She opened the door. (Focus on who did it)
+
+3. When to use each pattern:
+   • Use INTRANSITIVE when the agent is unknown, unimportant, 
+     or when describing a natural process
+   • Use TRANSITIVE when the agent is important or specific
+
+Common Mistakes to Avoid:
+✗ The door was opened. (Passive - implies someone did it)
+✓ The door opened. (Ergative - neutral, no agent implied)
+
+✗ Prices were increased. (Passive - sounds bureaucratic)
+✓ Prices increased. (Ergative - more natural in many contexts)
