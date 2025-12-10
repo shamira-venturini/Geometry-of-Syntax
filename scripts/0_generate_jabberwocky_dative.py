@@ -2,7 +2,7 @@ import random
 import csv
 import os
 
-OUTPUT_DIR = "/corpora/dative"
+OUTPUT_DIR = "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/dative"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 OUTPUT_FILE = os.path.join(OUTPUT_DIR, "jabberwocky_dative.csv")
 NUM_SAMPLES = 15000
