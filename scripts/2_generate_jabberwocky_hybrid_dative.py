@@ -1,29 +1,18 @@
 import random
 import csv
-import os
 
 # --- CONFIGURATION ---
-OUTPUT_DIR = "corpora/dative"
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-OUTPUT_FILE = os.path.join(OUTPUT_DIR, "jabberwocky_hybrid_dative.csv")
+OUTPUT_FILE = "../corpora/dative/jabberwocky_hybrid_dative.csv"
 NUM_SAMPLES = 15000
 random.seed(42)
 
-# --- SANITIZED VOCABULARY (Matches Standard Clean Corpus) ---
-# Nouns (No overlap with verb roots)
-NOUNS = [
-    "wug", "dax", "fep", "blicket", "glorp", "tove", "slithy", "borogove",
-    "mome", "rath", "jubjub", "bandersnatch", "tumtum", "tulgey", "frabjous",
-    "snark", "boojum", "vorpal", "manxome", "uffish", "kiki", "bouba",
-    "zorp", "quib", "narp", "vlim", "crunk", "dril", "frob", "zib"
-]
-
-# Verbs (Past Tense)
-VERBS = [
-    "gimbled", "gorped", "whiffled", "burbled", "snickered", "galumphed",
-    "pilked", "strugged", "yomped", "fazzed", "quilliged", "chortled",
-    "outgrabed", "crinked", "blemed", "porked", "glorked"
-]
+# --- VOCABULARY ---
+NOUNS = ["wug", "dax", "fep", "blicket", "glorp", "tove", "slithy", "borogove", "mome", "rath", "jubjub",
+         "bandersnatch", "tumtum", "tulgey", "frabjous", "snark", "boojum", "vorpal", "manxome", "uffish", "whiffling",
+         "burbled", "snicker", "galumph", "beamish", "frumious", "gimble", "mimsy", "kiki", "bouba", "zorp", "quib",
+         "narp", "vlim", "crunk", "dril", "frob", "zib"]
+VERBS = ["gimbled", "gorped", "whiffled", "burbled", "snickered", "galumphed", "pilked", "strugged", "yomped", "fazzed",
+         "quilliged", "chortled", "outgrabed", "crinked", "blemed", "porked", "zibbed", "glorked"]
 
 # Animate Pronouns (The "Semantic Scaffold")
 PRONOUNS = ["him", "her", "them", "us", "me", "you"]
@@ -33,32 +22,33 @@ def generate_hybrid_row():
     random.shuffle(NOUNS)
     random.shuffle(VERBS)
 
-    # 1. Select Nouns & Verbs (Disjoint)
+    # Prime: Standard Jabberwocky (No Animacy)
+    # We want to see if the TARGET benefits from Animacy, regardless of Prime.
+    # Actually, to test scaffolding, we should probably make BOTH Prime and Target Hybrid
+    # to maximize the priming signal.
+
     p_agent, p_theme = NOUNS[0], NOUNS[1]
     t_agent, t_theme = NOUNS[2], NOUNS[3]
+
+    p_recip = random.choice(PRONOUNS)
+    t_recip = random.choice(PRONOUNS)
 
     p_verb = VERBS[0]
     t_verb = VERBS[1]
 
-    # 2. Select Pronouns (Disjoint)
-    # CRITICAL FIX: Ensure Prime and Target use DIFFERENT pronouns
-    # to avoid lexical priming of the pronoun itself.
-    p_recip, t_recip = random.sample(PRONOUNS, 2)
-
-    # 3. Determiners (Flip)
+    # Determiners (Only for Agent/Theme, Pronouns don't take dets)
     if random.random() > 0.5:
         p_det, t_det = "the", "a"
     else:
         p_det, t_det = "a", "the"
 
-    # 4. Preposition Flip (Strict Disjointness)
+    # Preposition Flip
     if random.random() > 0.5:
         p_prep, t_prep = "to", "for"
     else:
         p_prep, t_prep = "for", "to"
 
     # --- Construct Sentences ---
-
     # DO: Agent V [Pronoun] Theme
     # Note: No determiner before pronoun
     p_do = f"{p_det} {p_agent} {p_verb} {p_recip} {p_det} {p_theme} ."
@@ -72,7 +62,7 @@ def generate_hybrid_row():
 
 
 # --- EXECUTION ---
-print(f"Generating {NUM_SAMPLES} Clean Hybrid Jabberwocky pairs...")
+print(f"Generating {NUM_SAMPLES} Hybrid Jabberwocky pairs...")
 with open(OUTPUT_FILE, 'w', newline='') as f:
     writer = csv.writer(f)
     writer.writerow(["p_do", "p_po", "t_do", "t_po"])
