@@ -4,3 +4,4 @@ numpy
 transformers
 tqdm
 statsmodels
+sklearn
