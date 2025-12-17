@@ -2,7 +2,7 @@ import random
 import csv
 
 # --- CONFIGURATION ---
-OUTPUT_FILE = "../corpora/dative/jabberwocky_dative.csv"
+OUTPUT_FILE = "../../corpora/dative/jabberwocky_dative.csv"
 NUM_SAMPLES = 15000
 random.seed(42)
 
