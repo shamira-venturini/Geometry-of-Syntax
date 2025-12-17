@@ -6,7 +6,7 @@ from sklearn.model_selection import KFold
 from tqdm.notebook import tqdm
 
 # --- CONFIGURATION ---
-INPUT_DIR = "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/pca_results/activations"
+INPUT_DIR = "/pca_results/activations"
 OUTPUT_DIR = "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/pca_results/null_tests"
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
