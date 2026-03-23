@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.DS_Store
+
+# Archived material
+_archive/
+
+# Priming checkpoint artifacts
+behavioral_results/**/conditions/
+behavioral_results/**/done.json
+behavioral_results/**/checkpoint*/
+behavioral_results/**/*checkpoint*/
+
+# Large raw score tables (keep summaries/reports)
+behavioral_results/**/*_level_scores.csv
