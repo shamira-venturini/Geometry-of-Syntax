@@ -5,6 +5,12 @@ __pycache__/
 # Archived material
 _archive/
 
+# folders
+
+docs/
+out/
+PrimeLM/
+
 # Priming checkpoint artifacts
 behavioral_results/**/conditions/
 behavioral_results/**/done.json

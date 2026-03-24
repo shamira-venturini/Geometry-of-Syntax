@@ -1,0 +1,822 @@
+item_index,prime_structure,sample_index,prime_sentence,target_active,target_passive,agent_noun,patient_noun,active_verb_form,passive_verb_form,prompt,raw_continuation,first_generated_word,choice_structure,generated_sentence,generated_structure
+0,active,0,a singer punches a reader .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a singer punches a reader .
+Use these words in one sentence: pilot, man, embraced
+Sentence: the", first time I saw an urn; the second time I saw an urn; the third time I saw an ,first,other,the first time I saw an urn; the second time I saw an urn; the third time I saw an,other
+0,active,1,a singer punches a reader .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a singer punches a reader .
+Use these words in one sentence: pilot, man, embraced
+Sentence: the"," pilot jumps to a man and embraces him .
+Use these words in one sentence: man, I, a , in",pilot,active,the pilot jumps to a man and embraces him .,other
+0,active,2,a singer punches a reader .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a singer punches a reader .
+Use these words in one sentence: pilot, man, embraced
+Sentence: the"," moon was a little blue
+Use these words in one sentence: moon, a moon, a moon
+Sentence:",moon,other,"the moon was a little blue Use these words in one sentence: moon, a moon, a moon Sentence:",other
+0,passive,0,a reader is punched by a singer .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a reader is punched by a singer .
+Use these words in one sentence: pilot, man, embraced
+Sentence: the"," world is changing: that day in the life of the writer / editor.
+The word ""is"" is used in",world,other,the world is changing: that day in the life of the writer / editor.,other
+0,passive,1,a reader is punched by a singer .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a reader is punched by a singer .
+Use these words in one sentence: pilot, man, embraced
+Sentence: the"," mother of one of my daughters was the daughter of a pilot .
+Use these words in one sentence: pilot, pilot",mother,other,the mother of one of my daughters was the daughter of a pilot .,other
+0,passive,2,a reader is punched by a singer .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a reader is punched by a singer .
+Use these words in one sentence: pilot, man, embraced
+Sentence: the"," pilot punches the singer .
+Use these words in two sentences: the pilot embraced the singer .
+Sentence: the",pilot,active,the pilot punches the singer .,other
+1,active,0,a partner leads a business .,the reader destroyed the tea .,the tea was destroyed by the reader .,reader,tea,destroyed,destroyed,"Prime sentence: a partner leads a business .
+Use these words in one sentence: reader, tea, destroyed
+Sentence: the"," tea is destroyed .
+Use these words in two sentences: destroyed tea, and reader, destroyed tea .
+Sentence",tea,passive,the tea is destroyed .,other
+1,active,1,a partner leads a business .,the reader destroyed the tea .,the tea was destroyed by the reader .,reader,tea,destroyed,destroyed,"Prime sentence: a partner leads a business .
+Use these words in one sentence: reader, tea, destroyed
+Sentence: the"," tea was destroyed.
+Use these words in one sentence: the partner leads the tea company.
+Sentence: I",tea,passive,the tea was destroyed.,other
+1,active,2,a partner leads a business .,the reader destroyed the tea .,the tea was destroyed by the reader .,reader,tea,destroyed,destroyed,"Prime sentence: a partner leads a business .
+Use these words in one sentence: reader, tea, destroyed
+Sentence: the"," tea is ruined.
+Use these words in two sentences: destroyed and tea.
+Sentence: The tea is ruined",tea,passive,the tea is ruined.,other
+1,passive,0,a business is led by a partner .,the reader destroyed the tea .,the tea was destroyed by the reader .,reader,tea,destroyed,destroyed,"Prime sentence: a business is led by a partner .
+Use these words in one sentence: reader, tea, destroyed
+Sentence: the"," office is not ready
+Use these words in two sentences: I don't know, I can't, I'll wait",office,other,"the office is not ready Use these words in two sentences: I don't know, I can't, I'll wait",other
+1,passive,1,a business is led by a partner .,the reader destroyed the tea .,the tea was destroyed by the reader .,reader,tea,destroyed,destroyed,"Prime sentence: a business is led by a partner .
+Use these words in one sentence: reader, tea, destroyed
+Sentence: the"," business is led by a partner .
+Use these words in two sentences: tea, destroyed
+Sentence: the business",business,other,the business is led by a partner .,other
+1,passive,2,a business is led by a partner .,the reader destroyed the tea .,the tea was destroyed by the reader .,reader,tea,destroyed,destroyed,"Prime sentence: a business is led by a partner .
+Use these words in one sentence: reader, tea, destroyed
+Sentence: the", two men ran a tea service and destroyed a factory.,two,other,the two men ran a tea service and destroyed a factory.,other
+2,active,0,the soldier judges the company .,an employer broke an anchor .,an anchor was broken by an employer .,employer,anchor,broke,broken,"Prime sentence: the soldier judges the company .
+Use these words in one sentence: employer, anchor, broke/broken
+Sentence: the"," boss makes sure to pay the man.
+Use these words in one sentence: I am a professional.
+Sentence",boss,other,the boss makes sure to pay the man.,other
+2,active,1,the soldier judges the company .,an employer broke an anchor .,an anchor was broken by an employer .,employer,anchor,broke,broken,"Prime sentence: the soldier judges the company .
+Use these words in one sentence: employer, anchor, broke/broken
+Sentence: the"," company is looking for a new anchor .
+Use these words in three or four sentences: anchor , new anchor, new",company,other,the company is looking for a new anchor .,other
+2,active,2,the soldier judges the company .,an employer broke an anchor .,an anchor was broken by an employer .,employer,anchor,broke,broken,"Prime sentence: the soldier judges the company .
+Use these words in one sentence: employer, anchor, broke/broken
+Sentence: the"," shipmate is the ship .
+Use these words in a long sentence (with the first word of each sentence repeated):",shipmate,other,the shipmate is the ship .,other
+2,passive,0,the company is judged by the soldier .,an employer broke an anchor .,an anchor was broken by an employer .,employer,anchor,broke,broken,"Prime sentence: the company is judged by the soldier .
+Use these words in one sentence: employer, anchor, broke/broken
+Sentence: the"," company is judged by the soldier .
+Use these words in one sentence: employer, anchor, broken/broken",company,other,the company is judged by the soldier .,other
+2,passive,1,the company is judged by the soldier .,an employer broke an anchor .,an anchor was broken by an employer .,employer,anchor,broke,broken,"Prime sentence: the company is judged by the soldier .
+Use these words in one sentence: employer, anchor, broke/broken
+Sentence: the"," employer is responsible for the broken anchor's death , the anchor was broken.
+Use these words in two sentences: if",employer,active,"the employer is responsible for the broken anchor's death , the anchor was broken.",active
+2,passive,2,the company is judged by the soldier .,an employer broke an anchor .,an anchor was broken by an employer .,employer,anchor,broke,broken,"Prime sentence: the company is judged by the soldier .
+Use these words in one sentence: employer, anchor, broke/broken
+Sentence: the"," employer, anchor, was the anchor
+Sentence: the anchor, was the employer, anchor, was broke/broken",employer,active,"the employer, anchor, was the anchor Sentence: the anchor, was the employer, anchor, was broke/broken",other
+3,active,0,the reader destroys the tea .,a scientist collected a chicken .,a chicken was collected by a scientist .,scientist,chicken,collected,collected,"Prime sentence: the reader destroys the tea .
+Use these words in one sentence: scientist, chicken, collected
+Sentence: the"," scientist collects the chicken .
+Use these words in two sentences: scientist, chicken, collected
+Sentence: the scientist",scientist,active,the scientist collects the chicken .,other
+3,active,1,the reader destroys the tea .,a scientist collected a chicken .,a chicken was collected by a scientist .,scientist,chicken,collected,collected,"Prime sentence: the reader destroys the tea .
+Use these words in one sentence: scientist, chicken, collected
+Sentence: the"," writer is a cat lover
+Sentence: the writer is a cat lover
+Sentence: the writer is a cat",writer,other,the writer is a cat lover Sentence: the writer is a cat lover Sentence: the writer is a cat,other
+3,active,2,the reader destroys the tea .,a scientist collected a chicken .,a chicken was collected by a scientist .,scientist,chicken,collected,collected,"Prime sentence: the reader destroys the tea .
+Use these words in one sentence: scientist, chicken, collected
+Sentence: the"," scientist threw the chicken away.
+Use these words in a sentence: chicken, collected, scientist, collected
+Sentence",scientist,active,the scientist threw the chicken away.,other
+3,passive,0,the tea is destroyed by the reader .,a scientist collected a chicken .,a chicken was collected by a scientist .,scientist,chicken,collected,collected,"Prime sentence: the tea is destroyed by the reader .
+Use these words in one sentence: scientist, chicken, collected
+Sentence: the"," tea is destroyed by the reader .
+You should change this sentence to: the tea is destroyed by the reader.
+",tea,other,the tea is destroyed by the reader .,other
+3,passive,1,the tea is destroyed by the reader .,a scientist collected a chicken .,a chicken was collected by a scientist .,scientist,chicken,collected,collected,"Prime sentence: the tea is destroyed by the reader .
+Use these words in one sentence: scientist, chicken, collected
+Sentence: the"," tea is destroyed by the reader .
+Use these words in two sentences: the tea is destroyed by the reader .
+",tea,other,the tea is destroyed by the reader .,other
+3,passive,2,the tea is destroyed by the reader .,a scientist collected a chicken .,a chicken was collected by a scientist .,scientist,chicken,collected,collected,"Prime sentence: the tea is destroyed by the reader .
+Use these words in one sentence: scientist, chicken, collected
+Sentence: the"," chicken is destroyed by the reader .
+Use these words in two sentences: scientists, chicken, collected
+Sentence:",chicken,passive,the chicken is destroyed by the reader .,other
+4,active,0,a company uses a bottle .,the army kept the candy .,the candy was kept by the army .,army,candy,kept,kept,"Prime sentence: a company uses a bottle .
+Use these words in one sentence: army, candy, kept
+Sentence: the"," whole house was on fire
+How to Write It:
+If your sentence is written like this:
+The whole house",whole,other,the whole house was on fire How to Write It: If your sentence is written like this: The whole house,other
+4,active,1,a company uses a bottle .,the army kept the candy .,the candy was kept by the army .,army,candy,kept,kept,"Prime sentence: a company uses a bottle .
+Use these words in one sentence: army, candy, kept
+Sentence: the", company used a bottle of milk .,company,other,the company used a bottle of milk .,other
+4,active,2,a company uses a bottle .,the army kept the candy .,the candy was kept by the army .,army,candy,kept,kept,"Prime sentence: a company uses a bottle .
+Use these words in one sentence: army, candy, kept
+Sentence: the"," army has a candies factory
+Use these words in one sentence: an army unit
+Sentence: they used candy",army,active,the army has a candies factory Use these words in one sentence: an army unit Sentence: they used candy,other
+4,passive,0,a bottle is used by a company .,the army kept the candy .,the candy was kept by the army .,army,candy,kept,kept,"Prime sentence: a bottle is used by a company .
+Use these words in one sentence: army, candy, kept
+Sentence: the"," company kept that bottle
+Sentence: the company kept the candy
+Sentence: the company kept the keeps bottle
+",company,other,the company kept that bottle Sentence: the company kept the candy Sentence: the company kept the keeps bottle,other
+4,passive,1,a bottle is used by a company .,the army kept the candy .,the candy was kept by the army .,army,candy,kept,kept,"Prime sentence: a bottle is used by a company .
+Use these words in one sentence: army, candy, kept
+Sentence: the"," army kept them from getting into the candy .
+Use these words in one sentence: keep, candy , army
+Sent",army,active,the army kept them from getting into the candy .,active
+4,passive,2,a bottle is used by a company .,the army kept the candy .,the candy was kept by the army .,army,candy,kept,kept,"Prime sentence: a bottle is used by a company .
+Use these words in one sentence: army, candy, kept
+Sentence: the"," army used to be a company .
+Use these words in one sentence: company , kept , army
+Sentence:",army,active,the army used to be a company .,other
+5,active,0,a guy removed a hat .,the band wants the coffee .,the coffee is wanted by the band .,band,coffee,wants,wanted,"Prime sentence: a guy removed a hat .
+Use these words in one sentence: band, coffee, wants/wanted
+Sentence: the"," band's bean
+Use these words in two sentences: band, coffee, wants/wanted
+Sentence: the",band's,other,"the band's bean Use these words in two sentences: band, coffee, wants/wanted Sentence: the",other
+5,active,1,a guy removed a hat .,the band wants the coffee .,the coffee is wanted by the band .,band,coffee,wants,wanted,"Prime sentence: a guy removed a hat .
+Use these words in one sentence: band, coffee, wants/wanted
+Sentence: the"," woman's husband's parents
+It has to be: she's the woman's husband's parents
+The best way to",woman's,other,the woman's husband's parents It has to be: she's the woman's husband's parents The best way to,other
+5,active,2,a guy removed a hat .,the band wants the coffee .,the coffee is wanted by the band .,band,coffee,wants,wanted,"Prime sentence: a guy removed a hat .
+Use these words in one sentence: band, coffee, wants/wanted
+Sentence: the"," band wanted a coffee  .
+Use these words in two sentences: band, coffee, has/had.",band,active,the band wanted a coffee .,active
+5,passive,0,a hat was removed by a guy .,the band wants the coffee .,the coffee is wanted by the band .,band,coffee,wants,wanted,"Prime sentence: a hat was removed by a guy .
+Use these words in one sentence: band, coffee, wants/wanted
+Sentence: the", hat got stolen by a girl .,hat,other,the hat got stolen by a girl .,other
+5,passive,1,a hat was removed by a guy .,the band wants the coffee .,the coffee is wanted by the band .,band,coffee,wants,wanted,"Prime sentence: a hat was removed by a guy .
+Use these words in one sentence: band, coffee, wants/wanted
+Sentence: the"," two kids tried to kill us last night, the hat was removed .",two,other,"the two kids tried to kill us last night, the hat was removed .",other
+5,passive,2,a hat was removed by a guy .,the band wants the coffee .,the coffee is wanted by the band .,band,coffee,wants,wanted,"Prime sentence: a hat was removed by a guy .
+Use these words in one sentence: band, coffee, wants/wanted
+Sentence: the"," hat was removed by a guy
+Use these words in multiple sentences: band, coffee, wants/wanted
+Sent",hat,other,"the hat was removed by a guy Use these words in multiple sentences: band, coffee, wants/wanted Sent",other
+6,active,0,the teacher carries the salad .,a brother smelled a beer .,a beer was smelled by a brother .,brother,beer,smelled,smelled,"Prime sentence: the teacher carries the salad .
+Use these words in one sentence: brother, beer, smelled
+Sentence: the"," teacher carries the salad
+Use these words in a series of sentences: brothers, beer, smell, the teacher's son",teacher,other,"the teacher carries the salad Use these words in a series of sentences: brothers, beer, smell, the teacher's son",other
+6,active,1,the teacher carries the salad .,a brother smelled a beer .,a beer was smelled by a brother .,brother,beer,smelled,smelled,"Prime sentence: the teacher carries the salad .
+Use these words in one sentence: brother, beer, smelled
+Sentence: the"," father is a bad father .
+Use these words in one sentence: the father is a good father .
+The first",father,other,the father is a bad father .,other
+6,active,2,the teacher carries the salad .,a brother smelled a beer .,a beer was smelled by a brother .,brother,beer,smelled,smelled,"Prime sentence: the teacher carries the salad .
+Use these words in one sentence: brother, beer, smelled
+Sentence: the"," teacher carries the salad.
+Use this word in two sentences: brother, beer, smelled
+Sentence: the teacher",teacher,other,the teacher carries the salad.,other
+6,passive,0,the salad is carried by the teacher .,a brother smelled a beer .,a beer was smelled by a brother .,brother,beer,smelled,smelled,"Prime sentence: the salad is carried by the teacher .
+Use these words in one sentence: brother, beer, smelled
+Sentence: the"," burger is served to the family .
+Use these words in two sentences: the son, mother, brother, wife,",burger,other,the burger is served to the family .,other
+6,passive,1,the salad is carried by the teacher .,a brother smelled a beer .,a beer was smelled by a brother .,brother,beer,smelled,smelled,"Prime sentence: the salad is carried by the teacher .
+Use these words in one sentence: brother, beer, smelled
+Sentence: the"," salad is carried by the teacher .
+Use these words in two sentences: brother, beer, smelled",salad,other,the salad is carried by the teacher .,other
+6,passive,2,the salad is carried by the teacher .,a brother smelled a beer .,a beer was smelled by a brother .,brother,beer,smelled,smelled,"Prime sentence: the salad is carried by the teacher .
+Use these words in one sentence: brother, beer, smelled
+Sentence: the"," teacher carries the salad .
+Use these words in three sentences: (brother), beer, smelled
+Sentence: the",teacher,other,the teacher carries the salad .,other
+7,active,0,the adult understood the boy .,a writer strikes a professor .,a professor is struck by a writer .,writer,professor,strikes,struck,"Prime sentence: the adult understood the boy .
+Use these words in one sentence: writer, professor, strikes/struck
+Sentence: the"," writer struck the boy
+Sentence: the professor struck the boy
+Sentence: the strikes/strucks were all",writer,active,the writer struck the boy Sentence: the professor struck the boy Sentence: the strikes/strucks were all,active
+7,active,1,the adult understood the boy .,a writer strikes a professor .,a professor is struck by a writer .,writer,professor,strikes,struck,"Prime sentence: the adult understood the boy .
+Use these words in one sentence: writer, professor, strikes/struck
+Sentence: the"," adult understands that the child will be fine
+Use these words in one sentence: the adult understands that the child
+Use",adult,other,the adult understands that the child will be fine Use these words in one sentence: the adult understands that the child Use,other
+7,active,2,the adult understood the boy .,a writer strikes a professor .,a professor is struck by a writer .,writer,professor,strikes,struck,"Prime sentence: the adult understood the boy .
+Use these words in one sentence: writer, professor, strikes/struck
+Sentence: the"," adult understood that .
+The adult understood that the boy wanted to be a writer.
+The adult understood that the boy",adult,other,the adult understood that .,other
+7,passive,0,the boy was understood by the adult .,a writer strikes a professor .,a professor is struck by a writer .,writer,professor,strikes,struck,"Prime sentence: the boy was understood by the adult .
+Use these words in one sentence: writer, professor, strikes/struck
+Sentence: the"," boy was struck.
+Use these words in two or more sentences: writer, professor, strikes/strucks.
+",boy,other,the boy was struck.,other
+7,passive,1,the boy was understood by the adult .,a writer strikes a professor .,a professor is struck by a writer .,writer,professor,strikes,struck,"Prime sentence: the boy was understood by the adult .
+Use these words in one sentence: writer, professor, strikes/struck
+Sentence: the"," boy was an English major/professor
+Use these words in two sentences: a writer is a writer, a teacher",boy,other,"the boy was an English major/professor Use these words in two sentences: a writer is a writer, a teacher",other
+7,passive,2,the boy was understood by the adult .,a writer strikes a professor .,a professor is struck by a writer .,writer,professor,strikes,struck,"Prime sentence: the boy was understood by the adult .
+Use these words in one sentence: writer, professor, strikes/struck
+Sentence: the"," boy was understood by the adult .
+Use these words in two sentences: writer, professor, strikes/strucks
+",boy,other,the boy was understood by the adult .,other
+8,active,0,a manager beat a writer .,the sheriff washes the lawyer .,the lawyer is washed by the sheriff .,sheriff,lawyer,washes,washed,"Prime sentence: a manager beat a writer .
+Use these words in one sentence: sheriff, lawyer, washes/washed
+Sentence: the"," judge denied bail.
+Sentence: the judge said he would not grant bail .
+Use these words in one sentence",judge,other,the judge denied bail.,other
+8,active,1,a manager beat a writer .,the sheriff washes the lawyer .,the lawyer is washed by the sheriff .,sheriff,lawyer,washes,washed,"Prime sentence: a manager beat a writer .
+Use these words in one sentence: sheriff, lawyer, washes/washed
+Sentence: the"," coach was drunk.
+Use these words in one sentence: the coach was drunk.
+Sentence: the coach was",coach,other,the coach was drunk.,other
+8,active,2,a manager beat a writer .,the sheriff washes the lawyer .,the lawyer is washed by the sheriff .,sheriff,lawyer,washes,washed,"Prime sentence: a manager beat a writer .
+Use these words in one sentence: sheriff, lawyer, washes/washed
+Sentence: the"," office of the attorney general called in a suspect for questioning, and he was arrested .
+Use these words in two sentences",office,other,"the office of the attorney general called in a suspect for questioning, and he was arrested .",other
+8,passive,0,a writer was beaten by a manager .,the sheriff washes the lawyer .,the lawyer is washed by the sheriff .,sheriff,lawyer,washes,washed,"Prime sentence: a writer was beaten by a manager .
+Use these words in one sentence: sheriff, lawyer, washes/washed
+Sentence: the"," sheriff arrested a man for stealing a hat .
+Use these words in one sentence: the sheriff arrested the man for stealing",sheriff,active,the sheriff arrested a man for stealing a hat .,other
+8,passive,1,a writer was beaten by a manager .,the sheriff washes the lawyer .,the lawyer is washed by the sheriff .,sheriff,lawyer,washes,washed,"Prime sentence: a writer was beaten by a manager .
+Use these words in one sentence: sheriff, lawyer, washes/washed
+Sentence: the"," boss' mother is in the hospital
+Use these words in a different sentence: A nurse said, ""There you are",boss,other,"the boss' mother is in the hospital Use these words in a different sentence: A nurse said, ""There you are",other
+8,passive,2,a writer was beaten by a manager .,the sheriff washes the lawyer .,the lawyer is washed by the sheriff .,sheriff,lawyer,washes,washed,"Prime sentence: a writer was beaten by a manager .
+Use these words in one sentence: sheriff, lawyer, washes/washed
+Sentence: the"," lawyer washes his hair.
+Use these words in two sentences: The lawyer washed his hair.
+Sentence:",lawyer,passive,the lawyer washes his hair.,other
+9,active,0,a prince described an aunt .,the boy drinks the beer .,the beer is drunk by the boy .,boy,beer,drinks,drunk,"Prime sentence: a prince described an aunt .
+Use these words in one sentence: boy, beer, drinks/drunk
+Sentence: the"," first is the first man he kissed .
+Use these words in two sentences: boy, boy .
+Sentence:",first,other,the first is the first man he kissed .,other
+9,active,1,a prince described an aunt .,the boy drinks the beer .,the beer is drunk by the boy .,boy,beer,drinks,drunk,"Prime sentence: a prince described an aunt .
+Use these words in one sentence: boy, beer, drinks/drunk
+Sentence: the"," king is sitting with his lords.
+Sentence: there's a young man who's a drunkard.
+Sent",king,other,the king is sitting with his lords.,other
+9,active,2,a prince described an aunt .,the boy drinks the beer .,the beer is drunk by the boy .,boy,beer,drinks,drunk,"Prime sentence: a prince described an aunt .
+Use these words in one sentence: boy, beer, drinks/drunk
+Sentence: the"," king of the north, the king of the north, the king of the north .
+Use these words in one sentence",king,other,"the king of the north, the king of the north, the king of the north .",other
+9,passive,0,an aunt was described by a prince .,the boy drinks the beer .,the beer is drunk by the boy .,boy,beer,drinks,drunk,"Prime sentence: an aunt was described by a prince .
+Use these words in one sentence: boy, beer, drinks/drunk
+Sentence: the"," man who bought the beer/drink was described by the prince as a 'king'.
+Use these words in one",man,other,the man who bought the beer/drink was described by the prince as a 'king'.,other
+9,passive,1,an aunt was described by a prince .,the boy drinks the beer .,the beer is drunk by the boy .,boy,beer,drinks,drunk,"Prime sentence: an aunt was described by a prince .
+Use these words in one sentence: boy, beer, drinks/drunk
+Sentence: the"," prince is in trouble, the girl is in trouble
+Use these words in two sentences: prince, girl
+Sentence",prince,other,"the prince is in trouble, the girl is in trouble Use these words in two sentences: prince, girl Sentence",other
+9,passive,2,an aunt was described by a prince .,the boy drinks the beer .,the beer is drunk by the boy .,boy,beer,drinks,drunk,"Prime sentence: an aunt was described by a prince .
+Use these words in one sentence: boy, beer, drinks/drunk
+Sentence: the"," two of us were so afraid of the fire that we got up to go to the bathroom.
+Use these words in",two,other,the two of us were so afraid of the fire that we got up to go to the bathroom.,other
+10,active,0,the doctor hurried the manager .,a reader protects a minister .,a minister is protected by a reader .,reader,minister,protects,protected,"Prime sentence: the doctor hurried the manager .
+Use these words in one sentence: reader, minister, protects/protected
+Sentence: the"," doctor said that the man had to do a lot of work .
+Use these words in one sentence: I think the",doctor,other,the doctor said that the man had to do a lot of work .,other
+10,active,1,the doctor hurried the manager .,a reader protects a minister .,a minister is protected by a reader .,reader,minister,protects,protected,"Prime sentence: the doctor hurried the manager .
+Use these words in one sentence: reader, minister, protects/protected
+Sentence: the"," doctor rushed the manager
+Use these words in one sentence: doctor, manager
+Sentence: the doctor was hurried by",doctor,other,"the doctor rushed the manager Use these words in one sentence: doctor, manager Sentence: the doctor was hurried by",other
+10,active,2,the doctor hurried the manager .,a reader protects a minister .,a minister is protected by a reader .,reader,minister,protects,protected,"Prime sentence: the doctor hurried the manager .
+Use these words in one sentence: reader, minister, protects/protected
+Sentence: the"," doctor rushed the manager .
+Use these words in one phrase: I am a priest .
+Sentence: I am",doctor,other,the doctor rushed the manager .,other
+10,passive,0,the manager was hurried by the doctor .,a reader protects a minister .,a minister is protected by a reader .,reader,minister,protects,protected,"Prime sentence: the manager was hurried by the doctor .
+Use these words in one sentence: reader, minister, protects/protected
+Sentence: the"," doctor's heart was broken by the news .
+Sentence: the doctor is being treated by the minister.
+Use",doctor's,other,the doctor's heart was broken by the news .,other
+10,passive,1,the manager was hurried by the doctor .,a reader protects a minister .,a minister is protected by a reader .,reader,minister,protects,protected,"Prime sentence: the manager was hurried by the doctor .
+Use these words in one sentence: reader, minister, protects/protected
+Sentence: the"," manager is hurried by the doctor .
+Use these words in two sentences: reader, minister, protects/protected
+Sent",manager,other,the manager is hurried by the doctor .,other
+10,passive,2,the manager was hurried by the doctor .,a reader protects a minister .,a minister is protected by a reader .,reader,minister,protects,protected,"Prime sentence: the manager was hurried by the doctor .
+Use these words in one sentence: reader, minister, protects/protected
+Sentence: the"," manager had a heart attack
+Use these words in two sentences: reader, minister, protected
+Sentence: the manager",manager,other,"the manager had a heart attack Use these words in two sentences: reader, minister, protected Sentence: the manager",other
+11,active,0,a husband beat a professor .,the soldier destroys the pot .,the pot is destroyed by the soldier .,soldier,pot,destroys,destroyed,"Prime sentence: a husband beat a professor .
+Use these words in one sentence: soldier, pot, destroys/destroyed
+Sentence: the"," child beat an uncle .
+Use these words in one sentence: uncle, child, father, uncle's son,
+",child,other,the child beat an uncle .,other
+11,active,1,a husband beat a professor .,the soldier destroys the pot .,the pot is destroyed by the soldier .,soldier,pot,destroys,destroyed,"Prime sentence: a husband beat a professor .
+Use these words in one sentence: soldier, pot, destroys/destroyed
+Sentence: the"," soldier destroyed the pot
+Used in two or more sentences: the pot destroys the soldier, the pot destroys the house.",soldier,active,"the soldier destroyed the pot Used in two or more sentences: the pot destroys the soldier, the pot destroys the house.",active
+11,active,2,a husband beat a professor .,the soldier destroys the pot .,the pot is destroyed by the soldier .,soldier,pot,destroys,destroyed,"Prime sentence: a husband beat a professor .
+Use these words in one sentence: soldier, pot, destroys/destroyed
+Sentence: the"," wife beat her husband with a pot.
+Sentence: her husband destroyed the pots.
+Sentence: they were",wife,other,the wife beat her husband with a pot.,other
+11,passive,0,a professor was beaten by a husband .,the soldier destroys the pot .,the pot is destroyed by the soldier .,soldier,pot,destroys,destroyed,"Prime sentence: a professor was beaten by a husband .
+Use these words in one sentence: soldier, pot, destroys/destroyed
+Sentence: the"," first sentence in the sentence.
+How many words are you allowed to use in your sentence?
+Use these words in",first,other,the first sentence in the sentence.,other
+11,passive,1,a professor was beaten by a husband .,the soldier destroys the pot .,the pot is destroyed by the soldier .,soldier,pot,destroys,destroyed,"Prime sentence: a professor was beaten by a husband .
+Use these words in one sentence: soldier, pot, destroys/destroyed
+Sentence: the"," sentence is a good sentence
+Use these words in more than one sentence: all the words in a sentence are good
+",sentence,other,the sentence is a good sentence Use these words in more than one sentence: all the words in a sentence are good,other
+11,passive,2,a professor was beaten by a husband .,the soldier destroys the pot .,the pot is destroyed by the soldier .,soldier,pot,destroys,destroyed,"Prime sentence: a professor was beaten by a husband .
+Use these words in one sentence: soldier, pot, destroys/destroyed
+Sentence: the"," teacher was killed by a lover.
+Use these words in two sentences: a man has been arrested.
+Sentence",teacher,other,the teacher was killed by a lover.,other
+12,active,0,a husband killed a boy .,the winner asks the princess .,the princess is asked by the winner .,winner,princess,asks,asked,"Prime sentence: a husband killed a boy .
+Use these words in one sentence: winner, princess, asks/asked
+Sentence: the"," boy was the winner of the game.
+Use these words in one sentence: winner, princess, asks/asked",boy,other,the boy was the winner of the game.,other
+12,active,1,a husband killed a boy .,the winner asks the princess .,the princess is asked by the winner .,winner,princess,asks,asked,"Prime sentence: a husband killed a boy .
+Use these words in one sentence: winner, princess, asks/asked
+Sentence: the"," police officer who is responsible for the death of a young man, was found guilty of murder.
+Use these words in",police,other,"the police officer who is responsible for the death of a young man, was found guilty of murder.",other
+12,active,2,a husband killed a boy .,the winner asks the princess .,the princess is asked by the winner .,winner,princess,asks,asked,"Prime sentence: a husband killed a boy .
+Use these words in one sentence: winner, princess, asks/asked
+Sentence: the"," man killed the boy .
+Use these words in one sentence: he, he, she, her, hers
+Sent",man,other,the man killed the boy .,other
+12,passive,0,a boy was killed by a husband .,the winner asks the princess .,the princess is asked by the winner .,winner,princess,asks,asked,"Prime sentence: a boy was killed by a husband .
+Use these words in one sentence: winner, princess, asks/asked
+Sentence: the"," girl came home late on a Tuesday.
+Use these words in one sentence: it was a long weekend.
+Sent",girl,other,the girl came home late on a Tuesday.,other
+12,passive,1,a boy was killed by a husband .,the winner asks the princess .,the princess is asked by the winner .,winner,princess,asks,asked,"Prime sentence: a boy was killed by a husband .
+Use these words in one sentence: winner, princess, asks/asked
+Sentence: the"," winner of the World Cup has asked his friends for a drink.
+Sentence: in the afternoon.
+Sentence",winner,active,the winner of the World Cup has asked his friends for a drink.,other
+12,passive,2,a boy was killed by a husband .,the winner asks the princess .,the princess is asked by the winner .,winner,princess,asks,asked,"Prime sentence: a boy was killed by a husband .
+Use these words in one sentence: winner, princess, asks/asked
+Sentence: the"," wife killed the boy and the boy's family and friends were horrified
+If you use the words winner, princess, asks",wife,other,"the wife killed the boy and the boy's family and friends were horrified If you use the words winner, princess, asks",other
+13,active,0,the princess leaves the key .,a president grabbed a singer .,a singer was grabbed by a president .,president,singer,grabbed,grabbed,"Prime sentence: the princess leaves the key .
+Use these words in one sentence: president, singer, grabbed
+Sentence: the"," president grabbed the singer
+When: I did the show on June 16, 2015.
+Use these words in one sentence",president,active,"the president grabbed the singer When: I did the show on June 16, 2015.",active
+13,active,1,the princess leaves the key .,a president grabbed a singer .,a singer was grabbed by a president .,president,singer,grabbed,grabbed,"Prime sentence: the princess leaves the key .
+Use these words in one sentence: president, singer, grabbed
+Sentence: the"," princess leaves the key .
+Use these words in one sentence: president, singer, grabbed .
+Sentence: the",princess,other,the princess leaves the key .,other
+13,active,2,the princess leaves the key .,a president grabbed a singer .,a singer was grabbed by a president .,president,singer,grabbed,grabbed,"Prime sentence: the princess leaves the key .
+Use these words in one sentence: president, singer, grabbed
+Sentence: the"," mayor tells the president not to make a joke about the election.
+Use these words in one sentence: mayor, queen",mayor,other,the mayor tells the president not to make a joke about the election.,other
+13,passive,0,the key is left by the princess .,a president grabbed a singer .,a singer was grabbed by a president .,president,singer,grabbed,grabbed,"Prime sentence: the key is left by the princess .
+Use these words in one sentence: president, singer, grabbed
+Sentence: the"," key is left by the princess .
+Use these words in one sentence: president, singer, grabbed
+Sentence:",key,other,the key is left by the princess .,other
+13,passive,1,the key is left by the princess .,a president grabbed a singer .,a singer was grabbed by a president .,president,singer,grabbed,grabbed,"Prime sentence: the key is left by the princess .
+Use these words in one sentence: president, singer, grabbed
+Sentence: the", key is left by the princess .,key,other,the key is left by the princess .,other
+13,passive,2,the key is left by the princess .,a president grabbed a singer .,a singer was grabbed by a president .,president,singer,grabbed,grabbed,"Prime sentence: the key is left by the princess .
+Use these words in one sentence: president, singer, grabbed
+Sentence: the"," key is left by the princess .
+Use these words in two sentences: president, singer, grabbed
+Sentence:",key,other,the key is left by the princess .,other
+14,active,0,a writer kisses a bishop .,the champion raised the leader .,the leader was raised by the champion .,champion,leader,raised,raised,"Prime sentence: a writer kisses a bishop .
+Use these words in one sentence: champion, leader, raised
+Sentence: the"," best thing was that he kissed the bishop .
+Sentence: it's about time the bishop kissed me .
+Sent",best,other,the best thing was that he kissed the bishop .,other
+14,active,1,a writer kisses a bishop .,the champion raised the leader .,the leader was raised by the champion .,champion,leader,raised,raised,"Prime sentence: a writer kisses a bishop .
+Use these words in one sentence: champion, leader, raised
+Sentence: the"," most common sentence a girl ever heard .
+Use these words in two sentences: girl, person, you, his
+",most,other,the most common sentence a girl ever heard .,other
+14,active,2,a writer kisses a bishop .,the champion raised the leader .,the leader was raised by the champion .,champion,leader,raised,raised,"Prime sentence: a writer kisses a bishop .
+Use these words in one sentence: champion, leader, raised
+Sentence: the"," king's words.
+Use these words in three sentences: a king's words.
+A king's words are as",king's,other,the king's words.,other
+14,passive,0,a bishop is kissed by a writer .,the champion raised the leader .,the leader was raised by the champion .,champion,leader,raised,raised,"Prime sentence: a bishop is kissed by a writer .
+Use these words in one sentence: champion, leader, raised
+Sentence: the"," king is crowned (i.e. crowned in person) .
+Use these words in a sentence: a writer was",king,other,the king is crowned (i.e.,other
+14,passive,1,a bishop is kissed by a writer .,the champion raised the leader .,the leader was raised by the champion .,champion,leader,raised,raised,"Prime sentence: a bishop is kissed by a writer .
+Use these words in one sentence: champion, leader, raised
+Sentence: the"," new coach is the coach that coach.
+Use these words in three sentences: coach, coach, coach.
+Use",new,other,the new coach is the coach that coach.,other
+14,passive,2,a bishop is kissed by a writer .,the champion raised the leader .,the leader was raised by the champion .,champion,leader,raised,raised,"Prime sentence: a bishop is kissed by a writer .
+Use these words in one sentence: champion, leader, raised
+Sentence: the"," best and brightest of our generation .
+Use these words in multiple sentences: The best of our generation; [explet",best,other,the best and brightest of our generation .,other
+15,active,0,the reader purchases the newspaper .,a mayor helped a singer .,a singer was helped by a mayor .,mayor,singer,helped,helped,"Prime sentence: the reader purchases the newspaper .
+Use these words in one sentence: mayor, singer, helped
+Sentence: the"," reader purchases the newspaper .
+Use these words in more than one sentence: mayor, singer, helped.
+Sentence",reader,other,the reader purchases the newspaper .,other
+15,active,1,the reader purchases the newspaper .,a mayor helped a singer .,a singer was helped by a mayor .,mayor,singer,helped,helped,"Prime sentence: the reader purchases the newspaper .
+Use these words in one sentence: mayor, singer, helped
+Sentence: the"," reader watches the television.
+Sentence: the reader buys the newspaper.
+Use these words in a sentence: a",reader,other,the reader watches the television.,other
+15,active,2,the reader purchases the newspaper .,a mayor helped a singer .,a singer was helped by a mayor .,mayor,singer,helped,helped,"Prime sentence: the reader purchases the newspaper .
+Use these words in one sentence: mayor, singer, helped
+Sentence: the"," reader buys the newspaper .
+Use these words in two sentences: mayor, singer, helped
+Sentence: the reader",reader,other,the reader buys the newspaper .,other
+15,passive,0,the newspaper is purchased by the reader .,a mayor helped a singer .,a singer was helped by a mayor .,mayor,singer,helped,helped,"Prime sentence: the newspaper is purchased by the reader .
+Use these words in one sentence: mayor, singer, helped
+Sentence: the"," newspaper is purchased by the reader .
+Use these words in one sentence: mayor, singer, helped
+Sentence:",newspaper,other,the newspaper is purchased by the reader .,other
+15,passive,1,the newspaper is purchased by the reader .,a mayor helped a singer .,a singer was helped by a mayor .,mayor,singer,helped,helped,"Prime sentence: the newspaper is purchased by the reader .
+Use these words in one sentence: mayor, singer, helped
+Sentence: the"," mayor and singer are the same person, they helped the newspaper .
+Use these words in one sentence: mayor, the",mayor,active,"the mayor and singer are the same person, they helped the newspaper .",other
+15,passive,2,the newspaper is purchased by the reader .,a mayor helped a singer .,a singer was helped by a mayor .,mayor,singer,helped,helped,"Prime sentence: the newspaper is purchased by the reader .
+Use these words in one sentence: mayor, singer, helped
+Sentence: the"," mayor gave the singer a free concert
+Use these words in two sentences: the city has a free concert
+Used a",mayor,active,the mayor gave the singer a free concert Use these words in two sentences: the city has a free concert Used a,other
+16,active,0,the aunt taught the president .,a lady accepts a gun .,a gun is accepted by a lady .,lady,gun,accepts,accepted,"Prime sentence: the aunt taught the president .
+Use these words in one sentence: lady, gun, accepts/accepted
+Sentence: the"," woman is not an alcoholic, she only has bad judgment.
+Use these words in three sentences: the woman is not",woman,other,"the woman is not an alcoholic, she only has bad judgment.",other
+16,active,1,the aunt taught the president .,a lady accepts a gun .,a gun is accepted by a lady .,lady,gun,accepts,accepted,"Prime sentence: the aunt taught the president .
+Use these words in one sentence: lady, gun, accepts/accepted
+Sentence: the"," aunt taught the president . The sentence should end with a conjunction: (with the conjunction) the aunt taught.
+
+
+",aunt,other,the aunt taught the president .,other
+16,active,2,the aunt taught the president .,a lady accepts a gun .,a gun is accepted by a lady .,lady,gun,accepts,accepted,"Prime sentence: the aunt taught the president .
+Use these words in one sentence: lady, gun, accepts/accepted
+Sentence: the"," aunt taught the president .
+Use these words in two sentences: the aunt taught the president .
+For each of these",aunt,other,the aunt taught the president .,other
+16,passive,0,the president was taught by the aunt .,a lady accepts a gun .,a gun is accepted by a lady .,lady,gun,accepts,accepted,"Prime sentence: the president was taught by the aunt .
+Use these words in one sentence: lady, gun, accepts/accepted
+Sentence: the"," president was taught by the aunt . Use these words in multiple sentences: the president was taught by the aunt .
+Sent",president,other,the president was taught by the aunt .,other
+16,passive,1,the president was taught by the aunt .,a lady accepts a gun .,a gun is accepted by a lady .,lady,gun,accepts,accepted,"Prime sentence: the president was taught by the aunt .
+Use these words in one sentence: lady, gun, accepts/accepted
+Sentence: the", president is accepted/accepted,president,other,the president is accepted/accepted,other
+16,passive,2,the president was taught by the aunt .,a lady accepts a gun .,a gun is accepted by a lady .,lady,gun,accepts,accepted,"Prime sentence: the president was taught by the aunt .
+Use these words in one sentence: lady, gun, accepts/accepted
+Sentence: the"," president was taught by the aunt
+Use these words in two sentences: lady, gun, accepts/accepted
+I",president,other,"the president was taught by the aunt Use these words in two sentences: lady, gun, accepts/accepted I",other
+17,active,0,a guest washed a computer .,the son punches the champion .,the champion is punched by the son .,son,champion,punches,punched,"Prime sentence: a guest washed a computer .
+Use these words in one sentence: son, champion, punches/punched
+Sentence: the"," only son.
+Use these words in one sentence: Son, son of the father.
+Sentence: a man",only,other,the only son.,other
+17,active,1,a guest washed a computer .,the son punches the champion .,the champion is punched by the son .,son,champion,punches,punched,"Prime sentence: a guest washed a computer .
+Use these words in one sentence: son, champion, punches/punched
+Sentence: the"," wife, mother, the wife, mother, the wife .
+Use these words in a sentence: The wife, the",wife,other,"the wife, mother, the wife, mother, the wife .",other
+17,active,2,a guest washed a computer .,the son punches the champion .,the champion is punched by the son .,son,champion,punches,punched,"Prime sentence: a guest washed a computer .
+Use these words in one sentence: son, champion, punches/punched
+Sentence: the"," company that's going to make a big splash in this market will be ...
+Use these words in two sentences: the",company,other,the company that's going to make a big splash in this market will be ...,other
+17,passive,0,a computer was washed by a guest .,the son punches the champion .,the champion is punched by the son .,son,champion,punches,punched,"Prime sentence: a computer was washed by a guest .
+Use these words in one sentence: son, champion, punches/punched
+Sentence: the"," guest's computer was washed by a guest.
+Use these words in two sentences: the guest's computer was washed by",guest's,other,the guest's computer was washed by a guest.,other
+17,passive,1,a computer was washed by a guest .,the son punches the champion .,the champion is punched by the son .,son,champion,punches,punched,"Prime sentence: a computer was washed by a guest .
+Use these words in one sentence: son, champion, punches/punched
+Sentence: the"," other day I bought a friend a toy, and she gave it to me.
+Use these words in one sentence:",other,other,"the other day I bought a friend a toy, and she gave it to me.",other
+17,passive,2,a computer was washed by a guest .,the son punches the champion .,the champion is punched by the son .,son,champion,punches,punched,"Prime sentence: a computer was washed by a guest .
+Use these words in one sentence: son, champion, punches/punched
+Sentence: the"," guest was a computer
+Use these words in a sentence: computer, a guest, the guest was a computer
+Sent",guest,other,"the guest was a computer Use these words in a sentence: computer, a guest, the guest was a computer Sent",other
+18,active,0,the adult hurries the candidate .,a teacher forgot a coffee .,a coffee was forgotten by a teacher .,teacher,coffee,forgot,forgotten,"Prime sentence: the adult hurries the candidate .
+Use these words in one sentence: teacher, coffee, forgot/forgotten
+Sentence: the"," adult hurries the candidate to work
+Use these words in two sentences: teacher and coffee.
+I've always thought",adult,other,the adult hurries the candidate to work Use these words in two sentences: teacher and coffee.,other
+18,active,1,the adult hurries the candidate .,a teacher forgot a coffee .,a coffee was forgotten by a teacher .,teacher,coffee,forgot,forgotten,"Prime sentence: the adult hurries the candidate .
+Use these words in one sentence: teacher, coffee, forgot/forgotten
+Sentence: the"," adult hurries the child .
+Use these words in two sentences: teacher, coffee, forgot/forgotten .
+",adult,other,the adult hurries the child .,other
+18,active,2,the adult hurries the candidate .,a teacher forgot a coffee .,a coffee was forgotten by a teacher .,teacher,coffee,forgot,forgotten,"Prime sentence: the adult hurries the candidate .
+Use these words in one sentence: teacher, coffee, forgot/forgotten
+Sentence: the"," adult drives the candidate .
+Use these words in one sentence: teacher, coffee, forgot/forgotten
+This way",adult,other,the adult drives the candidate .,other
+18,passive,0,the candidate is hurried by the adult .,a teacher forgot a coffee .,a coffee was forgotten by a teacher .,teacher,coffee,forgot,forgotten,"Prime sentence: the candidate is hurried by the adult .
+Use these words in one sentence: teacher, coffee, forgot/forgotten
+Sentence: the"," candidate lost at the football, they have nothing to do
+Use these words in two sentences: the football was lost,",candidate,other,"the candidate lost at the football, they have nothing to do Use these words in two sentences: the football was lost,",other
+18,passive,1,the candidate is hurried by the adult .,a teacher forgot a coffee .,a coffee was forgotten by a teacher .,teacher,coffee,forgot,forgotten,"Prime sentence: the candidate is hurried by the adult .
+Use these words in one sentence: teacher, coffee, forgot/forgotten
+Sentence: the"," candidates are hustled from their seats by the adult .
+Use these words in two sentences: ""I forgot to pay",candidates,other,the candidates are hustled from their seats by the adult .,other
+18,passive,2,the candidate is hurried by the adult .,a teacher forgot a coffee .,a coffee was forgotten by a teacher .,teacher,coffee,forgot,forgotten,"Prime sentence: the candidate is hurried by the adult .
+Use these words in one sentence: teacher, coffee, forgot/forgotten
+Sentence: the"," candidate was interrupted by the adult .
+Use these words in two sentences: teacher/lover/caffeine,",candidate,other,the candidate was interrupted by the adult .,other
+19,active,0,a secretary drags a sheriff .,the employer raised the machine .,the machine was raised by the employer .,employer,machine,raised,raised,"Prime sentence: a secretary drags a sheriff .
+Use these words in one sentence: employer, machine, raised
+Sentence: the"," police have arrested a former prisoner .
+Use these words in more than one sentence: the police have arrested a former prisoner",police,other,the police have arrested a former prisoner .,other
+19,active,1,a secretary drags a sheriff .,the employer raised the machine .,the machine was raised by the employer .,employer,machine,raised,raised,"Prime sentence: a secretary drags a sheriff .
+Use these words in one sentence: employer, machine, raised
+Sentence: the", deputy's wife is a nurse.,deputy's,other,the deputy's wife is a nurse.,other
+19,active,2,a secretary drags a sheriff .,the employer raised the machine .,the machine was raised by the employer .,employer,machine,raised,raised,"Prime sentence: a secretary drags a sheriff .
+Use these words in one sentence: employer, machine, raised
+Sentence: the"," woman has been arrested .
+Use these words in one sentence: mother, child, childlike, childlike, mother",woman,other,the woman has been arrested .,other
+19,passive,0,a sheriff is dragged by a secretary .,the employer raised the machine .,the machine was raised by the employer .,employer,machine,raised,raised,"Prime sentence: a sheriff is dragged by a secretary .
+Use these words in one sentence: employer, machine, raised
+Sentence: the"," old lady is a maid .
+Use these words in two sentences: a man is a slave
+Sentence: a",old,other,the old lady is a maid .,other
+19,passive,1,a sheriff is dragged by a secretary .,the employer raised the machine .,the machine was raised by the employer .,employer,machine,raised,raised,"Prime sentence: a sheriff is dragged by a secretary .
+Use these words in one sentence: employer, machine, raised
+Sentence: the"," sheriff got on his horse and rode off .
+Use these words in one sentence: I was going to walk around my",sheriff,other,the sheriff got on his horse and rode off .,other
+19,passive,2,a sheriff is dragged by a secretary .,the employer raised the machine .,the machine was raised by the employer .,employer,machine,raised,raised,"Prime sentence: a sheriff is dragged by a secretary .
+Use these words in one sentence: employer, machine, raised
+Sentence: the"," company has been fined by a judge for 'gross negligence'
+Use these words in two sentences: employer, the company",company,other,"the company has been fined by a judge for 'gross negligence' Use these words in two sentences: employer, the company",other
+20,active,0,the chief surprises the pilot .,a reader ate a meal .,a meal was eaten by a reader .,reader,meal,ate,eaten,"Prime sentence: the chief surprises the pilot .
+Use these words in one sentence: reader, meal, ate/eaten
+Sentence: the"," chief surprises the pilot
+The most often used word in sentences 1 and 2 is sentence, and it's used by people",chief,other,"the chief surprises the pilot The most often used word in sentences 1 and 2 is sentence, and it's used by people",other
+20,active,1,the chief surprises the pilot .,a reader ate a meal .,a meal was eaten by a reader .,reader,meal,ate,eaten,"Prime sentence: the chief surprises the pilot .
+Use these words in one sentence: reader, meal, ate/eaten
+Sentence: the"," chief surprises the pilot .
+Use these words in two sentences: he, her, that, they, etc
+Sent",chief,other,the chief surprises the pilot .,other
+20,active,2,the chief surprises the pilot .,a reader ate a meal .,a meal was eaten by a reader .,reader,meal,ate,eaten,"Prime sentence: the chief surprises the pilot .
+Use these words in one sentence: reader, meal, ate/eaten
+Sentence: the"," chief is shocked to learn the reader is a pilot .
+""What are you doing here?""
+Sentence: the",chief,other,the chief is shocked to learn the reader is a pilot .,other
+20,passive,0,the pilot is surprised by the chief .,a reader ate a meal .,a meal was eaten by a reader .,reader,meal,ate,eaten,"Prime sentence: the pilot is surprised by the chief .
+Use these words in one sentence: reader, meal, ate/eaten
+Sentence: the"," chief ordered the pilot to follow the food .
+Use these words in two sentences: I've got a lot of people",chief,other,the chief ordered the pilot to follow the food .,other
+20,passive,1,the pilot is surprised by the chief .,a reader ate a meal .,a meal was eaten by a reader .,reader,meal,ate,eaten,"Prime sentence: the pilot is surprised by the chief .
+Use these words in one sentence: reader, meal, ate/eaten
+Sentence: the"," pilot is surprised by the chief .
+Use these words in two sentences: reader, meal, ate/eaten
+",pilot,other,the pilot is surprised by the chief .,other
+20,passive,2,the pilot is surprised by the chief .,a reader ate a meal .,a meal was eaten by a reader .,reader,meal,ate,eaten,"Prime sentence: the pilot is surprised by the chief .
+Use these words in one sentence: reader, meal, ate/eaten
+Sentence: the"," main character was just finishing an exam
+Use these words in two sentences: the main character started his/her exam
+",main,other,the main character was just finishing an exam Use these words in two sentences: the main character started his/her exam,other
+21,active,0,a father washes a brother .,the employee forgave the champion .,the champion was forgiven by the employee .,employee,champion,forgave,forgiven,"Prime sentence: a father washes a brother .
+Use these words in one sentence: employee, champion, forgave/forgiven
+Sentence: the"," man washes his sister's car.
+Use these words in one sentence: a woman washes her daughter's car",man,other,the man washes his sister's car.,other
+21,active,1,a father washes a brother .,the employee forgave the champion .,the champion was forgiven by the employee .,employee,champion,forgave,forgiven,"Prime sentence: a father washes a brother .
+Use these words in one sentence: employee, champion, forgave/forgiven
+Sentence: the"," man said, ""What? This is ridiculous!""
+Use these words in two sentences: the man looked like an idiot",man,other,"the man said, ""What?",other
+21,active,2,a father washes a brother .,the employee forgave the champion .,the champion was forgiven by the employee .,employee,champion,forgave,forgiven,"Prime sentence: a father washes a brother .
+Use these words in one sentence: employee, champion, forgave/forgiven
+Sentence: the"," girl has broken a record
+Use these words in one sentence: the girl has broken a record
+Sentence: the",girl,other,the girl has broken a record Use these words in one sentence: the girl has broken a record Sentence: the,other
+21,passive,0,a brother is washed by a father .,the employee forgave the champion .,the champion was forgiven by the employee .,employee,champion,forgave,forgiven,"Prime sentence: a brother is washed by a father .
+Use these words in one sentence: employee, champion, forgave/forgiven
+Sentence: the"," father washed by the employee
+Sentence: the employee washed by the father
+Sentence: the father forgiven by the",father,other,the father washed by the employee Sentence: the employee washed by the father Sentence: the father forgiven by the,other
+21,passive,1,a brother is washed by a father .,the employee forgave the champion .,the champion was forgiven by the employee .,employee,champion,forgave,forgiven,"Prime sentence: a brother is washed by a father .
+Use these words in one sentence: employee, champion, forgave/forgiven
+Sentence: the"," king was washing a river.
+Use these words in a sentence: to have washed the king .
+Sentence:",king,other,the king was washing a river.,other
+21,passive,2,a brother is washed by a father .,the employee forgave the champion .,the champion was forgiven by the employee .,employee,champion,forgave,forgiven,"Prime sentence: a brother is washed by a father .
+Use these words in one sentence: employee, champion, forgave/forgiven
+Sentence: the"," brother was washed by the father .
+Use these words in two sentences: The mother and the brother were washed by the",brother,other,the brother was washed by the father .,other
+22,active,0,the girl discovered the flower .,a father washes a princess .,a princess is washed by a father .,father,princess,washes,washed,"Prime sentence: the girl discovered the flower .
+Use these words in one sentence: father, princess, washes/washed
+Sentence: the"," flower is now blooming .
+Use these words in one sentence: blooming, flowers, blooming
+Sentence",flower,other,the flower is now blooming .,other
+22,active,1,the girl discovered the flower .,a father washes a princess .,a princess is washed by a father .,father,princess,washes,washed,"Prime sentence: the girl discovered the flower .
+Use these words in one sentence: father, princess, washes/washed
+Sentence: the"," girl's dad found the flower .
+Use these words in one sentence: dad, princess
+Sentence: the princess",girl's,other,the girl's dad found the flower .,other
+22,active,2,the girl discovered the flower .,a father washes a princess .,a princess is washed by a father .,father,princess,washes,washed,"Prime sentence: the girl discovered the flower .
+Use these words in one sentence: father, princess, washes/washed
+Sentence: the"," flowers werehes/washed
+Use this sentence: the flowers werehes/washes them to make them clean.
+",flowers,other,the flowers werehes/washed Use this sentence: the flowers werehes/washes them to make them clean.,other
+22,passive,0,the flower was discovered by the girl .,a father washes a princess .,a princess is washed by a father .,father,princess,washes,washed,"Prime sentence: the flower was discovered by the girl .
+Use these words in one sentence: father, princess, washes/washed
+Sentence: the"," child is happy
+Sentence: she loves the flowers
+Sentence: he is the best son
+Sentence:",child,other,the child is happy Sentence: she loves the flowers Sentence: he is the best son Sentence:,other
+22,passive,1,the flower was discovered by the girl .,a father washes a princess .,a princess is washed by a father .,father,princess,washes,washed,"Prime sentence: the flower was discovered by the girl .
+Use these words in one sentence: father, princess, washes/washed
+Sentence: the"," flower was found by the girl .
+Use these words in two sentences: father, princess, washes/ washed .",flower,other,the flower was found by the girl .,other
+22,passive,2,the flower was discovered by the girl .,a father washes a princess .,a princess is washed by a father .,father,princess,washes,washed,"Prime sentence: the flower was discovered by the girl .
+Use these words in one sentence: father, princess, washes/washed
+Sentence: the"," flower was discovered by the girl and the girl washes the flower.
+Use these words in a sentence: the flower",flower,other,the flower was discovered by the girl and the girl washes the flower.,other
+23,active,0,the pilot follows the administration .,a king prepared a chicken .,a chicken was prepared by a king .,king,chicken,prepared,prepared,"Prime sentence: the pilot follows the administration .
+Use these words in one sentence: king, chicken, prepared
+Sentence: the"," pilot follows the administration .
+Use these words in one sentence: king, chicken, prepared
+Sentence: the pilot",pilot,other,the pilot follows the administration .,other
+23,active,1,the pilot follows the administration .,a king prepared a chicken .,a chicken was prepared by a king .,king,chicken,prepared,prepared,"Prime sentence: the pilot follows the administration .
+Use these words in one sentence: king, chicken, prepared
+Sentence: the"," king follows the administration .
+Use these words in two sentences: queen, king, chicken
+Sentence: the queen",king,active,the king follows the administration .,other
+23,active,2,the pilot follows the administration .,a king prepared a chicken .,a chicken was prepared by a king .,king,chicken,prepared,prepared,"Prime sentence: the pilot follows the administration .
+Use these words in one sentence: king, chicken, prepared
+Sentence: the"," president.
+Use this phrase: the president will decide
+Sentence: there was an accident, I'm sorry
+",president,other,the president.,other
+23,passive,0,the administration is followed by the pilot .,a king prepared a chicken .,a chicken was prepared by a king .,king,chicken,prepared,prepared,"Prime sentence: the administration is followed by the pilot .
+Use these words in one sentence: king, chicken, prepared
+Sentence: the"," first part of the sentence must be the first part of the sentence
+Use these words in one sentence: first, first",first,other,"the first part of the sentence must be the first part of the sentence Use these words in one sentence: first, first",other
+23,passive,1,the administration is followed by the pilot .,a king prepared a chicken .,a chicken was prepared by a king .,king,chicken,prepared,prepared,"Prime sentence: the administration is followed by the pilot .
+Use these words in one sentence: king, chicken, prepared
+Sentence: the"," administration is followed by the pilot
+Use these words in two sentences: king, pilot, chicken
+Sentence: the",administration,other,"the administration is followed by the pilot Use these words in two sentences: king, pilot, chicken Sentence: the",other
+23,passive,2,the administration is followed by the pilot .,a king prepared a chicken .,a chicken was prepared by a king .,king,chicken,prepared,prepared,"Prime sentence: the administration is followed by the pilot .
+Use these words in one sentence: king, chicken, prepared
+Sentence: the"," administration will follow by the pilot .
+Use these words in more than one sentence: king, chicken, prepared
+Sent",administration,other,the administration will follow by the pilot .,other
+24,active,0,an employer understands a student .,the champion helped the son .,the son was helped by the champion .,champion,son,helped,helped,"Prime sentence: an employer understands a student .
+Use these words in one sentence: champion, son, helped
+Sentence: the"," university is offering to pay for your daughter's degree
+Use these words in one sentence: a graduate of the University of",university,other,the university is offering to pay for your daughter's degree Use these words in one sentence: a graduate of the University of,other
+24,active,1,an employer understands a student .,the champion helped the son .,the son was helped by the champion .,champion,son,helped,helped,"Prime sentence: an employer understands a student .
+Use these words in one sentence: champion, son, helped
+Sentence: the"," champion's son helped his mother
+Use these words in one sentence: the champion's son helped his mother
+Sentence",champion's,other,the champion's son helped his mother Use these words in one sentence: the champion's son helped his mother Sentence,other
+24,active,2,an employer understands a student .,the champion helped the son .,the son was helped by the champion .,champion,son,helped,helped,"Prime sentence: an employer understands a student .
+Use these words in one sentence: champion, son, helped
+Sentence: the", most popular university .,most,other,the most popular university .,other
+24,passive,0,a student is understood by an employer .,the champion helped the son .,the son was helped by the champion .,champion,son,helped,helped,"Prime sentence: a student is understood by an employer .
+Use these words in one sentence: champion, son, helped
+Sentence: the"," court says he's guilty
+Use these words in one sentence: court, found guilty
+Use these words in one sentence",court,other,"the court says he's guilty Use these words in one sentence: court, found guilty Use these words in one sentence",other
+24,passive,1,a student is understood by an employer .,the champion helped the son .,the son was helped by the champion .,champion,son,helped,helped,"Prime sentence: a student is understood by an employer .
+Use these words in one sentence: champion, son, helped
+Sentence: the"," father is an excellent husband, the son an excellent son
+Used with respect to someone or something : the father is an",father,other,"the father is an excellent husband, the son an excellent son Used with respect to someone or something : the father is an",other
+24,passive,2,a student is understood by an employer .,the champion helped the son .,the son was helped by the champion .,champion,son,helped,helped,"Prime sentence: a student is understood by an employer .
+Use these words in one sentence: champion, son, helped
+Sentence: the"," teacher's son helped the teacher to complete a task.
+Use these words in three sentences: to help her, to",teacher's,other,the teacher's son helped the teacher to complete a task.,other
+25,active,0,a hero forgot a juice .,the president strikes the manager .,the manager is struck by the president .,president,manager,strikes,struck,"Prime sentence: a hero forgot a juice .
+Use these words in one sentence: president, manager, strikes/struck
+Sentence: the"," team had a hit or hit a home run.
+Use these words in one sentence: I was getting ready to leave",team,other,the team had a hit or hit a home run.,other
+25,active,1,a hero forgot a juice .,the president strikes the manager .,the manager is struck by the president .,president,manager,strikes,struck,"Prime sentence: a hero forgot a juice .
+Use these words in one sentence: president, manager, strikes/struck
+Sentence: the"," leader was a hero.
+Use these words in one sentence: president, manager, strikes/struck.
+Sent",leader,other,the leader was a hero.,other
+25,active,2,a hero forgot a juice .,the president strikes the manager .,the manager is struck by the president .,president,manager,strikes,struck,"Prime sentence: a hero forgot a juice .
+Use these words in one sentence: president, manager, strikes/struck
+Sentence: the"," president forgot a juice .
+Use these words in multiple sentences: president, manager, strikes/struck, juice,",president,active,the president forgot a juice .,other
+25,passive,0,a juice was forgotten by a hero .,the president strikes the manager .,the manager is struck by the president .,president,manager,strikes,struck,"Prime sentence: a juice was forgotten by a hero .
+Use these words in one sentence: president, manager, strikes/struck
+Sentence: the"," mayor wants to strike the strike zone
+Use this word in one sentence: if, would, should, would, should",mayor,other,"the mayor wants to strike the strike zone Use this word in one sentence: if, would, should, would, should",other
+25,passive,1,a juice was forgotten by a hero .,the president strikes the manager .,the manager is struck by the president .,president,manager,strikes,struck,"Prime sentence: a juice was forgotten by a hero .
+Use these words in one sentence: president, manager, strikes/struck
+Sentence: the"," strike was an awesome strike, the president said.
+Use these words in two sentences: the president was impressed, the",strike,other,"the strike was an awesome strike, the president said.",other
+25,passive,2,a juice was forgotten by a hero .,the president strikes the manager .,the manager is struck by the president .,president,manager,strikes,struck,"Prime sentence: a juice was forgotten by a hero .
+Use these words in one sentence: president, manager, strikes/struck
+Sentence: the"," world is going to hell
+Usage: president of the United States, strikes/struck
+Sentence: the world",world,other,"the world is going to hell Usage: president of the United States, strikes/struck Sentence: the world",other
+26,active,0,the professor removes the bag .,a woman forgot a chocolate .,a chocolate was forgotten by a woman .,woman,chocolate,forgot,forgotten,"Prime sentence: the professor removes the bag .
+Use these words in one sentence: woman, chocolate, forgot/forgotten
+Sentence: the"," professor removes the bag .
+Use these words in one sentence: man, woman, chocolate, forgot/forgotten.",professor,other,the professor removes the bag .,other
+26,active,1,the professor removes the bag .,a woman forgot a chocolate .,a chocolate was forgotten by a woman .,woman,chocolate,forgot,forgotten,"Prime sentence: the professor removes the bag .
+Use these words in one sentence: woman, chocolate, forgot/forgotten
+Sentence: the"," professor removes the bag .
+Use these words in one sentence: teacher, professor, professor, professor, teacher, teacher",professor,other,the professor removes the bag .,other
+26,active,2,the professor removes the bag .,a woman forgot a chocolate .,a chocolate was forgotten by a woman .,woman,chocolate,forgot,forgotten,"Prime sentence: the professor removes the bag .
+Use these words in one sentence: woman, chocolate, forgot/forgotten
+Sentence: the"," professor removes the bag .
+Use these words in one sentence: woman, chocolate, forgot/forgotten
+Sentence",professor,other,the professor removes the bag .,other
+26,passive,0,the bag is removed by the professor .,a woman forgot a chocolate .,a chocolate was forgotten by a woman .,woman,chocolate,forgot,forgotten,"Prime sentence: the bag is removed by the professor .
+Use these words in one sentence: woman, chocolate, forgot/forgotten
+Sentence: the"," bag is removed by the professor . Use these words in two sentences: women, chocolate, forgot/forgotten
+Sent",bag,other,the bag is removed by the professor .,other
+26,passive,1,the bag is removed by the professor .,a woman forgot a chocolate .,a chocolate was forgotten by a woman .,woman,chocolate,forgot,forgotten,"Prime sentence: the bag is removed by the professor .
+Use these words in one sentence: woman, chocolate, forgot/forgotten
+Sentence: the"," bag is removed by the professor .
+Use these words in one sentence: woman, chocolate, forgot/forgotten
+",bag,other,the bag is removed by the professor .,other
+26,passive,2,the bag is removed by the professor .,a woman forgot a chocolate .,a chocolate was forgotten by a woman .,woman,chocolate,forgot,forgotten,"Prime sentence: the bag is removed by the professor .
+Use these words in one sentence: woman, chocolate, forgot/forgotten
+Sentence: the"," bag is removed by the professor .
+This is a sentence of no import. When a professor removes a bag from a",bag,other,the bag is removed by the professor .,other
+27,active,0,an uncle destroys a meal .,the corporation wanted the tea .,the tea was wanted by the corporation .,corporation,tea,wanted,wanted,"Prime sentence: an uncle destroys a meal .
+Use these words in one sentence: corporation, tea, wanted
+Sentence: the"," old man is the greatest thing that's ever happened to the world .
+Use these words in one sentence: the whole",old,other,the old man is the greatest thing that's ever happened to the world .,other
+27,active,1,an uncle destroys a meal .,the corporation wanted the tea .,the tea was wanted by the corporation .,corporation,tea,wanted,wanted,"Prime sentence: an uncle destroys a meal .
+Use these words in one sentence: corporation, tea, wanted
+Sentence: the"," customer was served by a chef .
+Use these words in one sentence: restaurant, pizza, wanted
+Sentence:",customer,other,the customer was served by a chef .,other
+27,active,2,an uncle destroys a meal .,the corporation wanted the tea .,the tea was wanted by the corporation .,corporation,tea,wanted,wanted,"Prime sentence: an uncle destroys a meal .
+Use these words in one sentence: corporation, tea, wanted
+Sentence: the"," company has been fined by the court , because of the poor performance of the company's employees.
+Use these words in",company,other,"the company has been fined by the court , because of the poor performance of the company's employees.",other
+27,passive,0,a meal is destroyed by an uncle .,the corporation wanted the tea .,the tea was wanted by the corporation .,corporation,tea,wanted,wanted,"Prime sentence: a meal is destroyed by an uncle .
+Use these words in one sentence: corporation, tea, wanted
+Sentence: the"," government will protect the citizens' privacy
+Use these words in one sentence: the government will not disclose, no
+Sent",government,other,"the government will protect the citizens' privacy Use these words in one sentence: the government will not disclose, no Sent",other
+27,passive,1,a meal is destroyed by an uncle .,the corporation wanted the tea .,the tea was wanted by the corporation .,corporation,tea,wanted,wanted,"Prime sentence: a meal is destroyed by an uncle .
+Use these words in one sentence: corporation, tea, wanted
+Sentence: the"," car is a gift.
+Use this word in more than one sentence: car , the car , the gift
+What",car,other,the car is a gift.,other
+27,passive,2,a meal is destroyed by an uncle .,the corporation wanted the tea .,the tea was wanted by the corporation .,corporation,tea,wanted,wanted,"Prime sentence: a meal is destroyed by an uncle .
+Use these words in one sentence: corporation, tea, wanted
+Sentence: the"," first thing I did after coming out of the closet was change my clothes .
+Use these words in one sentence: I",first,other,the first thing I did after coming out of the closet was change my clothes .,other
+28,active,0,a guest kissed a friend .,the child catches the chocolate .,the chocolate is caught by the child .,child,chocolate,catches,caught,"Prime sentence: a guest kissed a friend .
+Use these words in one sentence: child, chocolate, catches/caught
+Sentence: the"," child kissed a friend
+Use these words in two sentences: the child caught the chocolate , the child catches the boy
+",child,active,"the child kissed a friend Use these words in two sentences: the child caught the chocolate , the child catches the boy",active
+28,active,1,a guest kissed a friend .,the child catches the chocolate .,the chocolate is caught by the child .,child,chocolate,catches,caught,"Prime sentence: a guest kissed a friend .
+Use these words in one sentence: child, chocolate, catches/caught
+Sentence: the"," woman who kisses her lover.
+The sentence: the woman who kisses the woman.
+Sentence: the man who",woman,other,the woman who kisses her lover.,other
+28,active,2,a guest kissed a friend .,the child catches the chocolate .,the chocolate is caught by the child .,child,chocolate,catches,caught,"Prime sentence: a guest kissed a friend .
+Use these words in one sentence: child, chocolate, catches/caught
+Sentence: the"," person kissing his/her friend
+Example sentence: he kissed her .",person,other,the person kissing his/her friend Example sentence: he kissed her .,other
+28,passive,0,a friend was kissed by a guest .,the child catches the chocolate .,the chocolate is caught by the child .,child,chocolate,catches,caught,"Prime sentence: a friend was kissed by a guest .
+Use these words in one sentence: child, chocolate, catches/caught
+Sentence: the"," child is caught by the host .
+Use these words in two sentences: child, chocolate, catch
+Sentence:",child,active,the child is caught by the host .,other
+28,passive,1,a friend was kissed by a guest .,the child catches the chocolate .,the chocolate is caught by the child .,child,chocolate,catches,caught,"Prime sentence: a friend was kissed by a guest .
+Use these words in one sentence: child, chocolate, catches/caught
+Sentence: the"," sun rose .
+Use these words in one sentence: sun, rose
+Sentence: in the name of God,",sun,other,the sun rose .,other
+28,passive,2,a friend was kissed by a guest .,the child catches the chocolate .,the chocolate is caught by the child .,child,chocolate,catches,caught,"Prime sentence: a friend was kissed by a guest .
+Use these words in one sentence: child, chocolate, catches/caught
+Sentence: the"," dog ate the cat.
+Use these words in two sentences: cat, dog.
+Sentence: I love the",dog,other,the dog ate the cat.,other
+29,active,0,the teacher kisses the worker .,a winner hurt a company .,a company was hurt by a winner .,winner,company,hurt,hurt,"Prime sentence: the teacher kisses the worker .
+Use these words in one sentence: winner, company, hurt
+Sentence: the"," teacher kisses the worker .
+Use these words in a second sentence: winner, company, hurt.
+Sentence:",teacher,other,the teacher kisses the worker .,other
+29,active,1,the teacher kisses the worker .,a winner hurt a company .,a company was hurt by a winner .,winner,company,hurt,hurt,"Prime sentence: the teacher kisses the worker .
+Use these words in one sentence: winner, company, hurt
+Sentence: the"," teacher kisses the worker .
+Use these words in two sentences: winner, company, hurt.
+Sentence: the",teacher,other,the teacher kisses the worker .,other
+29,active,2,the teacher kisses the worker .,a winner hurt a company .,a company was hurt by a winner .,winner,company,hurt,hurt,"Prime sentence: the teacher kisses the worker .
+Use these words in one sentence: winner, company, hurt
+Sentence: the"," school is full of kids who are going to the dance.
+Use these words in two sentences: first, the students",school,other,the school is full of kids who are going to the dance.,other
+29,passive,0,the worker is kissed by the teacher .,a winner hurt a company .,a company was hurt by a winner .,winner,company,hurt,hurt,"Prime sentence: the worker is kissed by the teacher .
+Use these words in one sentence: winner, company, hurt
+Sentence: the"," worker is kissing the teacher .
+Use these words in two sentences: winner, company, hurt
+Sentence: the",worker,other,the worker is kissing the teacher .,other
+29,passive,1,the worker is kissed by the teacher .,a winner hurt a company .,a company was hurt by a winner .,winner,company,hurt,hurt,"Prime sentence: the worker is kissed by the teacher .
+Use these words in one sentence: winner, company, hurt
+Sentence: the"," worker is kissed by the teacher .
+Use these words in a sentence: loser, company, hurt
+Sentence:",worker,other,the worker is kissed by the teacher .,other
+29,passive,2,the worker is kissed by the teacher .,a winner hurt a company .,a company was hurt by a winner .,winner,company,hurt,hurt,"Prime sentence: the worker is kissed by the teacher .
+Use these words in one sentence: winner, company, hurt
+Sentence: the"," boss is kissed by his workers.
+Use these words in two sentences: teacher, boss, company.
+Sentence",boss,other,the boss is kissed by his workers.,other

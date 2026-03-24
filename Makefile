@@ -1,6 +1,6 @@
 PYTHON := .venv/bin/python
 
-.PHONY: python-version transitive-priming transitive-report transitive-stats jabberwocky-lexicon-audit jabberwocky-semantic-audit jabberwocky-tokenizer-filter regenerate-jabberwocky-transitive regenerate-jabberwocky-transitive-bpe
+.PHONY: python-version transitive-priming transitive-report transitive-stats core-generation-pilot jabberwocky-lexicon-audit jabberwocky-semantic-audit jabberwocky-tokenizer-filter regenerate-jabberwocky-transitive regenerate-jabberwocky-transitive-bpe
 
 python-version:
 	$(PYTHON) --version
@@ -13,6 +13,9 @@ transitive-report:
 
 transitive-stats:
 	$(PYTHON) scripts/Phase-1/5_analyze_transitive_statistics.py
+
+core-generation-pilot:
+	$(PYTHON) scripts/Phase-1/6_core_generation_priming_pilot.py
 
 jabberwocky-lexicon-audit:
 	$(PYTHON) scripts/Phase-1/1_audit_jabberwocky_lexicon.py

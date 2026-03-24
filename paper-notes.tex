@@ -3,464 +3,302 @@
 \usepackage[a4paper,margin=1in]{geometry}
 \usepackage[T1]{fontenc}
 \usepackage[utf8]{inputenc}
-\usepackage{enumitem}
+\usepackage{booktabs}
 \usepackage{hyperref}
+\usepackage{enumitem}
 
-\title{Paper Notes}
+\title{Draft: Methods and Results}
 \date{}
 
 \begin{document}
 \maketitle
 
-\section*{Current Paper Scope}
+\section*{Methods}
 
-The paper should remain simple, elegant, and narrow.
+\subsection*{Corpora and provenance}
 
-\begin{itemize}[leftmargin=*]
-    \item Alternation: transitive active/passive only.
-    \item Main conditions: \texttt{CORE}, \texttt{ANOMALOUS}, and \texttt{jabberwocky}.
-    \item Main model for the first pass: \texttt{gpt2-large}.
-    \item Main experiment only for now: fixed-target structural priming.
-\end{itemize}
+We analyzed the transitive active/passive alternation only. Dative materials were
+not included in this draft.
 
-Things to exclude from the first paper:
+The \texttt{CORE} and \texttt{ANOMALOUS} corpora come from the Prime-LM line of work
+(Sinclair et al., 2022) and were used here via:
 
 \begin{itemize}[leftmargin=*]
-    \item PCA
-    \item steering
-    \item dative materials
-    \item clinical framing
-    \item semantic-similarity conditions in the first pass
+    \item \texttt{corpora/transitive/CORE\_transitive\_15000sampled\_10-1.csv}
+    \item \texttt{corpora/transitive/ANOMALOUS\_chomsky\_transitive\_15000sampled\_10-1.csv}
 \end{itemize}
 
-\section*{Main Research Question}
+For \texttt{CORE}, Sinclair et al.\ describe the materials as
+``designed to control for lexical overlap and semantic similarity''
+(2022, p.~1037). For the implausibility manipulation corresponding to our
+\texttt{ANOMALOUS} condition, they state that
+``prime sentences are specifically designed to be semantically implausible''
+(2022, p.~1039).
 
-Does structural priming in autoregressive language models survive when lexical and
-semantic support are progressively depleted, and if so, where in the target
-sentence does the residual effect emerge?
+The third condition is a strict Jabberwocky transitive corpus:
+\texttt{corpora/transitive/jabberwocky\_transitive\_bpe\_filtered.csv}.
+Its design goal is lexical content degradation with English morphosyntax
+preserved. Function words, auxiliaries, inflectional morphology, and
+argument-structure templates were retained, while lexical-semantic anchoring of
+content words was minimized.
 
-\section*{Main Claim to Aim For}
+\subsection*{Jabberwocky norming and control studies}
 
-Safe version:
-
-\begin{quote}
-Large language models retain measurable structural priming under severe lexical
-and semantic degradation, but the effect is attenuated and concentrated in the
-structure-diagnostic region of the target.
-\end{quote}
-
-Avoid stronger claims such as:
+Three norming/control passes were performed in this repository before the final
+Jabberwocky corpus was fixed.
 
 \begin{itemize}[leftmargin=*]
-    \item syntax in complete isolation
-    \item fully meaning-free stimuli
-    \item discovery of a syntax mechanism
+    \item Lexical audit
+    (\texttt{scripts/Phase-1/1\_audit\_jabberwocky\_lexicon.py}): the final
+    nonce inventory contains no exact English matches, no overlap with the
+    Prime-LM vocabulary list, and no close-form neighbors under the screening
+    criteria used here.
+    \item Semantic audit
+    (\texttt{scripts/Phase-1/2\_audit\_jabberwocky\_semantics.py}): the revised
+    inventory showed reduced lexical-semantic anchoring relative to the legacy
+    Jabberwocky materials, especially for nouns and past-tense verb forms.
+    \item Tokenizer-length filter
+    (\texttt{scripts/Phase-1/4\_filter\_jabberwocky\_tokenizer\_lengths.py}):
+    noun forms and verb present/past forms were filtered to stable GPT-2 BPE
+    lengths (4--5 tokens) to reduce extreme segmentation imbalance in the final
+    corpus.
 \end{itemize}
 
-\section*{Primary Measures}
+\subsection*{Models}
+
+The first full run used \texttt{gpt2-large}. We then repeated the same
+experiment with \texttt{EleutherAI/pythia-410m}.
+
+\texttt{pythia-410m} was selected as the replication model for two reasons.
+First, it is a decoder-only causal language model with standard left-to-right
+generation, making it directly comparable to \texttt{gpt2-large} for the same
+teacher-forced priming assay. Second, it is much more suitable for the planned
+follow-up mechanistic-interpretability/editing work: it is smaller, faster to
+run repeatedly, and commonly used in open-weight interpretability pipelines.
+The choice was therefore not meant to maximize raw performance, but to provide a
+clean behavioral replication in a model family that is also practical for
+subsequent causal intervention studies.
+
+\subsection*{Priming computation}
+
+Both models were run with
+\texttt{scripts/Phase-1/2\_transitive\_token\_priming.py} using the same
+\texttt{paper\_main} transitive preset, differing only in the model name and
+output directory. For each item and target structure, the model scores the same
+target under a congruent prime and an incongruent prime.
+
+Token-level priming effect:
+\[
+\mathrm{PE}_{token} = \log P(t_i \mid \text{prime}_{congruent}) - \log P(t_i \mid \text{prime}_{incongruent}).
+\]
+
+Aggregations:
 
 \begin{itemize}[leftmargin=*]
-    \item \texttt{sentence\_pe}: full target sentence priming effect
-    \item \texttt{token\_pe}: token-wise priming effect by target position
-    \item \texttt{critical\_word\_pe}: full-word priming effect at target word index 2
-    \item \texttt{critical\_word\_pe\_mean}: token-normalized full-word priming effect at target word index 2
-    \item \texttt{post\_divergence\_pe}: secondary descriptive variable
-    \item \texttt{structure\_region\_pe}: legacy coarse suffix metric, useful for diagnostics only
+    \item \texttt{sentence\_pe}: sum of token PE across the target sentence.
+    \item \texttt{sentence\_pe\_mean}: mean token PE across the target sentence.
+    \item \texttt{critical\_word\_pe} and \texttt{critical\_word\_pe\_mean}:
+    summed and token-normalized PE at target word index 2.
 \end{itemize}
 
-Important note:
+The primary metric in this draft is \texttt{sentence\_pe\_mean}. We chose it
+because raw \texttt{sentence\_pe} is strongly affected by tokenizer-specific
+length differences, which are especially substantial in strict Jabberwocky.
+Mean token PE provides the most stable cross-model comparison among the metrics
+currently implemented in the repository.
 
-For active/passive targets, literal token divergence happens very early because
-argument order changes immediately. Therefore, \texttt{post\_divergence\_pe} is too
-broad to serve as the main structure-sensitive measure. The first pilot also showed
-that \texttt{structure\_region\_pe} remains too sensitive to BPE length in the
-strict Jabberwocky materials, especially for long nonce verbs. The main analysis
-should therefore focus on the word-aligned critical-word metric.
+\subsection*{Statistical analysis}
 
-\section*{Current Active Analysis Scripts}
+Statistics were computed with
+\texttt{scripts/Phase-1/5\_analyze\_transitive\_statistics.py} for each model
+separately. The main inferential unit was the paired passive-minus-active
+contrast at item level within each condition.
+
+We used:
 
 \begin{itemize}[leftmargin=*]
-    \item \texttt{scripts/Phase-1/2\_transitive\_token\_priming.py}
-    \item \texttt{scripts/Phase-1/3\_summarize\_transitive\_priming.py}
-    \item \texttt{scripts/Phase-1/1\_audit\_jabberwocky\_lexicon.py}
-    \item \texttt{scripts/Phase-1/2\_audit\_jabberwocky\_semantics.py}
+    \item sign-flip permutation tests (\(n=10{,}000\)),
+    \item bootstrap 95\% confidence intervals (\(n=10{,}000\)),
+    \item one-sample \(t\)-tests and paired \(d_z\),
+    \item a confound-aware regression on paired differences with HC3 robust
+    standard errors,
+    \item and per-condition linear mixed-effects models with random intercept by
+    item.
 \end{itemize}
 
-The scoring script now writes:
+The paired-difference regression was:
+\[
+\Delta \texttt{sentence\_pe\_mean} \sim \texttt{condition}
++ z(\Delta \texttt{target\_length})
++ z(\Delta \texttt{critical\_word\_token\_count}).
+\]
+
+The per-condition mixed-effects robustness model was:
+\[
+\texttt{sentence\_pe\_mean} \sim \texttt{target\_structure}
++ z(\texttt{target\_length})
++ z(\texttt{critical\_word\_token\_count})
++ (1 \mid \texttt{item}).
+\]
+
+\section*{Results}
+
+\subsection*{Experiment 1: \texttt{gpt2-large}}
+
+Table~\ref{tab:gpt2desc} reports descriptive means for the original
+\texttt{gpt2-large} run. Positive values indicate higher target probability
+after congruent primes.
+
+\begin{table}[h]
+\centering
+\caption{Descriptive priming means for \texttt{gpt2-large}.}
+\label{tab:gpt2desc}
+\begin{tabular}{llrrrr}
+\toprule
+Condition & Target & \texttt{sentence\_pe} & \texttt{sentence\_pe\_mean} & \texttt{critical\_word\_pe\_mean} & \(n\) \\
+\midrule
+CORE & active & 0.1907 & 0.0312 & 0.1304 & 15000 \\
+CORE & passive & 1.3985 & 0.1746 & 0.1757 & 15000 \\
+ANOMALOUS & active & -0.3384 & -0.0559 & 0.1115 & 15000 \\
+ANOMALOUS & passive & 1.5548 & 0.1940 & 0.1597 & 15000 \\
+jabberwocky & active & -1.8562 & -0.1121 & 0.0447 & 15000 \\
+jabberwocky & passive & 7.1376 & 0.3854 & 0.8082 & 15000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the primary metric (\texttt{sentence\_pe\_mean}), passive-minus-active
+differences were positive in all conditions:
 
 \begin{itemize}[leftmargin=*]
-    \item item-level sentence and critical-word scores
-    \item token-level target traces
-    \item word-level target summaries based on tokenizer-to-word alignment
+    \item CORE: \(+0.1434\), 95\% CI \([0.1375, 0.1493]\), \(d_z=0.389\)
+    \item ANOMALOUS: \(+0.2500\), 95\% CI \([0.2433, 0.2566]\), \(d_z=0.594\)
+    \item jabberwocky: \(+0.4975\), 95\% CI \([0.4921, 0.5029]\), \(d_z=1.482\)
 \end{itemize}
 
-\section*{Why the Jabberwocky Condition Matters}
+All sign-flip permutation tests reached the minimum attainable value with
+10,000 permutations (\(p=0.0001\)).
 
-The Jabberwocky condition must preserve English morphosyntax. That is not a flaw;
-it is the point.
-
-What must be preserved:
+The per-condition LMM passive coefficients were:
 
 \begin{itemize}[leftmargin=*]
-    \item function words
-    \item argument structure
-    \item inflectional morphology
-    \item passive cues such as \texttt{was} and \texttt{by}
+    \item CORE: \(\beta=0.1704\), SE \(=0.0270\), \(p=2.96\times10^{-10}\)
+    \item ANOMALOUS: \(\beta=0.4098\), SE \(=0.0301\), \(p=4.01\times10^{-42}\)
+    \item jabberwocky: \(\beta=0.6497\), SE \(=0.0149\), \(p\approx 0\)
 \end{itemize}
 
-What should be minimized:
+In the paired-difference regression, \(z(\Delta\texttt{target\_length})\) was
+not significant (\(p=0.88\)), while
+\(z(\Delta\texttt{critical\_word\_token\_count})\) was positive and significant
+(\(\beta=0.0884,\ p=1.58\times10^{-19}\)). Thus, for
+\texttt{gpt2-large}, critical-word tokenization asymmetry contributed to effect
+magnitude but did not remove the overall passive asymmetry.
+
+\subsection*{Experiment 2: \texttt{pythia-410m}}
+
+We repeated the same analysis pipeline with \texttt{pythia-410m}. In the raw
+output tables, the same Jabberwocky corpus appears under the label
+\texttt{jabberwocky-only}; this is a naming artifact of the replication run, not
+a different stimulus set.
+
+Table~\ref{tab:pythiadesc} reports descriptive means for the replication.
+
+\begin{table}[h]
+\centering
+\caption{Descriptive priming means for \texttt{pythia-410m}.}
+\label{tab:pythiadesc}
+\begin{tabular}{llrrrr}
+\toprule
+Condition & Target & \texttt{sentence\_pe} & \texttt{sentence\_pe\_mean} & \texttt{critical\_word\_pe\_mean} & \(n\) \\
+\midrule
+CORE & active & 0.0671 & 0.0103 & 0.2799 & 15000 \\
+CORE & passive & 1.3342 & 0.1664 & 0.0869 & 15000 \\
+ANOMALOUS & active & 0.1130 & 0.0181 & 0.1778 & 15000 \\
+ANOMALOUS & passive & 0.8960 & 0.1117 & 0.0581 & 15000 \\
+jabberwocky & active & -1.6320 & -0.0997 & 0.0312 & 15000 \\
+jabberwocky & passive & 5.4393 & 0.2967 & 0.5275 & 15000 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+For the primary metric (\texttt{sentence\_pe\_mean}), passive-minus-active
+differences again remained positive in all conditions:
 
 \begin{itemize}[leftmargin=*]
-    \item ordinary lexical semantics of content words
-    \item obvious form overlap with existing English words
-    \item direct recycling of PrimeLM vocabulary
+    \item CORE: \(+0.1561\), 95\% CI \([0.1492, 0.1628]\), \(d_z=0.365\)
+    \item ANOMALOUS: \(+0.0936\), 95\% CI \([0.0864, 0.1008]\), \(d_z=0.206\)
+    \item jabberwocky: \(+0.3964\), 95\% CI \([0.3902, 0.4025]\), \(d_z=1.045\)
 \end{itemize}
 
-\section*{Jabberwocky Lexicon Revision}
+All sign-flip permutation tests again reached the minimum value with 10,000
+permutations (\(p=0.0001\)).
 
-An earlier exploratory Jabberwocky lexicon was archived and replaced by a stricter
-nonce lexicon.
-
-Current active files:
+The mixed-effects robustness pattern was weaker than in
+\texttt{gpt2-large}. The per-condition LMM passive coefficients were:
 
 \begin{itemize}[leftmargin=*]
-    \item \texttt{corpora/transitive/jabberwocky\_transitive.csv}
-    \item \texttt{corpora/transitive/jabberwocky\_transitive\_bpe\_filtered.csv}
-    \item \texttt{corpora/transitive/jabberwocky\_transitive\_strict\_vocabulary.json}
-    \item \texttt{corpora/transitive/jabberwocky\_transitive\_strict\_bpe\_filtered\_vocabulary.json}
-    \item \texttt{scripts/corpora\_generators/0\_generate\_jabberwocky\_transitive.py}
+    \item CORE: \(\beta=-0.0588\), SE \(=0.0341\), \(p=0.0848\)
+    \item ANOMALOUS: \(\beta=0.0405\), SE \(=0.0283\), \(p=0.1532\)
+    \item jabberwocky: \(\beta=0.2224\), SE \(=0.0133\), \(p=1.26\times10^{-62}\)
 \end{itemize}
 
-Archived legacy files:
+Thus, \texttt{pythia-410m} robustly reproduced the passive advantage only in
+Jabberwocky once target length and critical-word token-count covariates were
+included in the mixed-effects model.
+
+The paired-difference regression also differed from \texttt{gpt2-large}. For
+\texttt{pythia-410m}, \(z(\Delta\texttt{target\_length})\) was positive and
+significant (\(\beta=0.0194,\ p=4.53\times10^{-19}\)), while
+\(z(\Delta\texttt{critical\_word\_token\_count})\) was not significant
+(\(p=0.71\)). This suggests that in the Pythia replication, length asymmetry was
+the more important nuisance factor, whereas critical-word tokenization asymmetry
+was less explanatory than in \texttt{gpt2-large}.
+
+\subsection*{Comparative interpretation}
+
+The cross-model comparison yields three main observations.
 
 \begin{itemize}[leftmargin=*]
-    \item \texttt{corpora/archive/legacy/transitive/jabberwocky\_transitive.csv}
-    \item \texttt{corpora/archive/legacy/transitive/jabberwocky\_transitive\_legacy\_vocabulary.json}
-    \item \texttt{scripts/archive/legacy/corpora\_generators/0\_generate\_jabberwocky\_transitive.py}
+    \item Both models show a positive passive-minus-active effect on the primary
+    item-paired metric in all three conditions, with the largest effect in
+    Jabberwocky.
+    \item \texttt{gpt2-large} shows a stronger and more uniform passive bias:
+    \texttt{sentence\_pe\_mean} passive-minus-active is \(0.1434/0.2500/0.4975\)
+    for CORE/ANOMALOUS/Jabberwocky, compared with
+    \(0.1561/0.0936/0.3964\) for \texttt{pythia-410m}.
+    \item The mixed-effects robustness analysis separates the models more
+    sharply. For \texttt{gpt2-large}, the passive coefficient is positive and
+    highly reliable in all three conditions. For \texttt{pythia-410m}, the same
+    coefficient is clearly positive only in Jabberwocky and is small or
+    non-significant in CORE and ANOMALOUS.
 \end{itemize}
 
-\section*{Lexical Audit Note for the Paper}
-
-This should be reported briefly in Methods or Stimuli Validation.
-
-Suggested content:
-
-\begin{quote}
-We replaced an earlier exploratory Jabberwocky lexicon with a stricter nonce
-lexicon preserving English morphosyntax while minimizing lexical overlap with
-English and PrimeLM vocabulary. A lexical audit of the revised lexicon found no
-exact English matches, no PrimeLM vocabulary overlaps, no stem overlaps, and no
-neighbors within edit distance $\leq 2$ under our screening criteria.
-\end{quote}
-
-The detailed audit tables should go in the appendix or supplement, not the main
-results section.
-
-\section*{Semantic Leakage Audit Note}
-
-We also ran a model-based representational audit using GPT-style lexical and
-contextual representations.
-
-Interpretation to remember:
-
-\begin{itemize}[leftmargin=*]
-    \item Low lexical similarity is evidence against direct lexical anchoring.
-    \item Contextual similarity in neutral noun/verb frames is expected to reflect
-    grammatical slot information, not just meaning.
-    \item Therefore, contextual similarity does not by itself prove semantic
-    contamination.
-\end{itemize}
-
-Main conclusion from the comparison:
-
-\begin{itemize}[leftmargin=*]
-    \item The new strict lexicon reduced lexical anchoring relative to the legacy
-    Jabberwocky lexicon.
-    \item The improvement is strongest for nouns and past-tense verb forms.
-    \item Present-tense verb forms remain moderately close to English verbs at the
-    lexical level, which is expected because English morphology is intentionally
-    preserved.
-\end{itemize}
-
-Suggested wording:
-
-\begin{quote}
-A model-based audit further indicated reduced lexical anchoring in the revised
-Jabberwocky lexicon relative to the earlier exploratory version, especially for
-noun forms and past-tense verb forms.
-\end{quote}
-
-\section*{Tokenizer Handling and How to Justify It}
-
-For \texttt{gpt2-large}, there are no ordinary unknown tokens. GPT-2 uses
-byte-level BPE, so a nonce form is decomposed into valid subword pieces rather
-than mapped to an \texttt{<unk>} symbol.
-
-This means the relevant confound is not unknown-token failure but segmentation
-length:
-
-\begin{itemize}[leftmargin=*]
-    \item within a single priming comparison, the target sentence is identical
-    under the congruent and incongruent prime, so target tokenization is held
-    constant
-    \item across items and structures, longer BPE decompositions can distort
-    summed token-level effects
-\end{itemize}
-
-Therefore:
-
-\begin{itemize}[leftmargin=*]
-    \item we should not justify the method in terms of ``handling unknown tokens''
-    \item we should justify it in terms of controlling subword segmentation length
-    \item the main safeguard is to compute priming over the full critical word span
-    rather than a single BPE token or a long suffix
-    \item the token-normalized form \texttt{critical\_word\_pe\_mean} is especially
-    important for Jabberwocky because active nonce verbs often decompose into
-    4--6 GPT-2 tokens whereas passive auxiliaries are usually 1 token
-\end{itemize}
-
-Suggested wording:
-
-\begin{quote}
-Because GPT-2 uses byte-level BPE, nonce items are not mapped to unknown symbols
-but decomposed into subword sequences. We therefore treat subword segmentation
-length, rather than unknown-token failure, as the relevant tokenization confound.
-To reduce this confound, priming at the critical word is computed over the full
-word span and reported both as a summed effect and as a token-normalized mean.
-\end{quote}
-
-\section*{Possible Additional Tokenization Control}
-
-This control step has now been implemented for the transitive Jabberwocky
-materials.
-
-Current filter specification:
-
-\begin{itemize}[leftmargin=*]
-    \item noun forms kept only if GPT-2 tokenization length is 4 or 5 BPEs
-    \item verb stems kept only if both present and past inflected forms are 4 or 5 BPEs
-\end{itemize}
-
-Current filtered outputs:
-
-\begin{itemize}[leftmargin=*]
-    \item \texttt{behavioral\_results/jabberwocky\_tokenizer\_length\_audit/tokenizer\_length\_summary.csv}
-    \item \texttt{behavioral\_results/jabberwocky\_tokenizer\_length\_audit/noun\_token\_lengths.csv}
-    \item \texttt{behavioral\_results/jabberwocky\_tokenizer\_length\_audit/verb\_token\_lengths.csv}
-    \item \texttt{corpora/transitive/jabberwocky\_transitive\_strict\_bpe\_filtered\_vocabulary.json}
-    \item \texttt{corpora/transitive/jabberwocky\_transitive\_bpe\_filtered.csv}
-\end{itemize}
-
-Current retained inventory under the 4--5 BPE filter:
-
-\begin{itemize}[leftmargin=*]
-    \item nouns: 80 $\rightarrow$ 65
-    \item verb stems: 40 $\rightarrow$ 34
-\end{itemize}
-
-This means the stricter BPE control remains feasible without collapsing the
-vocabulary.
-
-If reviewers still push on subword length, one stronger control remains available:
-
-\begin{itemize}[leftmargin=*]
-    \item tighten the allowed token-count band further
-    \item explicitly balance token-count distributions across present and past forms
-    \item optionally match noun token counts even more aggressively
-\end{itemize}
-
-This is not necessary before the first full run, because the current paper path
-already uses the BPE-filtered Jabberwocky corpus.
-
-\section*{What to Report vs.\ What to Avoid}
-
-Report:
-
-\begin{itemize}[leftmargin=*]
-    \item that the Jabberwocky lexicon was revised
-    \item that lexical-confound screening was performed
-    \item that the revised lexicon is cleaner than the legacy one
-    \item that English morphosyntax was intentionally preserved
-\end{itemize}
-
-Avoid:
-
-\begin{itemize}[leftmargin=*]
-    \item claiming that semantics has been eliminated absolutely
-    \item claiming that the stimuli are meaning-free in a philosophical sense
-    \item turning the paper into a lexical audit paper
-\end{itemize}
-
-\section*{Best Framing}
-
-Best framing for the Jabberwocky condition:
-
-\begin{quote}
-lexically content-degraded while preserving English morphosyntax
-\end{quote}
-
-Good alternatives:
-
-\begin{itemize}[leftmargin=*]
-    \item Jabberwocky-style nonce lexicalization
-    \item content-degraded morphosyntactic materials
-\end{itemize}
-
-\section*{Immediate Next Step}
-
-Pilot reruns with the revised scoring pipeline are now complete. The main point
-to remember is:
-
-\begin{itemize}[leftmargin=*]
-    \item the coarse suffix metrics still look distorted in strict Jabberwocky
-    \item the word-aligned critical-word metric is much cleaner
-    \item Jabberwocky active priming is above zero at the critical word, even
-    though sentence-level and suffix-level summaries can remain negative
-\end{itemize}
-
-Pilot values to remember from the revised pipeline (\texttt{max-items = 200}):
-
-\begin{itemize}[leftmargin=*]
-    \item \texttt{CORE} active critical-word PE: about 0.057
-    \item \texttt{ANOMALOUS} active critical-word PE: about 0.0004
-    \item strict \texttt{jabberwocky} active critical-word PE: about 0.122
-    \item \texttt{CORE} passive critical-word PE: about 0.227
-    \item \texttt{ANOMALOUS} passive critical-word PE: about 0.151
-    \item strict \texttt{jabberwocky} passive critical-word PE: about 0.922
-\end{itemize}
-
-Therefore the next real step is the full Experiment 1 run with the active strict
-Jabberwocky corpus:
-
-\begin{itemize}[leftmargin=*]
-    \item \texttt{CORE}
-    \item \texttt{ANOMALOUS}
-    \item new strict BPE-filtered \texttt{jabberwocky}
-\end{itemize}
-
-The paper is viable only if:
-
-\begin{itemize}[leftmargin=*]
-    \item the token-level curves are interpretable
-    \item \texttt{critical\_word\_pe} or \texttt{critical\_word\_pe\_mean} remains
-    above zero for strict Jabberwocky
-    \item the effect ordering remains interpretable across \texttt{CORE},
-    \texttt{ANOMALOUS}, and strict \texttt{jabberwocky}
-    \item active/passive asymmetry is discussed as a property of the paradigm,
-    not overinterpreted as a direct structural comparison
-\end{itemize}
-
-\section*{Analysis Methods Update (23 March 2026)}
-
-This section supersedes the earlier pilot-only status notes.
-
-\subsection*{Data and run configuration}
-
-\begin{itemize}[leftmargin=*]
-    \item Full Experiment 1 was run with \texttt{gpt2-large} using
-    \texttt{make transitive-priming}.
-    \item Active preset: \texttt{paper\_main}.
-    \item Conditions: \texttt{CORE}, \texttt{ANOMALOUS}, strict BPE-filtered
-    \texttt{jabberwocky}.
-    \item Corpus paths are now \texttt{corpora/transitive/*} in the active preset.
-    \item Checkpoint/resume is enabled per condition to avoid rerun loss.
-\end{itemize}
-
-\subsection*{Primary scoring outputs}
-
-\begin{itemize}[leftmargin=*]
-    \item Item-level file: 90,000 rows total (30,000 per condition; active and passive targets per item).
-    \item Token-level file: 951,023 rows total.
-    \item Word-level file: 630,000 rows total.
-    \item Summary files and report:
-    \texttt{behavioral\_results/transitive\_token\_profiles/*}.
-\end{itemize}
-
-\subsection*{Statistical analysis implementation}
-
-\begin{itemize}[leftmargin=*]
-    \item New script:
-    \texttt{scripts/Phase-1/5\_analyze\_transitive\_statistics.py}.
-    \item New make target: \texttt{make transitive-stats}.
-    \item Primary dependent variable: \texttt{sentence\_pe\_mean}
-    (passive minus active, item-paired).
-    \item Secondary dependent variables:
-    \texttt{sentence\_pe}, \texttt{post\_divergence\_pe\_mean},
-    \texttt{critical\_word\_pe\_mean}.
-    \item Item-paired inference:
-    one-sample paired contrast with
-    \begin{itemize}[leftmargin=*]
-        \item sign-flip permutation test (\(n=10{,}000\))
-        \item bootstrap 95\% CI (\(n=10{,}000\))
-        \item one-sample \(t\)-test and paired \(d_z\)
-    \end{itemize}
-    \item Confound-aware model on paired deltas:
-    \texttt{delta\_sentence\_pe\_mean \(\sim\) condition + z\_delta\_target\_length + z\_delta\_critical\_word\_token\_count}
-    with HC3 robust SE.
-    \item Per-condition robustness model:
-    random-intercept LMM by item,
-    \texttt{sentence\_pe\_mean \(\sim\) target\_structure + z\_target\_length + z\_critical\_word\_token\_count}.
-\end{itemize}
-
-\subsection*{Key results from full run}
-
-\paragraph{Primary metric (\texttt{sentence\_pe\_mean}, passive minus active).}
-
-\begin{itemize}[leftmargin=*]
-    \item \texttt{CORE}: \(+0.1434\), 95\% CI \([0.1375,\,0.1493]\), \(d_z=0.389\).
-    \item \texttt{ANOMALOUS}: \(+0.2500\), 95\% CI \([0.2433,\,0.2566]\), \(d_z=0.594\).
-    \item \texttt{jabberwocky}: \(+0.4975\), 95\% CI \([0.4921,\,0.5029]\), \(d_z=1.482\).
-    \item All permutation \(p\)-values are at the floor (\(0.0001\) with 10k permutations).
-\end{itemize}
-
-\paragraph{Raw sentence-sum metric (\texttt{sentence\_pe}).}
-
-\begin{itemize}[leftmargin=*]
-    \item \texttt{CORE}: \(+1.208\)
-    \item \texttt{ANOMALOUS}: \(+1.893\)
-    \item \texttt{jabberwocky}: \(+8.994\)
-\end{itemize}
-
-This raw scale is strongly length-sensitive and should remain secondary.
-
-\paragraph{Confound-aware delta regression.}
-
-\begin{itemize}[leftmargin=*]
-    \item \texttt{z\_delta\_target\_length}: not significant (\(p=0.88\)).
-    \item \texttt{z\_delta\_critical\_word\_token\_count}: positive and significant
-    (\(\beta=0.0884,\ p\approx 1.58\times 10^{-19}\)).
-    \item \texttt{jabberwocky} remains strongly above baseline after covariates.
-\end{itemize}
-
-\paragraph{Per-condition LMM robustness (passive coefficient).}
-
-\begin{itemize}[leftmargin=*]
-    \item \texttt{CORE}: \(0.1704,\ p\approx 2.96\times 10^{-10}\).
-    \item \texttt{ANOMALOUS}: \(0.4098,\ p\approx 4.01\times 10^{-42}\).
-    \item \texttt{jabberwocky}: \(0.6497,\ p\approx 0\) (numerically underflowed).
-    \item Final LMM fits converged for all three conditions after optimizer fallback.
-\end{itemize}
-
-\subsection*{Current interpretation for writeup}
-
-\begin{itemize}[leftmargin=*]
-    \item The model shows a robust passive-over-active priming asymmetry in all conditions.
-    \item The asymmetry remains in strict Jabberwocky under token-normalized and covariate-controlled analyses.
-    \item The largest effects are concentrated in morphosyntactic cue zones
-    (especially passive auxiliaries and function words), not in nonce lexical stems.
-    \item Therefore the safe claim is morphosyntactic-cue-sensitive priming under
-    lexical content degradation, not fully isolated ``pure syntax''.
-\end{itemize}
-
-\subsection*{Files to cite in Methods/Results drafting}
+Taken together, the replication supports the existence of a passive-favoring
+priming signal beyond a single model, but also suggests that the signal is not
+equally stable across model families. The cross-model convergence is strongest
+for Jabberwocky, which is also the condition most directly aligned with the
+current theoretical goal of testing morphosyntactic persistence under reduced
+lexical semantics.
+
+\section*{Source files used for this draft}
 
 \begin{itemize}[leftmargin=*]
     \item \texttt{behavioral\_results/transitive\_token\_profiles/transitive\_item\_summary.csv}
-    \item \texttt{behavioral\_results/transitive\_token\_profiles/transitive\_report.md}
     \item \texttt{behavioral\_results/transitive\_token\_profiles/stats/paired\_effects.csv}
-    \item \texttt{behavioral\_results/transitive\_token\_profiles/stats/delta\_regression\_coefficients.csv}
     \item \texttt{behavioral\_results/transitive\_token\_profiles/stats/lmm\_condition\_coefficients.csv}
-    \item \texttt{behavioral\_results/transitive\_token\_profiles/stats/analysis\_report.md}
+    \item \texttt{behavioral\_results/transitive\_token\_profiles/stats/delta\_regression\_coefficients.csv}
+    \item \texttt{behavioral\_results/transitive\_token\_profiles\_pythia410m/transitive\_item\_summary.csv}
+    \item \texttt{behavioral\_results/transitive\_token\_profiles\_pythia410m/stats/paired\_effects.csv}
+    \item \texttt{behavioral\_results/transitive\_token\_profiles\_pythia410m/stats/lmm\_condition\_coefficients.csv}
+    \item \texttt{behavioral\_results/transitive\_token\_profiles\_pythia410m/stats/delta\_regression\_coefficients.csv}
 \end{itemize}
+
+\section*{Reference}
+
+Sinclair, M., Jumelet, J., and Linzen, T. (2022).
+\emph{Structural Persistence in Language Models:
+Priming as a Window into Abstract Language Processing}.
+Transactions of the ACL.
+\url{https://aclanthology.org/2022.tacl-1.60/}
 
 \end{document}

@@ -1,0 +1,58 @@
+item_index,prime_structure,sample_index,prime_sentence,target_active,target_passive,agent_noun,patient_noun,active_verb_form,passive_verb_form,prompt,raw_continuation,first_generated_word,choice_structure,generated_sentence,generated_structure
+0,active,0,a singer punches a reader .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a singer punches a reader .
+Use these words in one sentence: pilot, man, embraced
+Sentence: the"," man punches the woman .
+Use these words in one sentence: a lover
+Sentence: the lover punches the man",man,passive,the man punches the woman .,other
+0,passive,0,a reader is punched by a singer .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a reader is punched by a singer .
+Use these words in one sentence: pilot, man, embraced
+Sentence: the"," sentence: pilot was hugged .
+
+A:
+
+For this, you can write a function with a list of",sentence,other,the sentence: pilot was hugged .,other
+1,active,0,a partner leads a business .,the reader destroyed the tea .,the tea was destroyed by the reader .,reader,tea,destroyed,destroyed,"Prime sentence: a partner leads a business .
+Use these words in one sentence: reader, tea, destroyed
+Sentence: the"," first part is an old book, then two new stories, then a
+whole series of new stories. A story can",first,other,"the first part is an old book, then two new stories, then a whole series of new stories.",other
+1,passive,0,a business is led by a partner .,the reader destroyed the tea .,the tea was destroyed by the reader .,reader,tea,destroyed,destroyed,"Prime sentence: a business is led by a partner .
+Use these words in one sentence: reader, tea, destroyed
+Sentence: the"," manager of a tea factory is a good businessman
+
+We use these words in one sentence: he is a very wealthy",manager,other,the manager of a tea factory is a good businessman We use these words in one sentence: he is a very wealthy,other
+2,active,0,the soldier judges the company .,an employer broke an anchor .,an anchor was broken by an employer .,employer,anchor,broke,broken,"Prime sentence: the soldier judges the company .
+Use these words in one sentence: employer, anchor, broke/broken
+Sentence: the"," soldier judges the company .
+If you’re new to sentence writing, here are some hints to help.
+
+",soldier,other,the soldier judges the company .,other
+2,passive,0,the company is judged by the soldier .,an employer broke an anchor .,an anchor was broken by an employer .,employer,anchor,broke,broken,"Prime sentence: the company is judged by the soldier .
+Use these words in one sentence: employer, anchor, broke/broken
+Sentence: the"," company is broken/ broke, and the military
+
+A:
+
+You can use the following:
+
+[",company,other,"the company is broken/ broke, and the military A: You can use the following: [",other
+3,active,0,the reader destroys the tea .,a scientist collected a chicken .,a chicken was collected by a scientist .,scientist,chicken,collected,collected,"Prime sentence: the reader destroys the tea .
+Use these words in one sentence: scientist, chicken, collected
+Sentence: the"," reader breaks the tea .
+
+In English, the noun 'tea' is a compound noun, consisting of a",reader,other,the reader breaks the tea .,other
+3,passive,0,the tea is destroyed by the reader .,a scientist collected a chicken .,a chicken was collected by a scientist .,scientist,chicken,collected,collected,"Prime sentence: the tea is destroyed by the reader .
+Use these words in one sentence: scientist, chicken, collected
+Sentence: the"," tea is in the water, and the water is in the tea
+
+Verb: to throw a coin, to",tea,other,"the tea is in the water, and the water is in the tea Verb: to throw a coin, to",other
+4,active,0,a company uses a bottle .,the army kept the candy .,the candy was kept by the army .,army,candy,kept,kept,"Prime sentence: a company uses a bottle .
+Use these words in one sentence: army, candy, kept
+Sentence: the"," company uses a bottle .
+
+We can also use the compound verb form .
+This version has a positive form and",company,other,the company uses a bottle .,other
+4,passive,0,a bottle is used by a company .,the army kept the candy .,the candy was kept by the army .,army,candy,kept,kept,"Prime sentence: a bottle is used by a company .
+Use these words in one sentence: army, candy, kept
+Sentence: the"," bottle was used by a company .
+Use these words in one sentence: apple, apple, apple .
+Sentence",bottle,other,the bottle was used by a company .,other
