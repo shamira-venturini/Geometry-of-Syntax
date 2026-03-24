@@ -16,7 +16,7 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "transitive_token_profil
 LOCAL_PAPER_INPUTS = {
     "CORE": REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_15000sampled_10-1.csv",
     "ANOMALOUS": REPO_ROOT / "corpora" / "transitive" / "ANOMALOUS_chomsky_transitive_15000sampled_10-1.csv",
-    "jabberwocky": REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv",
+    "jabberwocky-only": REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv",
 }
 PRIMELM_ROOT = REPO_ROOT / "PrimeLM" / "corpora"
 PRESETS = {
