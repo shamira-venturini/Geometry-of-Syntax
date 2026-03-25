@@ -11,7 +11,7 @@ from tqdm import tqdm
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "transitive_token_profiles"
 LOCAL_PAPER_INPUTS = {
     "CORE": REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_15000sampled_10-1.csv",

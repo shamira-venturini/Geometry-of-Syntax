@@ -6,8 +6,8 @@ from typing import Dict, Iterable, List, Optional, Sequence, Set, Tuple
 import pandas as pd
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CORPUS = REPO_ROOT / "corpora" / "jabberwocky_transitive" / "jabberwocky_transitive.csv"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_CORPUS = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
 DEFAULT_DICT = Path("/usr/share/dict/words")
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "jabberwocky_lexicon_audit"
 FUNCTION_WORDS = {"the", "a", "is", "was", "by", "."}

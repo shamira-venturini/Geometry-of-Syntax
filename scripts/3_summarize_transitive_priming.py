@@ -4,7 +4,7 @@ from pathlib import Path
 import pandas as pd
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
+REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_INPUT_DIR = REPO_ROOT / "behavioral_results" / "transitive_token_profiles"
 DEFAULT_OUTPUT = DEFAULT_INPUT_DIR / "transitive_report.md"
 

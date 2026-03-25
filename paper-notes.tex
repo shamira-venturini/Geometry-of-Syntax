@@ -49,43 +49,33 @@ Jabberwocky corpus was fixed.
 
 \begin{itemize}[leftmargin=*]
     \item Lexical audit
-    (\texttt{scripts/Phase-1/1\_audit\_jabberwocky\_lexicon.py}): the final
+    (\texttt{scripts/1\_audit\_jabberwocky\_lexicon.py}): the final
     nonce inventory contains no exact English matches, no overlap with the
     Prime-LM vocabulary list, and no close-form neighbors under the screening
     criteria used here.
     \item Semantic audit
-    (\texttt{scripts/Phase-1/2\_audit\_jabberwocky\_semantics.py}): the revised
+    (\texttt{scripts/2\_audit\_jabberwocky\_semantics.py}): the revised
     inventory showed reduced lexical-semantic anchoring relative to the legacy
     Jabberwocky materials, especially for nouns and past-tense verb forms.
     \item Tokenizer-length filter
-    (\texttt{scripts/Phase-1/4\_filter\_jabberwocky\_tokenizer\_lengths.py}):
+    (\texttt{scripts/4\_filter\_jabberwocky\_tokenizer\_lengths.py}):
     noun forms and verb present/past forms were filtered to stable GPT-2 BPE
     lengths (4--5 tokens) to reduce extreme segmentation imbalance in the final
     corpus.
 \end{itemize}
 
-\subsection*{Models}
+\subsection*{Model}
 
-The first full run used \texttt{gpt2-large}. We then repeated the same
-experiment with \texttt{EleutherAI/pythia-410m}.
-
-\texttt{pythia-410m} was selected as the replication model for two reasons.
-First, it is a decoder-only causal language model with standard left-to-right
-generation, making it directly comparable to \texttt{gpt2-large} for the same
-teacher-forced priming assay. Second, it is much more suitable for the planned
-follow-up mechanistic-interpretability/editing work: it is smaller, faster to
-run repeatedly, and commonly used in open-weight interpretability pipelines.
-The choice was therefore not meant to maximize raw performance, but to provide a
-clean behavioral replication in a model family that is also practical for
-subsequent causal intervention studies.
+All results retained in this draft use \texttt{gpt2-large}. We are keeping a
+single-model presentation here because it yields the clearest and most stable
+behavioral pattern for the current paper scope.
 
 \subsection*{Priming computation}
 
-Both models were run with
-\texttt{scripts/Phase-1/2\_transitive\_token\_priming.py} using the same
-\texttt{paper\_main} transitive preset, differing only in the model name and
-output directory. For each item and target structure, the model scores the same
-target under a congruent prime and an incongruent prime.
+The teacher-forced priming experiment was run with
+\texttt{scripts/2\_transitive\_token\_priming.py} using the
+\texttt{paper\_main} transitive preset. For each item and target structure, the
+model scores the same target under a congruent prime and an incongruent prime.
 
 Token-level priming effect:
 \[
@@ -110,8 +100,8 @@ currently implemented in the repository.
 \subsection*{Statistical analysis}
 
 Statistics were computed with
-\texttt{scripts/Phase-1/5\_analyze\_transitive\_statistics.py} for each model
-separately. The main inferential unit was the paired passive-minus-active
+\texttt{scripts/5\_analyze\_transitive\_statistics.py}. The main inferential
+unit was the paired passive-minus-active
 contrast at item level within each condition.
 
 We used:
@@ -140,6 +130,51 @@ The per-condition mixed-effects robustness model was:
 + z(\texttt{critical\_word\_token\_count})
 + (1 \mid \texttt{item}).
 \]
+
+\subsection*{Constrained completion-choice pilot tasks}
+
+In addition to the teacher-forced scoring paradigm, we implemented a
+production-style constrained completion-choice pilot with
+\texttt{gpt2-large}. These pilots do not ask the model to generate an entire
+sentence freely. Instead, they define a structural decision point and score the
+competing continuations at that point.
+
+For transitive active/passive materials
+(\texttt{scripts/7\_core\_completion\_choice\_pilot.py}), the prompt
+ended in \texttt{Sentence: the}, after which the model was scored on two
+possible first-noun continuations:
+
+\begin{itemize}[leftmargin=*]
+    \item agent noun first \(\rightarrow\) active choice
+    \item patient noun first \(\rightarrow\) passive choice
+\end{itemize}
+
+We tested two prompt templates:
+
+\begin{itemize}[leftmargin=*]
+    \item \texttt{word\_list}: prime sentence plus a lexical scaffold
+    \item \texttt{role\_labeled}: prime sentence plus explicit AGENT/PATIENT role labels
+\end{itemize}
+
+The final completion-task design in this draft is the
+\texttt{role\_labeled} version. The \texttt{word\_list} prompt was exploratory.
+For the mixed-prime condition, the target event and lexical scaffold came from
+\texttt{CORE}, but the prime sentence came from the aligned strict Jabberwocky
+corpus. Thus only the prime was changed; the completion task itself was
+identical to the successful CORE pilot.
+
+For all completion-choice pilots, we report both:
+
+\begin{itemize}[leftmargin=*]
+    \item a hard categorical choice rate, and
+    \item a graded log-probability preference difference between the two candidate continuations.
+\end{itemize}
+
+Inference was paired by item within prompt template. For the binary choice
+measure we report paired \(t\)-tests, sign-flip permutation tests, bootstrap
+confidence intervals, and exact McNemar tests. For the graded log-probability
+measure we report paired \(t\)-tests, sign-flip permutation tests, bootstrap
+confidence intervals, and paired effect sizes.
 
 \section*{Results}
 
@@ -194,91 +229,37 @@ not significant (\(p=0.88\)), while
 \texttt{gpt2-large}, critical-word tokenization asymmetry contributed to effect
 magnitude but did not remove the overall passive asymmetry.
 
-\subsection*{Experiment 2: \texttt{pythia-410m}}
+\subsection*{Constrained completion-choice pilots}
 
-We repeated the same analysis pipeline with \texttt{pythia-410m}. In the raw
-output tables, the same Jabberwocky corpus appears under the label
-\texttt{jabberwocky-only}; this is a naming artifact of the replication run, not
-a different stimulus set.
+The constrained completion-choice task yielded a much clearer picture than the
+earlier open generation pilot. On CORE transitives, the task produced a
+priming-consistent passive shift, especially under the role-labeled prompt.
 
-Table~\ref{tab:pythiadesc} reports descriptive means for the replication.
+\paragraph{CORE transitive targets with CORE primes.}
+For the retained role-labeled prompt, passive choice rate increased from
+\(0.375\) after active primes to \(0.435\) after passive primes, a shift of
+\(+0.060\). This binary effect was reliable: paired \(t\)-test \(p=0.0025\),
+permutation \(p=0.0046\), bootstrap 95\% CI \([0.025, 0.10]\), exact McNemar
+\(p=0.00418\). The graded log-probability shift was also reliable
+(\(+0.278,\ p\approx 2.06\times10^{-10}\)).
 
-\begin{table}[h]
-\centering
-\caption{Descriptive priming means for \texttt{pythia-410m}.}
-\label{tab:pythiadesc}
-\begin{tabular}{llrrrr}
-\toprule
-Condition & Target & \texttt{sentence\_pe} & \texttt{sentence\_pe\_mean} & \texttt{critical\_word\_pe\_mean} & \(n\) \\
-\midrule
-CORE & active & 0.0671 & 0.0103 & 0.2799 & 15000 \\
-CORE & passive & 1.3342 & 0.1664 & 0.0869 & 15000 \\
-ANOMALOUS & active & 0.1130 & 0.0181 & 0.1778 & 15000 \\
-ANOMALOUS & passive & 0.8960 & 0.1117 & 0.0581 & 15000 \\
-jabberwocky & active & -1.6320 & -0.0997 & 0.0312 & 15000 \\
-jabberwocky & passive & 5.4393 & 0.2967 & 0.5275 & 15000 \\
-\bottomrule
-\end{tabular}
-\end{table}
+\paragraph{CORE targets with Jabberwocky primes.}
+The mixed-prime condition was more informative. Here the prime came from the
+strict Jabberwocky corpus, but the target completion task remained the same as
+the successful CORE transitive pilot.
 
-For the primary metric (\texttt{sentence\_pe\_mean}), passive-minus-active
-differences again remained positive in all conditions:
+For the retained role-labeled prompt, the passive choice shift was \(+0.035\).
+This binary shift was not significant in the 200-item pilot. However, the
+graded log-probability shift was reliable (\(+0.172,\ p=0.00019\)).
 
-\begin{itemize}[leftmargin=*]
-    \item CORE: \(+0.1561\), 95\% CI \([0.1492, 0.1628]\), \(d_z=0.365\)
-    \item ANOMALOUS: \(+0.0936\), 95\% CI \([0.0864, 0.1008]\), \(d_z=0.206\)
-    \item jabberwocky: \(+0.3964\), 95\% CI \([0.3902, 0.4025]\), \(d_z=1.045\)
-\end{itemize}
+This suggests that strict Jabberwocky primes can bias real-word structural
+choices, but in this pilot the effect is clearer in graded preference than in
+hard categorical choice.
 
-All sign-flip permutation tests again reached the minimum value with 10,000
-permutations (\(p=0.0001\)).
-
-The mixed-effects robustness pattern was weaker than in
-\texttt{gpt2-large}. The per-condition LMM passive coefficients were:
-
-\begin{itemize}[leftmargin=*]
-    \item CORE: \(\beta=-0.0588\), SE \(=0.0341\), \(p=0.0848\)
-    \item ANOMALOUS: \(\beta=0.0405\), SE \(=0.0283\), \(p=0.1532\)
-    \item jabberwocky: \(\beta=0.2224\), SE \(=0.0133\), \(p=1.26\times10^{-62}\)
-\end{itemize}
-
-Thus, \texttt{pythia-410m} robustly reproduced the passive advantage only in
-Jabberwocky once target length and critical-word token-count covariates were
-included in the mixed-effects model.
-
-The paired-difference regression also differed from \texttt{gpt2-large}. For
-\texttt{pythia-410m}, \(z(\Delta\texttt{target\_length})\) was positive and
-significant (\(\beta=0.0194,\ p=4.53\times10^{-19}\)), while
-\(z(\Delta\texttt{critical\_word\_token\_count})\) was not significant
-(\(p=0.71\)). This suggests that in the Pythia replication, length asymmetry was
-the more important nuisance factor, whereas critical-word tokenization asymmetry
-was less explanatory than in \texttt{gpt2-large}.
-
-\subsection*{Comparative interpretation}
-
-The cross-model comparison yields three main observations.
-
-\begin{itemize}[leftmargin=*]
-    \item Both models show a positive passive-minus-active effect on the primary
-    item-paired metric in all three conditions, with the largest effect in
-    Jabberwocky.
-    \item \texttt{gpt2-large} shows a stronger and more uniform passive bias:
-    \texttt{sentence\_pe\_mean} passive-minus-active is \(0.1434/0.2500/0.4975\)
-    for CORE/ANOMALOUS/Jabberwocky, compared with
-    \(0.1561/0.0936/0.3964\) for \texttt{pythia-410m}.
-    \item The mixed-effects robustness analysis separates the models more
-    sharply. For \texttt{gpt2-large}, the passive coefficient is positive and
-    highly reliable in all three conditions. For \texttt{pythia-410m}, the same
-    coefficient is clearly positive only in Jabberwocky and is small or
-    non-significant in CORE and ANOMALOUS.
-\end{itemize}
-
-Taken together, the replication supports the existence of a passive-favoring
-priming signal beyond a single model, but also suggests that the signal is not
-equally stable across model families. The cross-model convergence is strongest
-for Jabberwocky, which is also the condition most directly aligned with the
-current theoretical goal of testing morphosyntactic persistence under reduced
-lexical semantics.
+Overall, the constrained completion-choice paradigm appears viable for
+real-word transitive targets. The strongest bridge condition for future work is
+the mixed-prime design, where Jabberwocky primes are paired with real-word
+transitive targets.
 
 \section*{Source files used for this draft}
 
@@ -287,10 +268,11 @@ lexical semantics.
     \item \texttt{behavioral\_results/transitive\_token\_profiles/stats/paired\_effects.csv}
     \item \texttt{behavioral\_results/transitive\_token\_profiles/stats/lmm\_condition\_coefficients.csv}
     \item \texttt{behavioral\_results/transitive\_token\_profiles/stats/delta\_regression\_coefficients.csv}
-    \item \texttt{behavioral\_results/transitive\_token\_profiles\_pythia410m/transitive\_item\_summary.csv}
-    \item \texttt{behavioral\_results/transitive\_token\_profiles\_pythia410m/stats/paired\_effects.csv}
-    \item \texttt{behavioral\_results/transitive\_token\_profiles\_pythia410m/stats/lmm\_condition\_coefficients.csv}
-    \item \texttt{behavioral\_results/transitive\_token\_profiles\_pythia410m/stats/delta\_regression\_coefficients.csv}
+    \item \texttt{behavioral\_results/core\_completion\_choice\_pilot\_gpt2large/summary.csv}
+    \item \texttt{behavioral\_results/core\_completion\_choice\_pilot\_gpt2large/comparison.csv}
+    \item \texttt{behavioral\_results/core\_completion\_choice\_pilot\_gpt2large/stats.csv}
+    \item \texttt{behavioral\_results/core\_targets\_jabber\_primes\_completion\_choice\_pilot\_gpt2large/comparison.csv}
+    \item \texttt{behavioral\_results/core\_targets\_jabber\_primes\_completion\_choice\_pilot\_gpt2large/stats.csv}
 \end{itemize}
 
 \section*{Reference}

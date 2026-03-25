@@ -9,8 +9,8 @@ import torch.nn.functional as F
 from transformers import AutoModel, AutoTokenizer
 
 
-REPO_ROOT = Path(__file__).resolve().parents[2]
-VOCAB_PATH = REPO_ROOT / "corpora" / "jabberwocky_transitive" / "jabberwocky_transitive_strict_vocabulary.json"
+REPO_ROOT = Path(__file__).resolve().parents[1]
+VOCAB_PATH = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_strict_vocabulary.json"
 NOUN_REF_PATH = REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "nounlist_usf_freq.csv"
 VERB_REF_PATH = REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
 OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "jabberwocky_semantic_audit"
