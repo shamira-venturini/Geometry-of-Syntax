@@ -161,7 +161,7 @@ The first-pass implementation should produce:
 - region summaries
 - markdown or CSV outputs that can be used for the paper figures
 
-The new scripts in `scripts/Phase-1/` are intended to support exactly that.
+The new scripts in `scripts/` are intended to support exactly that.
 
 Current presets in the scoring script:
 
@@ -213,7 +213,7 @@ If those fail, stop the paper rather than broadening the claim.
 ### 2026-03-23
 
 - Completed full `paper_main` run (`CORE`, `ANOMALOUS`, strict BPE-filtered `jabberwocky`) with checkpointed condition outputs and merged root outputs.
-- Added reproducible statistics pipeline: `scripts/Phase-1/5_analyze_transitive_statistics.py` and `make transitive-stats`.
+- Added reproducible statistics pipeline: `scripts/5_analyze_transitive_statistics.py` and `make transitive-stats`.
 - Implemented item-paired inference on `sentence_pe_mean` with sign-flip permutation (`n=10,000`) and bootstrap CI (`n=10,000`), plus secondary metrics.
 - Added confound-aware delta regression and per-condition LMM robustness with covariates for `target_length` and `critical_word_token_count`.
 - Fixed local preset paths in scoring script to `corpora/transitive/*` to match current repository structure.

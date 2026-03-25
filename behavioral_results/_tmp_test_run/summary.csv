@@ -1,0 +1,3 @@
+prompt_template,prime_structure,n_items,n_active_choice,n_passive_choice,active_choice_rate,passive_choice_rate,mean_passive_minus_active_logprob,sd_passive_minus_active_logprob
+role_labeled,active,1,1,0,1.0,0.0,-0.5522918701171875,0.0
+role_labeled,passive,1,1,0,1.0,0.0,-1.2448480129241943,0.0

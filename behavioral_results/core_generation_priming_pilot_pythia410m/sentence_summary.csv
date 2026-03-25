@@ -1,3 +1,0 @@
-prime_structure,n_generations,n_active,n_passive,n_other,valid_rate,active_rate_all,passive_rate_all,active_rate_valid,passive_rate_valid
-active,90,3,1,86,0.044444444444444446,0.03333333333333333,0.011111111111111112,0.75,0.25
-passive,90,2,0,88,0.022222222222222223,0.022222222222222223,0.0,1.0,0.0

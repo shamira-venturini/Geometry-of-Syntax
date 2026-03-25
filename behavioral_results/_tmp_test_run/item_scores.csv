@@ -1,0 +1,7 @@
+item_index,prompt_template,prime_structure,prime_sentence,target_active,target_passive,agent_noun,patient_noun,active_verb_form,passive_verb_form,prompt,active_choice_logprob,passive_choice_logprob,passive_minus_active_logprob,chosen_structure
+0,role_labeled,active,a singer punches a reader .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a singer punches a reader .
+Event roles: AGENT=pilot; PATIENT=man; VERB=embraced
+Sentence: the",-3.6297755241394043,-4.182067394256592,-0.5522918701171875,active
+0,role_labeled,passive,a reader is punched by a singer .,the pilot embraced the man .,the man was embraced by the pilot .,pilot,man,embraced,embraced,"Prime sentence: a reader is punched by a singer .
+Event roles: AGENT=pilot; PATIENT=man; VERB=embraced
+Sentence: the",-2.988969087600708,-4.233817100524902,-1.2448480129241943,active
