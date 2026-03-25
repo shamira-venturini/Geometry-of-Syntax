@@ -1,7 +1,7 @@
-torch
-pandas
 numpy
+pandas
+scipy
+statsmodels
+torch
 transformers
 tqdm
-statsmodels
-sklearn
