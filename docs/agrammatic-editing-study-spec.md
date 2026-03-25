@@ -361,7 +361,7 @@ the main claim must become about limits of syntactic dissociation in current LMs
 ### 2026-03-23
 
 - The transitive priming pipeline in the source repo was stabilized and fully rerun with strict BPE-filtered Jabberwocky materials.
-- New statistics confirmed a robust passive-over-active asymmetry across `CORE`, `ANOMALOUS`, and `jabberwocky`, including covariate-controlled models.
+- New statistics confirmed a robust passive-over-active asymmetry in `CORE` and `jabberwocky`, which remain the active conditions for the paper path.
 - Diagnostic interpretation shifted:
   strongest Jabberwocky effects appear concentrated in morphosyntactic cue regions (auxiliary/function-word zones), not nonce lexical stems.
 - Consequence for this project:

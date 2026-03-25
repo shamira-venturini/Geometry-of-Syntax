@@ -1,0 +1,5 @@
+prompt_template,prime_structure,n_items,n_active_choice,n_passive_choice,active_choice_rate,passive_choice_rate,mean_passive_minus_active_logprob,sd_passive_minus_active_logprob
+role_labeled,active,200,108,92,0.54,0.46,-0.27509740352630613,1.9177005325517864
+role_labeled,passive,200,101,99,0.505,0.495,-0.10322565674781799,1.8218218741080157
+word_list,active,200,170,30,0.85,0.15,-1.6215987890958785,1.600726257224799
+word_list,passive,200,164,36,0.82,0.18,-1.4194614332914353,1.4786497424501914

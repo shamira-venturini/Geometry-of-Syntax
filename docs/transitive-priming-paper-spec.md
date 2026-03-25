@@ -8,7 +8,7 @@ The paper should be clean, narrow, and defensible.
 ## Scope
 
 - alternation: transitive active/passive only
-- conditions: `CORE`, `ANOMALOUS`, `jabberwocky`
+- conditions: `CORE`, `jabberwocky`
 - primary model: `gpt2-large`
 - optional replication: 1-2 additional base models if easy
 
@@ -48,19 +48,17 @@ Supporting result:
 Conditions:
 
 - `CORE`
-- `ANOMALOUS`
 - `jabberwocky`
 
 Interpretation:
 
 - `CORE` provides the ordinary lexical baseline
-- `ANOMALOUS` keeps real words while degrading semantic coherence
 - `jabberwocky` removes ordinary lexical semantics from the content words while
   preserving English morphosyntax
 
 Current Jabberwocky corpus status:
 
-- active file: `corpora/transitive/jabberwocky_transitive.csv`
+- active file: `corpora/transitive/jabberwocky_transitive_bpe_filtered.csv`
 - active vocabulary: `corpora/transitive/jabberwocky_transitive_strict_vocabulary.json`
 - archived legacy corpus retained separately
 - current strict-lexicon audit reports zero exact English overlaps, zero stem
@@ -165,7 +163,7 @@ The new scripts in `scripts/` are intended to support exactly that.
 
 Current presets in the scoring script:
 
-- `paper_main`: local `CORE` + `ANOMALOUS` + `jabberwocky`
+- `paper_main`: local `CORE` + `jabberwocky`
 - `primelm_core`: original Prime-LM transitive core conditions
 - `primelm_recency`: original Prime-LM recency corpus
 - `primelm_cumulative`: original Prime-LM cumulative corpus
@@ -212,7 +210,7 @@ If those fail, stop the paper rather than broadening the claim.
 
 ### 2026-03-23
 
-- Completed full `paper_main` run (`CORE`, `ANOMALOUS`, strict BPE-filtered `jabberwocky`) with checkpointed condition outputs and merged root outputs.
+- Completed full `paper_main` run (originally `CORE`, `ANOMALOUS`, strict BPE-filtered `jabberwocky`); the active paper path now retains `CORE` + `jabberwocky` and archives `ANOMALOUS`.
 - Added reproducible statistics pipeline: `scripts/5_analyze_transitive_statistics.py` and `make transitive-stats`.
 - Implemented item-paired inference on `sentence_pe_mean` with sign-flip permutation (`n=10,000`) and bootstrap CI (`n=10,000`), plus secondary metrics.
 - Added confound-aware delta regression and per-condition LMM robustness with covariates for `target_length` and `critical_word_token_count`.
