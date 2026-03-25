@@ -1,6 +1,9 @@
 __pycache__/
 *.pyc
 .DS_Store
+.idea/
+*.iml
+paper-notes.tex
 
 # Archived material
 _archive/
