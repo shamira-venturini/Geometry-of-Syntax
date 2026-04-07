@@ -3,6 +3,8 @@ __pycache__/
 .DS_Store
 .idea/
 *.iml
+.cache/
+.venv*/
 paper-notes.tex
 
 # Archived material
@@ -22,3 +24,11 @@ behavioral_results/**/*checkpoint*/
 
 # Large raw score tables (keep summaries/reports)
 behavioral_results/**/*_level_scores.csv
+
+# Local temporary run outputs
+behavioral_results/_smoke_*/
+behavioral_results/_smoke*/
+behavioral_results/_timing_*/
+behavioral_results/_timing*/
+behavioral_results/_tmp_*/
+behavioral_results/_tmp*/

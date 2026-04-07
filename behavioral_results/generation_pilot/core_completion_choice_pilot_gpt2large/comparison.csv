@@ -1,3 +1,0 @@
-prompt_template,passive_choice_rate_after_active_prime,passive_choice_rate_after_passive_prime,passive_choice_rate_shift,active_choice_rate_after_active_prime,active_choice_rate_after_passive_prime,active_choice_rate_shift,mean_logprob_shift
-role_labeled,0.375,0.435,0.06,0.625,0.565,0.06000000000000005,0.2777181714773178
-word_list,0.095,0.13,0.035,0.905,0.87,0.03500000000000003,0.2525520068407059

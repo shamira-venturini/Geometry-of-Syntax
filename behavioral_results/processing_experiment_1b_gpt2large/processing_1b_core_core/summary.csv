@@ -1,0 +1,5 @@
+prompt_template,prime_condition,n_items,n_active_choice,n_passive_choice,active_choice_rate,passive_choice_rate,mean_passive_minus_active_logprob,sd_passive_minus_active_logprob
+processing_teacher_forced,active,2080,344,1736,0.16538461538461538,0.8346153846153846,0.46928284786305,0.48501685592063315
+processing_teacher_forced,filler,2080,13,2067,0.00625,0.99375,1.541860811250405,0.5826560041238604
+processing_teacher_forced,no_prime,2080,30,2050,0.014423076923076924,0.9855769230769231,1.5306223431313286,0.6108013870501201
+processing_teacher_forced,passive,2080,0,2080,0.0,1.0,1.9548392812683906,0.5184179509343044

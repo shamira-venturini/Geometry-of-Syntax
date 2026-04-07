@@ -1,0 +1,31 @@
+{
+  "model_name": "gpt2-large",
+  "device": "mps",
+  "batch_size": 16,
+  "max_items": 2080,
+  "prime_conditions": [
+    "active",
+    "passive",
+    "no_prime",
+    "filler"
+  ],
+  "which": "both",
+  "local_files_only": true,
+  "seed": 13,
+  "runs": [
+    {
+      "name": "core_primes_core_targets",
+      "input_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+      "prime_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+      "output_dir": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/behavioral_results/processing_experiment_1b_gpt2large/processing_1b_core_core",
+      "condition_label": "processing_1b_core_core"
+    },
+    {
+      "name": "jabberwocky_primes_jabberwocky_targets",
+      "input_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+      "prime_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+      "output_dir": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/behavioral_results/processing_experiment_1b_gpt2large/processing_1b_jabberwocky_jabberwocky",
+      "condition_label": "processing_1b_jabberwocky_jabberwocky"
+    }
+  ]
+}

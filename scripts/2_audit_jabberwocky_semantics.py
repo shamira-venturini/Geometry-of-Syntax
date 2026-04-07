@@ -23,6 +23,36 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-name", default="gpt2-large")
     parser.add_argument("--device", default=None)
     parser.add_argument("--top-k", type=int, default=5)
+    parser.add_argument(
+        "--reference-mode",
+        choices=("primelm", "wordfreq", "wordlist"),
+        default="primelm",
+        help="Reference vocabulary to compare against.",
+    )
+    parser.add_argument(
+        "--wordfreq-top",
+        type=int,
+        default=50000,
+        help="Top-N English words to use when --reference-mode wordfreq.",
+    )
+    parser.add_argument(
+        "--wordlist-path",
+        type=Path,
+        default=None,
+        help="Path to newline-delimited word list when --reference-mode wordlist.",
+    )
+    parser.add_argument(
+        "--contextual",
+        choices=("auto", "on", "off"),
+        default="auto",
+        help="Whether to compute contextual embeddings (auto=on for primelm only).",
+    )
+    parser.add_argument(
+        "--contextual-ref-limit",
+        type=int,
+        default=10000,
+        help="Skip contextual embeddings when reference list exceeds this size.",
+    )
     parser.add_argument("--vocab-path", type=Path, default=VOCAB_PATH)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
     return parser.parse_args()
@@ -68,6 +98,52 @@ def load_reference_verbs() -> Dict[str, List[str]]:
     return {
         "present": sorted(frame["pres_3s"].str.strip().str.lower().unique().tolist()),
         "past": sorted(frame["past_A"].str.strip().str.lower().unique().tolist()),
+    }
+
+
+def load_wordfreq_list(top_n: int) -> List[str]:
+    try:
+        import wordfreq
+    except ModuleNotFoundError as exc:
+        raise ModuleNotFoundError(
+            "wordfreq is required for --reference-mode wordfreq. Install with `pip install wordfreq`."
+        ) from exc
+    words = wordfreq.top_n_list("en", top_n, wordlist="best", ascii_only=True)
+    return sorted({word.lower() for word in words if word.isalpha()})
+
+
+def load_wordlist(path: Path) -> List[str]:
+    if path is None:
+        raise ValueError("--wordlist-path is required when --reference-mode wordlist.")
+    if not path.exists():
+        raise FileNotFoundError(f"Wordlist not found: {path}")
+    words = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        word = line.strip().lower()
+        if word and word.isalpha():
+            words.append(word)
+    return sorted(set(words))
+
+
+def load_reference_sets(args: argparse.Namespace) -> Dict[str, List[str]]:
+    if args.reference_mode == "primelm":
+        nouns = load_reference_nouns()
+        verbs = load_reference_verbs()
+        return {
+            "nouns": nouns,
+            "verb_present": verbs["present"],
+            "verb_past": verbs["past"],
+            "label": "primelm",
+        }
+    if args.reference_mode == "wordfreq":
+        words = load_wordfreq_list(args.wordfreq_top)
+    else:
+        words = load_wordlist(args.wordlist_path)
+    return {
+        "nouns": words,
+        "verb_present": words,
+        "verb_past": words,
+        "label": args.reference_mode,
     }
 
 
@@ -192,53 +268,79 @@ def main() -> None:
     embedding_weight = model.get_input_embeddings().weight.detach().cpu()
 
     nonce = load_nonce_vocabulary(args.vocab_path)
-    ref_nouns = load_reference_nouns()
-    ref_verbs = load_reference_verbs()
+    ref_sets = load_reference_sets(args)
+    ref_nouns = ref_sets["nouns"]
+    ref_verbs = {
+        "present": ref_sets["verb_present"],
+        "past": ref_sets["verb_past"],
+    }
+
+    contextual_setting = args.contextual
+    include_contextual = (
+        contextual_setting == "on"
+        or (contextual_setting == "auto" and args.reference_mode == "primelm")
+    )
+    ref_size = max(len(ref_nouns), len(ref_verbs["present"]), len(ref_verbs["past"]))
+    if include_contextual and ref_size > args.contextual_ref_limit:
+        print(
+            f"Reference list size {ref_size} exceeds contextual limit "
+            f"{args.contextual_ref_limit}; skipping contextual embeddings."
+        )
+        include_contextual = False
 
     noun_lex_nonce = lexical_representations(tokenizer, embedding_weight, nonce["nouns"])
     noun_lex_ref = lexical_representations(tokenizer, embedding_weight, ref_nouns)
-    noun_ctx_nonce = batch_contextual_representations(
-        tokenizer, model, device, nonce["nouns"], prefix="the", suffix=" is here ."
-    )
-    noun_ctx_ref = batch_contextual_representations(
-        tokenizer, model, device, ref_nouns, prefix="the", suffix=" is here ."
-    )
+    if include_contextual:
+        noun_ctx_nonce = batch_contextual_representations(
+            tokenizer, model, device, nonce["nouns"], prefix="the", suffix=" is here ."
+        )
+        noun_ctx_ref = batch_contextual_representations(
+            tokenizer, model, device, ref_nouns, prefix="the", suffix=" is here ."
+        )
 
     nonce_verb_present = nonce["verb_present"]
     nonce_verb_past = nonce["verb_past"]
 
     verb_pres_lex_nonce = lexical_representations(tokenizer, embedding_weight, nonce_verb_present)
     verb_pres_lex_ref = lexical_representations(tokenizer, embedding_weight, ref_verbs["present"])
-    verb_pres_ctx_nonce = batch_contextual_representations(
-        tokenizer, model, device, nonce_verb_present, prefix="they", suffix=" it ."
-    )
-    verb_pres_ctx_ref = batch_contextual_representations(
-        tokenizer, model, device, ref_verbs["present"], prefix="they", suffix=" it ."
-    )
+    if include_contextual:
+        verb_pres_ctx_nonce = batch_contextual_representations(
+            tokenizer, model, device, nonce_verb_present, prefix="they", suffix=" it ."
+        )
+        verb_pres_ctx_ref = batch_contextual_representations(
+            tokenizer, model, device, ref_verbs["present"], prefix="they", suffix=" it ."
+        )
 
     verb_past_lex_nonce = lexical_representations(tokenizer, embedding_weight, nonce_verb_past)
     verb_past_lex_ref = lexical_representations(tokenizer, embedding_weight, ref_verbs["past"])
-    verb_past_ctx_nonce = batch_contextual_representations(
-        tokenizer, model, device, nonce_verb_past, prefix="they", suffix=" it ."
-    )
-    verb_past_ctx_ref = batch_contextual_representations(
-        tokenizer, model, device, ref_verbs["past"], prefix="they", suffix=" it ."
-    )
+    if include_contextual:
+        verb_past_ctx_nonce = batch_contextual_representations(
+            tokenizer, model, device, nonce_verb_past, prefix="they", suffix=" it ."
+        )
+        verb_past_ctx_ref = batch_contextual_representations(
+            tokenizer, model, device, ref_verbs["past"], prefix="they", suffix=" it ."
+        )
 
     tables = [
         similarity_table(noun_lex_nonce, noun_lex_ref, args.top_k, "noun", "lexical"),
-        similarity_table(noun_ctx_nonce, noun_ctx_ref, args.top_k, "noun", "contextual"),
         similarity_table(verb_pres_lex_nonce, verb_pres_lex_ref, args.top_k, "verb_present", "lexical"),
-        similarity_table(verb_pres_ctx_nonce, verb_pres_ctx_ref, args.top_k, "verb_present", "contextual"),
         similarity_table(verb_past_lex_nonce, verb_past_lex_ref, args.top_k, "verb_past", "lexical"),
-        similarity_table(verb_past_ctx_nonce, verb_past_ctx_ref, args.top_k, "verb_past", "contextual"),
     ]
+    if include_contextual:
+        tables.extend(
+            [
+                similarity_table(noun_ctx_nonce, noun_ctx_ref, args.top_k, "noun", "contextual"),
+                similarity_table(verb_pres_ctx_nonce, verb_pres_ctx_ref, args.top_k, "verb_present", "contextual"),
+                similarity_table(verb_past_ctx_nonce, verb_past_ctx_ref, args.top_k, "verb_past", "contextual"),
+            ]
+        )
 
     detail = pd.concat(tables, ignore_index=True)
     summary = summary_table(detail)
 
-    detail.to_csv(args.output_dir / "semantic_leakage_detail_old_jabber.csv", index=False)
-    summary.to_csv(args.output_dir / "semantic_leakage_summary_old_jabber.csv", index=False)
+    suffix = ref_sets["label"]
+    detail.to_csv(args.output_dir / f"semantic_leakage_detail_{suffix}.csv", index=False)
+    summary.to_csv(args.output_dir / f"semantic_leakage_summary_{suffix}.csv", index=False)
 
 
 if __name__ == "__main__":

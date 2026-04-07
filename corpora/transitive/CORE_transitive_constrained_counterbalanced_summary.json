@@ -1,0 +1,354 @@
+{
+  "noun_source": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/PrimeLM/vocabulary_lists/nounlist_usf_freq.csv",
+  "verb_source": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/PrimeLM/vocabulary_lists/verblist_T_usf_freq.csv",
+  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+  "row_count": 2080,
+  "included_verbs": [
+    {
+      "verb": "ask",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "bother",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "chase",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "follow",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "forgive",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "hurt",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "join",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "judge",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "carry",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "catch",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "describe",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "destroy",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "discover",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "drag",
+      "N1": "Person",
+      "N2": "PO",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "forget",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "grab",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "raise",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "select",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "wash",
+      "N1": "Person",
+      "N2": "PO",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "beat",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "comfort",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "embrace",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "help",
+      "N1": "Human",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "hurry",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "kill",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "kiss",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "protect",
+      "N1": "Human",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "punch",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "strike",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "surprise",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "teach",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    },
+    {
+      "verb": "understand",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 65,
+      "rows_added": 65
+    }
+  ],
+  "excluded_verbs": [
+    {
+      "verb": "drink",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Drinkable",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "eat",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Edible",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "taste",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Edible",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "lead",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Group",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "accept",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "break",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "leave",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "use",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Human",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "wrap",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "collect",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "keep",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Human",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "prepare",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "purchase",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Human",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "remove",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "smell",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Person",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "want",
+      "reason": "No reversible noun set with at least two nouns under N1/N2 constraints.",
+      "N1": "Human",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    }
+  ],
+  "audit": {
+    "tracked_verb_noun_pairs": 4160,
+    "imbalanced_pairs": []
+  },
+  "notes": [
+    "Each included verb contributes one reduced block where every eligible noun appears equally often as AGENT and PATIENT.",
+    "Excluded verbs have no noun set that can satisfy both N1 and N2 role constraints simultaneously."
+  ]
+}

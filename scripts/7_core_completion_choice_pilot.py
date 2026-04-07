@@ -12,7 +12,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_INPUT_CSV = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_15000sampled_10-1.csv"
+DEFAULT_INPUT_CSV = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "core_completion_choice_pilot"
 N_RESAMPLES = 10000
 
