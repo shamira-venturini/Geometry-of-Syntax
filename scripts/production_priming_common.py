@@ -112,6 +112,11 @@ def normalize_transitive_frame(frame: pd.DataFrame) -> pd.DataFrame:
 
 
 def load_verb_lookup(path: Path = VERB_LIST_PATH) -> Dict[Tuple[str, str], str]:
+    if not path.exists():
+        warnings.warn(
+            f"Verb lookup file not found at {path}; falling back to heuristic lemma inference.",
+        )
+        return {}
     frame = pd.read_csv(path, sep=";")
     lookup: Dict[Tuple[str, str], str] = {}
     for row in frame.itertuples(index=False):
