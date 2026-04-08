@@ -10,8 +10,17 @@ import statsmodels.formula.api as smf
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_INPUT = REPO_ROOT / "behavioral_results" / "transitive_token_profiles" / "transitive_item_level_scores.csv"
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "transitive_token_profiles" / "stats"
+DEFAULT_INPUT = (
+    REPO_ROOT
+    / "behavioral_results"
+    / "experiment-1"
+    / "experiment-1a"
+    / "transitive_token_profiles"
+    / "transitive_item_level_scores.csv"
+)
+DEFAULT_OUTPUT_DIR = (
+    REPO_ROOT / "behavioral_results" / "experiment-1" / "experiment-1a" / "transitive_token_profiles" / "stats"
+)
 PRIMARY_METRIC = "sentence_pe_mean"
 SECONDARY_METRICS = [
     "sentence_pe",

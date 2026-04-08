@@ -9,6 +9,9 @@ from typing import Dict, List
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_SCRIPT = REPO_ROOT / "scripts" / "15_counterbalanced_processing_experiment_1b.py"
 CORE_COUNTERBALANCED = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
+CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED = (
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
+)
 JABBERWOCKY = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
 
 
@@ -21,6 +24,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--max-items", type=int, default=None)
     parser.add_argument(
+        "--torch-dtype",
+        default="auto",
+        help="Torch dtype for model loading: auto, float32, float16, or bfloat16.",
+    )
+    parser.add_argument(
         "--prime-conditions",
         nargs="+",
         default=["active", "passive", "no_prime_eos", "no_prime_empty", "filler"],
@@ -30,6 +38,12 @@ def parse_args() -> argparse.Namespace:
         "--which",
         choices=("core", "jabberwocky", "both"),
         default="both",
+    )
+    parser.add_argument(
+        "--core-prime-mode",
+        choices=("lexically_controlled", "lexical_overlap"),
+        default="lexically_controlled",
+        help="Use the repaired core prime-target corpus or the older lexical-overlap version for comparison.",
     )
     parser.add_argument(
         "--local-files-only",
@@ -49,14 +63,23 @@ def run_command(command: List[str], cwd: Path) -> None:
     subprocess.run(command, cwd=cwd, check=True)
 
 
-def condition_configs(output_root: Path) -> List[Dict[str, object]]:
+def condition_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str, object]]:
+    if core_prime_mode == "lexically_controlled":
+        core_csv = CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED
+        core_output = output_root / "processing_1b_core_core_lexically_controlled"
+        condition_label = "processing_1b_core_core_lexically_controlled"
+    else:
+        core_csv = CORE_COUNTERBALANCED
+        core_output = output_root / "processing_1b_core_core_lexical_overlap"
+        condition_label = "processing_1b_core_core_lexical_overlap"
+
     return [
         {
             "name": "core_primes_core_targets",
-            "input_csv": CORE_COUNTERBALANCED,
-            "prime_csv": CORE_COUNTERBALANCED,
-            "output_dir": output_root / "processing_1b_core_core",
-            "condition_label": "processing_1b_core_core",
+            "input_csv": core_csv,
+            "prime_csv": core_csv,
+            "output_dir": core_output,
+            "condition_label": condition_label,
             "which_key": "core",
             "filler_domain": "core",
         },
@@ -81,15 +104,17 @@ def main() -> None:
         "model_name": args.model_name,
         "device": args.device,
         "batch_size": args.batch_size,
+        "torch_dtype": args.torch_dtype,
         "max_items": args.max_items,
         "prime_conditions": args.prime_conditions,
         "which": args.which,
+        "core_prime_mode": args.core_prime_mode,
         "local_files_only": bool(args.local_files_only),
         "seed": args.seed,
         "runs": [],
     }
 
-    for cfg in condition_configs(output_root):
+    for cfg in condition_configs(output_root, core_prime_mode=args.core_prime_mode):
         if args.which != "both" and cfg["which_key"] != args.which:
             continue
 
@@ -121,6 +146,8 @@ def main() -> None:
         ]
         if args.device:
             command.extend(["--device", args.device])
+        if args.torch_dtype:
+            command.extend(["--torch-dtype", args.torch_dtype])
         if args.max_items is not None:
             command.extend(["--max-items", str(args.max_items)])
         if args.local_files_only:
