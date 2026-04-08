@@ -1,0 +1,48 @@
+{
+  "source_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+  "summary_json": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled_summary.json",
+  "seed": 13,
+  "constraints": [
+    "Prime and target must not share the active-form verb.",
+    "Prime and target must not share either noun."
+  ],
+  "audit": {
+    "row_count": 2080,
+    "prime_source_row_indices_preview": [
+      1801,
+      710,
+      54,
+      210,
+      1311,
+      281,
+      1217,
+      1022,
+      183,
+      594,
+      1435,
+      20,
+      1646,
+      528,
+      1140,
+      1656,
+      820,
+      1720,
+      683,
+      1589,
+      103,
+      893,
+      1872,
+      1544,
+      625
+    ],
+    "same_verb_rows": 0,
+    "shared_noun_rows": 0,
+    "same_verb_rate": 0.0,
+    "shared_noun_rate": 0.0
+  },
+  "notes": [
+    "Each output row keeps the original target ta/tp and replaces the prime pa/pp with a matched row from the source corpus.",
+    "The original constrained corpus is retained separately as the lexical-overlap comparison condition."
+  ]
+}

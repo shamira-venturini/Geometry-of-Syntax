@@ -1,0 +1,35 @@
+{
+  "condition_label": "processing_1b_core_core_lexically_controlled",
+  "model_name": "gpt2-large",
+  "input_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+  "prime_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+  "max_items": null,
+  "batch_size": 128,
+  "prime_conditions": [
+    "active",
+    "passive",
+    "no_prime_eos",
+    "no_prime_empty",
+    "filler"
+  ],
+  "seed": 13,
+  "device": "cpu",
+  "local_files_only": true,
+  "n_rows": 10400,
+  "n_items": 2080,
+  "prime_alignment_mode": "paired_indices",
+  "lexical_overlap_audit": {
+    "rows_evaluated": 2080,
+    "same_active_verb_rows": 0,
+    "same_active_verb_rate": 0.0,
+    "shared_noun_rows": 0,
+    "shared_noun_rate": 0.0,
+    "shared_both_nouns_rows": 0,
+    "shared_both_nouns_rate": 0.0
+  },
+  "filler_sentence_count": 24,
+  "filler_domain": "core",
+  "task_type": "processing_experiment_1b",
+  "primary_score": "mean_target_logprob_difference",
+  "secondary_score": "sum_target_logprob_difference"
+}

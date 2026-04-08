@@ -1,0 +1,34 @@
+{
+  "model_name": "gpt2-large",
+  "device": "cuda",
+  "batch_size": 64,
+  "max_items": 2080,
+  "prompt_template": "role_labeled",
+  "prime_conditions": [
+    "active",
+    "passive",
+    "no_prime_eos",
+    "filler"
+  ],
+  "role_order": "shuffle",
+  "max_new_tokens": 24,
+  "seed": 13,
+  "which": "both",
+  "local_files_only": false,
+  "experiments": [
+    {
+      "name": "core_primes_counterbalanced_core_production",
+      "input_csv": "/content/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+      "prime_csv": "/content/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+      "completion_output_dir": "/content/Geometry-of-Syntax/behavioral_results/experiment_2_colab/counterbalanced_completion_core_primes",
+      "generation_output_dir": "/content/Geometry-of-Syntax/behavioral_results/experiment_2_colab/counterbalanced_generation_core_primes"
+    },
+    {
+      "name": "jabberwocky_primes_counterbalanced_core_production",
+      "input_csv": "/content/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+      "prime_csv": "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+      "completion_output_dir": "/content/Geometry-of-Syntax/behavioral_results/experiment_2_colab/counterbalanced_completion_jabberwocky_primes",
+      "generation_output_dir": "/content/Geometry-of-Syntax/behavioral_results/experiment_2_colab/counterbalanced_generation_jabberwocky_primes"
+    }
+  ]
+}

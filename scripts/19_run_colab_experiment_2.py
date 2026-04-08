@@ -40,12 +40,17 @@ def parse_args() -> argparse.Namespace:
         default="both",
         help="completion = Experiment 2a, generation = Experiment 2b, both = run both.",
     )
+    parser.add_argument(
+        "--core-prime-mode",
+        choices=("lexically_controlled", "lexical_overlap"),
+        default="lexically_controlled",
+    )
     parser.add_argument("--max-new-tokens", type=int, default=24)
     parser.add_argument("--seed", type=int, default=13)
     parser.add_argument(
         "--output-root",
         type=Path,
-        default=REPO_ROOT / "behavioral_results" / "experiment_2_colab",
+        default=REPO_ROOT / "behavioral_results" / "experiment_2_colab_lexically_controlled",
     )
     return parser.parse_args()
 
@@ -80,6 +85,8 @@ def main() -> None:
         args.role_order,
         "--which",
         args.which,
+        "--core-prime-mode",
+        args.core_prime_mode,
         "--max-new-tokens",
         str(args.max_new_tokens),
         "--seed",
@@ -102,6 +109,7 @@ def main() -> None:
         "prime_conditions": args.prime_conditions,
         "role_order": args.role_order,
         "which": args.which,
+        "core_prime_mode": args.core_prime_mode,
         "max_new_tokens": args.max_new_tokens,
         "seed": args.seed,
         "output_root": str(output_root),

@@ -8,6 +8,9 @@ from typing import Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COUNTERBALANCED_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
+COUNTERBALANCED_CORE_LEXICALLY_CONTROLLED = (
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
+)
 JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
 COMPLETION_SCRIPT = REPO_ROOT / "scripts" / "12_counterbalanced_completion_choice_experiment.py"
 GENERATION_SCRIPT = REPO_ROOT / "scripts" / "13_counterbalanced_generation_experiment.py"
@@ -21,6 +24,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--device", default=None)
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--max-items", type=int, default=None)
+    parser.add_argument(
+        "--torch-dtype",
+        default="auto",
+        help="Torch dtype for model loading: auto, float32, float16, or bfloat16.",
+    )
     parser.add_argument(
         "--prompt-template",
         choices=("role_labeled", "word_list", "all"),
@@ -43,6 +51,18 @@ def parse_args() -> argparse.Namespace:
         default="both",
     )
     parser.add_argument(
+        "--prime-set",
+        choices=("core", "jabberwocky", "both"),
+        default="both",
+        help="Which prime-source pairing(s) to run: core primes, jabberwocky primes, or both.",
+    )
+    parser.add_argument(
+        "--core-prime-mode",
+        choices=("lexically_controlled", "lexical_overlap"),
+        default="lexically_controlled",
+        help="Use the repaired core prime-target corpus or the older lexical-overlap version for comparison.",
+    )
+    parser.add_argument(
         "--local-files-only",
         action="store_true",
         help="Load tokenizer/model from the local Hugging Face cache only.",
@@ -61,17 +81,30 @@ def run_command(command: List[str], cwd: Path) -> None:
     subprocess.run(command, cwd=cwd, check=True)
 
 
-def experiment_configs(output_root: Path) -> List[Dict[str, object]]:
+def experiment_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str, object]]:
+    if core_prime_mode == "lexically_controlled":
+        core_csv = COUNTERBALANCED_CORE_LEXICALLY_CONTROLLED
+        core_completion_output = output_root / "counterbalanced_completion_core_primes_lexically_controlled"
+        core_generation_output = output_root / "counterbalanced_generation_core_primes_lexically_controlled"
+    else:
+        core_csv = COUNTERBALANCED_CORE
+        core_completion_output = output_root / "counterbalanced_completion_core_primes_lexical_overlap"
+        core_generation_output = output_root / "counterbalanced_generation_core_primes_lexical_overlap"
+
     return [
         {
+            "key": "core",
             "name": "core_primes_counterbalanced_core_production",
-            "prime_csv": COUNTERBALANCED_CORE,
-            "completion_output": output_root / "counterbalanced_completion_core_primes",
-            "generation_output": output_root / "counterbalanced_generation_core_primes",
+            "input_csv": core_csv,
+            "prime_csv": core_csv,
+            "completion_output": core_completion_output,
+            "generation_output": core_generation_output,
             "filler_domain": "core",
         },
         {
+            "key": "jabberwocky",
             "name": "jabberwocky_primes_counterbalanced_core_production",
+            "input_csv": core_csv,
             "prime_csv": JABBERWOCKY_PRIMES,
             "completion_output": output_root / "counterbalanced_completion_jabberwocky_primes",
             "generation_output": output_root / "counterbalanced_generation_jabberwocky_primes",
@@ -89,10 +122,13 @@ def main() -> None:
         "model_name": args.model_name,
         "device": args.device,
         "batch_size": args.batch_size,
+        "torch_dtype": args.torch_dtype,
         "max_items": args.max_items,
         "prompt_template": args.prompt_template,
         "prime_conditions": args.prime_conditions,
+        "prime_set": args.prime_set,
         "role_order": args.role_order,
+        "core_prime_mode": args.core_prime_mode,
         "max_new_tokens": args.max_new_tokens,
         "seed": args.seed,
         "which": args.which,
@@ -100,11 +136,14 @@ def main() -> None:
         "experiments": [],
     }
 
-    for config in experiment_configs(output_root):
+    allowed_prime_sets = {"core", "jabberwocky"} if args.prime_set == "both" else {args.prime_set}
+    for config in experiment_configs(output_root, core_prime_mode=args.core_prime_mode):
+        if config["key"] not in allowed_prime_sets:
+            continue
         print(f"=== {config['name']} ===")
         experiment_entry = {
             "name": config["name"],
-            "input_csv": str(COUNTERBALANCED_CORE),
+            "input_csv": str(config["input_csv"]),
             "prime_csv": str(config["prime_csv"]),
         }
 
@@ -117,7 +156,7 @@ def main() -> None:
                 "--model-name",
                 args.model_name,
                 "--input-csv",
-                str(COUNTERBALANCED_CORE),
+                str(config["input_csv"]),
                 "--prime-csv",
                 str(config["prime_csv"]),
                 "--output-dir",
@@ -135,6 +174,8 @@ def main() -> None:
             ]
             if args.device:
                 completion_command.extend(["--device", args.device])
+            if args.torch_dtype:
+                completion_command.extend(["--torch-dtype", args.torch_dtype])
             if args.max_items is not None:
                 completion_command.extend(["--max-items", str(args.max_items)])
             if args.local_files_only:
@@ -152,7 +193,7 @@ def main() -> None:
                 "--model-name",
                 args.model_name,
                 "--input-csv",
-                str(COUNTERBALANCED_CORE),
+                str(config["input_csv"]),
                 "--prime-csv",
                 str(config["prime_csv"]),
                 "--output-dir",
@@ -172,6 +213,8 @@ def main() -> None:
             ]
             if args.device:
                 generation_command.extend(["--device", args.device])
+            if args.torch_dtype:
+                generation_command.extend(["--torch-dtype", args.torch_dtype])
             if args.max_items is not None:
                 generation_command.extend(["--max-items", str(args.max_items)])
             if args.local_files_only:

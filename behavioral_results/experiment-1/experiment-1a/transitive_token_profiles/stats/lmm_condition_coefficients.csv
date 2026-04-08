@@ -1,0 +1,3 @@
+condition,term,coef,std_err,p_value,aic,bic,converged,n_obs,model,error
+CORE,C(target_structure)[T.passive],0.170424536082379,0.0270469863182578,2.956273269887832e-10,-8492.756664960762,-8442.902948996896,True,30000,lmm_random_intercept,
+jabberwocky,C(target_structure)[T.passive],0.6497464688685551,0.0149174108370785,0.0,-16314.93482841988,-16265.081112456011,True,30000,lmm_random_intercept,

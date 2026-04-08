@@ -1,0 +1,31 @@
+{
+  "model_name": "gpt2-large",
+  "input_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+  "prime_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+  "max_items": 4,
+  "batch_size": 16,
+  "prime_conditions": [
+    "active",
+    "passive",
+    "no_demo",
+    "filler"
+  ],
+  "filler_domain": "core",
+  "device": "cpu",
+  "prime_alignment_mode": "paired_indices",
+  "lexical_overlap_audit": {
+    "rows_evaluated": 4,
+    "same_active_verb_rows": 0,
+    "same_active_verb_rate": 0.0,
+    "shared_noun_rows": 0,
+    "shared_noun_rate": 0.0,
+    "shared_both_nouns_rows": 0,
+    "shared_both_nouns_rate": 0.0
+  },
+  "event_style": "all",
+  "role_style": "all",
+  "quote_style": "all",
+  "max_new_tokens": 18,
+  "seed": 13,
+  "paradigm": "demo_prompt_generation_sanity"
+}

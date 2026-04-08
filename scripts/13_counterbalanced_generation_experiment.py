@@ -6,11 +6,12 @@ from typing import Dict, List, Sequence, Tuple
 
 import pandas as pd
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
+from transformers import AutoTokenizer
 
 from production_priming_common import (
     CORE_FILLER_SENTENCES,
     JABBERWOCKY_FILLER_SENTENCES,
+    LEXICALLY_CONTROLLED_CORE_CSV,
     REPO_ROOT,
     TargetBundle,
     batched_choice_log_probs,
@@ -18,6 +19,8 @@ from production_priming_common import (
     classify_generated_structure,
     extract_bundle,
     get_device,
+    lexical_overlap_audit,
+    load_causal_lm_and_tokenizer,
     load_verb_lookup,
     normalize_generated_text,
     normalize_transitive_frame,
@@ -30,7 +33,7 @@ from production_priming_common import (
 )
 
 
-DEFAULT_INPUT_CSV = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
+DEFAULT_INPUT_CSV = LEXICALLY_CONTROLLED_CORE_CSV
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "counterbalanced_generation_choice"
 
 
@@ -50,6 +53,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--max-items", type=int, default=None)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--device", default=None)
+    parser.add_argument(
+        "--torch-dtype",
+        default="auto",
+        help="Torch dtype for model loading: auto, float32, float16, or bfloat16.",
+    )
     parser.add_argument(
         "--local-files-only",
         action="store_true",
@@ -261,17 +269,16 @@ def main() -> None:
         max_items=args.max_items,
         seed=args.seed,
     )
+    overlap_audit = lexical_overlap_audit(target_frame=target_frame, prime_frame=prime_frame)
 
     device = get_device(args.device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name, local_files_only=args.local_files_only)
-    if tokenizer.pad_token_id is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    tokenizer.padding_side = "right"
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_name,
+    tokenizer, model, resolved_dtype = load_causal_lm_and_tokenizer(
+        model_name=args.model_name,
+        device=device,
         local_files_only=args.local_files_only,
-    ).to(device)
-    model.eval()
+        torch_dtype_name=args.torch_dtype,
+    )
+    tokenizer.padding_side = "right"
 
     prime_conditions = prompt_condition_order(args.prime_conditions)
     filler_domain = infer_filler_domain(input_csv=input_csv, prime_csv=prime_csv, requested=args.filler_domain)
@@ -352,10 +359,12 @@ def main() -> None:
         "role_order": args.role_order,
         "seed": int(args.seed),
         "device": device,
+        "torch_dtype": str(resolved_dtype) if resolved_dtype is not None else "default",
         "local_files_only": bool(args.local_files_only),
         "n_rows": int(len(results)),
         "n_items": int(len(target_frame)),
         "prime_alignment_mode": prime_alignment_mode,
+        "lexical_overlap_audit": overlap_audit,
         "filler_sentence_count": len(filler_sentences),
         "filler_domain": filler_domain,
         "task_type": "counterbalanced_generation_choice",

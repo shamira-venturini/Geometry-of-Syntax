@@ -6,17 +6,19 @@ from typing import Dict, List, Tuple
 
 import pandas as pd
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from production_priming_common import (
     CORE_FILLER_SENTENCES,
     JABBERWOCKY_FILLER_SENTENCES,
+    LEXICALLY_CONTROLLED_CORE_CSV,
     REPO_ROOT,
     TargetBundle,
     batched_choice_log_probs,
     build_prompt,
     extract_bundle,
     get_device,
+    lexical_overlap_audit,
+    load_causal_lm_and_tokenizer,
     load_verb_lookup,
     normalize_transitive_frame,
     prompt_condition_order,
@@ -28,7 +30,7 @@ from production_priming_common import (
 )
 
 
-DEFAULT_INPUT_CSV = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
+DEFAULT_INPUT_CSV = LEXICALLY_CONTROLLED_CORE_CSV
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "counterbalanced_completion_choice_controlled"
 
 
@@ -49,13 +51,18 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=128)
     parser.add_argument("--device", default=None)
     parser.add_argument(
+        "--torch-dtype",
+        default="auto",
+        help="Torch dtype for model loading: auto, float32, float16, or bfloat16.",
+    )
+    parser.add_argument(
         "--local-files-only",
         action="store_true",
         help="Load tokenizer/model from the local Hugging Face cache only.",
     )
     parser.add_argument(
         "--prompt-template",
-        choices=("word_list", "role_labeled", "all"),
+        choices=("word_list", "role_labeled", "cue_list", "another_event", "same_kind_event", "all", "elicited_all"),
         default="role_labeled",
     )
     parser.add_argument(
@@ -77,6 +84,11 @@ def parse_args() -> argparse.Namespace:
         help="Keep AGENT/PATIENT/VERB order fixed or shuffle it per item.",
     )
     parser.add_argument("--seed", type=int, default=13)
+    parser.add_argument(
+        "--sentence-stub",
+        default="Sentence: the",
+        help="Literal stub appended at the end of the prompt before the completion choice.",
+    )
     return parser.parse_args()
 
 
@@ -89,6 +101,7 @@ def build_prompt_groups(
     role_order_mode: str,
     seed: int,
     filler_sentences: List[str],
+    sentence_stub: str,
 ) -> Tuple[List[Tuple[str, int, List[str], List[int]]], List[Dict[str, object]]]:
     verb_lookup = load_verb_lookup()
     prompt_groups: List[Tuple[str, int, List[str], List[int]]] = []
@@ -127,7 +140,7 @@ def build_prompt_groups(
                     bundle=bundle,
                     template_name=template_name,
                     role_sequence_values=sequence_values,
-                    sentence_stub="Sentence: the",
+                    sentence_stub=sentence_stub,
                 )
                 prompt_groups.append(
                     (
@@ -155,7 +168,7 @@ def build_prompt_groups(
                         "passive_verb_form": bundle.passive_verb_form,
                         "message_role_order_json": json.dumps(sequence_values),
                         "prompt": prompt,
-                        "sentence_stub": "Sentence: the",
+                        "sentence_stub": sentence_stub,
                         "choice_target": "first_noun",
                     }
                 )
@@ -187,16 +200,15 @@ def main() -> None:
         max_items=args.max_items,
         seed=args.seed,
     )
+    overlap_audit = lexical_overlap_audit(target_frame=target_frame, prime_frame=prime_frame)
 
     device = get_device(args.device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name, local_files_only=args.local_files_only)
-    if tokenizer.pad_token_id is None:
-        tokenizer.pad_token = tokenizer.eos_token
-    model = AutoModelForCausalLM.from_pretrained(
-        args.model_name,
+    tokenizer, model, resolved_dtype = load_causal_lm_and_tokenizer(
+        model_name=args.model_name,
+        device=device,
         local_files_only=args.local_files_only,
-    ).to(device)
-    model.eval()
+        torch_dtype_name=args.torch_dtype,
+    )
 
     prime_conditions = prompt_condition_order(args.prime_conditions)
     filler_domain = infer_filler_domain(input_csv=input_csv, prime_csv=prime_csv, requested=args.filler_domain)
@@ -212,6 +224,7 @@ def main() -> None:
         role_order_mode=args.role_order,
         seed=args.seed,
         filler_sentences=filler_sentences,
+        sentence_stub=args.sentence_stub,
     )
     batched_scores = batched_choice_log_probs(
         tokenizer=tokenizer,
@@ -246,12 +259,15 @@ def main() -> None:
         "prompt_template": args.prompt_template,
         "prime_conditions": prime_conditions,
         "role_order": args.role_order,
+        "sentence_stub": args.sentence_stub,
         "seed": int(args.seed),
         "device": device,
+        "torch_dtype": str(resolved_dtype) if resolved_dtype is not None else "default",
         "local_files_only": bool(args.local_files_only),
         "n_rows": int(len(results)),
         "n_items": int(len(target_frame)),
         "prime_alignment_mode": prime_alignment_mode,
+        "lexical_overlap_audit": overlap_audit,
         "filler_sentence_count": len(filler_sentences),
         "filler_domain": filler_domain,
         "task_type": "counterbalanced_completion_choice_controlled",

@@ -1,0 +1,133 @@
+item_index,prompt_template,prime_condition,prime_structure,prime_sentence,target_active,target_passive,agent_det,agent_noun,patient_det,patient_noun,verb_lemma,active_verb_form,passive_verb_form,message_role_order_json,prompt,sentence_stub,choice_target,active_choice_logprob,passive_choice_logprob,passive_minus_active_logprob,chosen_structure,passive_choice_indicator
+0,role_labeled,active,active,a cop protects a cousin .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""AGENT=minister"", ""PATIENT=mother"", ""VERB=embrace""]","Prime sentence: a cop protects a cousin .
+Event roles: AGENT=minister; PATIENT=mother; VERB=embrace
+Sentence: the",Sentence: the,first_noun,-3.9581105709075928,-4.1015625,-0.14345192909240723,active,0.0
+0,role_labeled,passive,passive,a cousin is protected by a cop .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""AGENT=minister"", ""PATIENT=mother"", ""VERB=embrace""]","Prime sentence: a cousin is protected by a cop .
+Event roles: AGENT=minister; PATIENT=mother; VERB=embrace
+Sentence: the",Sentence: the,first_noun,-4.050983905792236,-3.966954231262207,0.0840296745300293,passive,1.0
+0,role_labeled,no_prime_eos,no_prime_eos,,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""AGENT=minister"", ""PATIENT=mother"", ""VERB=embrace""]","Event roles: AGENT=minister; PATIENT=mother; VERB=embrace
+Sentence: the",Sentence: the,first_noun,-4.11801815032959,-4.295924663543701,-0.17790651321411133,active,0.0
+0,role_labeled,filler,filler,The witness paused near the doorway .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""AGENT=minister"", ""PATIENT=mother"", ""VERB=embrace""]","Prime sentence: The witness paused near the doorway .
+Event roles: AGENT=minister; PATIENT=mother; VERB=embrace
+Sentence: the",Sentence: the,first_noun,-4.465086936950684,-4.0543317794799805,0.4107551574707031,passive,1.0
+1,role_labeled,active,active,a doctor carries an employee .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""AGENT=girl"", ""PATIENT=guest"", ""VERB=catch""]","Prime sentence: a doctor carries an employee .
+Event roles: AGENT=girl; PATIENT=guest; VERB=catch
+Sentence: the",Sentence: the,first_noun,-2.9922642707824707,-6.365729331970215,-3.373465061187744,active,0.0
+1,role_labeled,passive,passive,an employee is carried by a doctor .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""AGENT=girl"", ""PATIENT=guest"", ""VERB=catch""]","Prime sentence: an employee is carried by a doctor .
+Event roles: AGENT=girl; PATIENT=guest; VERB=catch
+Sentence: the",Sentence: the,first_noun,-3.0230908393859863,-5.904403209686279,-2.881312370300293,active,0.0
+1,role_labeled,no_prime_eos,no_prime_eos,,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""AGENT=girl"", ""PATIENT=guest"", ""VERB=catch""]","Event roles: AGENT=girl; PATIENT=guest; VERB=catch
+Sentence: the",Sentence: the,first_noun,-2.138700008392334,-4.6273369789123535,-2.4886369705200195,active,0.0
+1,role_labeled,filler,filler,The kettle whistled in the kitchen .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""AGENT=girl"", ""PATIENT=guest"", ""VERB=catch""]","Prime sentence: The kettle whistled in the kitchen .
+Event roles: AGENT=girl; PATIENT=guest; VERB=catch
+Sentence: the",Sentence: the,first_noun,-4.088154315948486,-6.869912147521973,-2.7817578315734863,active,0.0
+2,role_labeled,active,active,a lady understands a lawyer .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""AGENT=professor"", ""PATIENT=reader"", ""VERB=embrace""]","Prime sentence: a lady understands a lawyer .
+Event roles: AGENT=professor; PATIENT=reader; VERB=embrace
+Sentence: the",Sentence: the,first_noun,-5.558877468109131,-6.92075777053833,-1.3618803024291992,active,0.0
+2,role_labeled,passive,passive,a lawyer is understood by a lady .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""AGENT=professor"", ""PATIENT=reader"", ""VERB=embrace""]","Prime sentence: a lawyer is understood by a lady .
+Event roles: AGENT=professor; PATIENT=reader; VERB=embrace
+Sentence: the",Sentence: the,first_noun,-4.766359329223633,-6.0143280029296875,-1.2479686737060547,active,0.0
+2,role_labeled,no_prime_eos,no_prime_eos,,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""AGENT=professor"", ""PATIENT=reader"", ""VERB=embrace""]","Event roles: AGENT=professor; PATIENT=reader; VERB=embrace
+Sentence: the",Sentence: the,first_noun,-3.8340539932250977,-5.186988830566406,-1.3529348373413086,active,0.0
+2,role_labeled,filler,filler,The sculpture stood in the hallway .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""AGENT=professor"", ""PATIENT=reader"", ""VERB=embrace""]","Prime sentence: The sculpture stood in the hallway .
+Event roles: AGENT=professor; PATIENT=reader; VERB=embrace
+Sentence: the",Sentence: the,first_noun,-3.791341543197632,-6.470044136047363,-2.6787025928497314,active,0.0
+3,role_labeled,active,active,a parent discovers a partner .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""AGENT=aunt"", ""PATIENT=author"", ""VERB=drag""]","Prime sentence: a parent discovers a partner .
+Event roles: AGENT=aunt; PATIENT=author; VERB=drag
+Sentence: the",Sentence: the,first_noun,-4.114624977111816,-5.286534309387207,-1.1719093322753906,active,0.0
+3,role_labeled,passive,passive,a partner is discovered by a parent .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""AGENT=aunt"", ""PATIENT=author"", ""VERB=drag""]","Prime sentence: a partner is discovered by a parent .
+Event roles: AGENT=aunt; PATIENT=author; VERB=drag
+Sentence: the",Sentence: the,first_noun,-4.267602443695068,-5.296276092529297,-1.0286736488342285,active,0.0
+3,role_labeled,no_prime_eos,no_prime_eos,,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""AGENT=aunt"", ""PATIENT=author"", ""VERB=drag""]","Event roles: AGENT=aunt; PATIENT=author; VERB=drag
+Sentence: the",Sentence: the,first_noun,-8.624823570251465,-3.9650776386260986,4.659745931625366,passive,1.0
+3,role_labeled,filler,filler,The tourist wandered through the plaza .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""AGENT=aunt"", ""PATIENT=author"", ""VERB=drag""]","Prime sentence: The tourist wandered through the plaza .
+Event roles: AGENT=aunt; PATIENT=author; VERB=drag
+Sentence: the",Sentence: the,first_noun,-5.198709964752197,-6.0510687828063965,-0.8523588180541992,active,0.0
+4,role_labeled,active,active,a son discovers a student .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""AGENT=opponent"", ""PATIENT=parent"", ""VERB=carry""]","Prime sentence: a son discovers a student .
+Event roles: AGENT=opponent; PATIENT=parent; VERB=carry
+Sentence: the",Sentence: the,first_noun,-6.654184341430664,-5.352939605712891,1.3012447357177734,passive,1.0
+4,role_labeled,passive,passive,a student is discovered by a son .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""AGENT=opponent"", ""PATIENT=parent"", ""VERB=carry""]","Prime sentence: a student is discovered by a son .
+Event roles: AGENT=opponent; PATIENT=parent; VERB=carry
+Sentence: the",Sentence: the,first_noun,-5.93096923828125,-4.840635299682617,1.0903339385986328,passive,1.0
+4,role_labeled,no_prime_eos,no_prime_eos,,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""AGENT=opponent"", ""PATIENT=parent"", ""VERB=carry""]","Event roles: AGENT=opponent; PATIENT=parent; VERB=carry
+Sentence: the",Sentence: the,first_noun,-4.754293918609619,-5.123339653015137,-0.3690457344055176,active,0.0
+4,role_labeled,filler,filler,The traveler rested beside the river .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""AGENT=opponent"", ""PATIENT=parent"", ""VERB=carry""]","Prime sentence: The traveler rested beside the river .
+Event roles: AGENT=opponent; PATIENT=parent; VERB=carry
+Sentence: the",Sentence: the,first_noun,-8.305880546569824,-7.519080638885498,0.7867999076843262,passive,1.0
+5,role_labeled,active,active,a daughter destroys a doctor .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""AGENT=guest"", ""PATIENT=guy"", ""VERB=protect""]","Prime sentence: a daughter destroys a doctor .
+Event roles: AGENT=guest; PATIENT=guy; VERB=protect
+Sentence: the",Sentence: the,first_noun,-7.018997669219971,-4.596442222595215,2.422555446624756,passive,1.0
+5,role_labeled,passive,passive,a doctor is destroyed by a daughter .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""AGENT=guest"", ""PATIENT=guy"", ""VERB=protect""]","Prime sentence: a doctor is destroyed by a daughter .
+Event roles: AGENT=guest; PATIENT=guy; VERB=protect
+Sentence: the",Sentence: the,first_noun,-6.8553266525268555,-4.608593463897705,2.2467331886291504,passive,1.0
+5,role_labeled,no_prime_eos,no_prime_eos,,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""AGENT=guest"", ""PATIENT=guy"", ""VERB=protect""]","Event roles: AGENT=guest; PATIENT=guy; VERB=protect
+Sentence: the",Sentence: the,first_noun,-4.297887325286865,-4.313913345336914,-0.016026020050048828,active,0.0
+5,role_labeled,filler,filler,The package arrived before noon .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""AGENT=guest"", ""PATIENT=guy"", ""VERB=protect""]","Prime sentence: The package arrived before noon .
+Event roles: AGENT=guest; PATIENT=guy; VERB=protect
+Sentence: the",Sentence: the,first_noun,-4.774563789367676,-4.272276878356934,0.5022869110107422,passive,1.0
+6,role_labeled,active,active,a mayor kills a minister .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""AGENT=man"", ""PATIENT=manager"", ""VERB=follow""]","Prime sentence: a mayor kills a minister .
+Event roles: AGENT=man; PATIENT=manager; VERB=follow
+Sentence: the",Sentence: the,first_noun,-3.6010377407073975,-4.871244430541992,-1.2702066898345947,active,0.0
+6,role_labeled,passive,passive,a minister is killed by a mayor .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""AGENT=man"", ""PATIENT=manager"", ""VERB=follow""]","Prime sentence: a minister is killed by a mayor .
+Event roles: AGENT=man; PATIENT=manager; VERB=follow
+Sentence: the",Sentence: the,first_noun,-4.023033142089844,-5.073275566101074,-1.0502424240112305,active,0.0
+6,role_labeled,no_prime_eos,no_prime_eos,,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""AGENT=man"", ""PATIENT=manager"", ""VERB=follow""]","Event roles: AGENT=man; PATIENT=manager; VERB=follow
+Sentence: the",Sentence: the,first_noun,-3.276501417160034,-4.073328971862793,-0.7968275547027588,active,0.0
+6,role_labeled,filler,filler,The package arrived before noon .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""AGENT=man"", ""PATIENT=manager"", ""VERB=follow""]","Prime sentence: The package arrived before noon .
+Event roles: AGENT=man; PATIENT=manager; VERB=follow
+Sentence: the",Sentence: the,first_noun,-4.164860725402832,-4.9753265380859375,-0.8104658126831055,active,0.0
+7,role_labeled,active,active,a cousin understands a daughter .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""AGENT=guest"", ""PATIENT=guy"", ""VERB=catch""]","Prime sentence: a cousin understands a daughter .
+Event roles: AGENT=guest; PATIENT=guy; VERB=catch
+Sentence: the",Sentence: the,first_noun,-5.673151969909668,-4.818032264709473,0.8551197052001953,passive,1.0
+7,role_labeled,passive,passive,a daughter is understood by a cousin .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""AGENT=guest"", ""PATIENT=guy"", ""VERB=catch""]","Prime sentence: a daughter is understood by a cousin .
+Event roles: AGENT=guest; PATIENT=guy; VERB=catch
+Sentence: the",Sentence: the,first_noun,-5.5320844650268555,-4.746603012084961,0.7854814529418945,passive,1.0
+7,role_labeled,no_prime_eos,no_prime_eos,,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""AGENT=guest"", ""PATIENT=guy"", ""VERB=catch""]","Event roles: AGENT=guest; PATIENT=guy; VERB=catch
+Sentence: the",Sentence: the,first_noun,-4.279301166534424,-4.165924549102783,0.11337661743164062,passive,1.0
+7,role_labeled,filler,filler,The blanket dried on the line .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""AGENT=guest"", ""PATIENT=guy"", ""VERB=catch""]","Prime sentence: The blanket dried on the line .
+Event roles: AGENT=guest; PATIENT=guy; VERB=catch
+Sentence: the",Sentence: the,first_noun,-6.791845321655273,-4.598384857177734,2.193460464477539,passive,1.0
+8,role_labeled,active,active,an actor washes an actress .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""AGENT=author"", ""PATIENT=bishop"", ""VERB=judge""]","Prime sentence: an actor washes an actress .
+Event roles: AGENT=author; PATIENT=bishop; VERB=judge
+Sentence: the",Sentence: the,first_noun,-4.091109752655029,-4.94243860244751,-0.8513288497924805,active,0.0
+8,role_labeled,passive,passive,an actress is washed by an actor .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""AGENT=author"", ""PATIENT=bishop"", ""VERB=judge""]","Prime sentence: an actress is washed by an actor .
+Event roles: AGENT=author; PATIENT=bishop; VERB=judge
+Sentence: the",Sentence: the,first_noun,-4.1586713790893555,-5.351014137268066,-1.192342758178711,active,0.0
+8,role_labeled,no_prime_eos,no_prime_eos,,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""AGENT=author"", ""PATIENT=bishop"", ""VERB=judge""]","Event roles: AGENT=author; PATIENT=bishop; VERB=judge
+Sentence: the",Sentence: the,first_noun,-4.860536575317383,-3.9372730255126953,0.9232635498046875,passive,1.0
+8,role_labeled,filler,filler,The teacher listened during assembly .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""AGENT=author"", ""PATIENT=bishop"", ""VERB=judge""]","Prime sentence: The teacher listened during assembly .
+Event roles: AGENT=author; PATIENT=bishop; VERB=judge
+Sentence: the",Sentence: the,first_noun,-5.398697853088379,-3.0278537273406982,2.3708441257476807,passive,1.0
+9,role_labeled,active,active,an employer forgives a father .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""AGENT=husband"", ""PATIENT=kid"", ""VERB=catch""]","Prime sentence: an employer forgives a father .
+Event roles: AGENT=husband; PATIENT=kid; VERB=catch
+Sentence: the",Sentence: the,first_noun,-3.228281021118164,-5.872447490692139,-2.6441664695739746,active,0.0
+9,role_labeled,passive,passive,a father is forgiven by an employer .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""AGENT=husband"", ""PATIENT=kid"", ""VERB=catch""]","Prime sentence: a father is forgiven by an employer .
+Event roles: AGENT=husband; PATIENT=kid; VERB=catch
+Sentence: the",Sentence: the,first_noun,-3.585069417953491,-5.806550025939941,-2.22148060798645,active,0.0
+9,role_labeled,no_prime_eos,no_prime_eos,,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""AGENT=husband"", ""PATIENT=kid"", ""VERB=catch""]","Event roles: AGENT=husband; PATIENT=kid; VERB=catch
+Sentence: the",Sentence: the,first_noun,-3.1511037349700928,-5.295554161071777,-2.1444504261016846,active,0.0
+9,role_labeled,filler,filler,The lantern glowed near sunset .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""AGENT=husband"", ""PATIENT=kid"", ""VERB=catch""]","Prime sentence: The lantern glowed near sunset .
+Event roles: AGENT=husband; PATIENT=kid; VERB=catch
+Sentence: the",Sentence: the,first_noun,-5.978420734405518,-5.63004732131958,0.3483734130859375,passive,1.0
+10,role_labeled,active,active,a teacher catches an uncle .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""AGENT=woman"", ""PATIENT=worker"", ""VERB=discover""]","Prime sentence: a teacher catches an uncle .
+Event roles: AGENT=woman; PATIENT=worker; VERB=discover
+Sentence: the",Sentence: the,first_noun,-2.979506492614746,-4.9916462898254395,-2.0121397972106934,active,0.0
+10,role_labeled,passive,passive,an uncle is caught by a teacher .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""AGENT=woman"", ""PATIENT=worker"", ""VERB=discover""]","Prime sentence: an uncle is caught by a teacher .
+Event roles: AGENT=woman; PATIENT=worker; VERB=discover
+Sentence: the",Sentence: the,first_noun,-3.2564449310302734,-5.080780506134033,-1.8243355751037598,active,0.0
+10,role_labeled,no_prime_eos,no_prime_eos,,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""AGENT=woman"", ""PATIENT=worker"", ""VERB=discover""]","Event roles: AGENT=woman; PATIENT=worker; VERB=discover
+Sentence: the",Sentence: the,first_noun,-2.310896158218384,-4.466876983642578,-2.1559808254241943,active,0.0
+10,role_labeled,filler,filler,The pillow rested on the sofa .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""AGENT=woman"", ""PATIENT=worker"", ""VERB=discover""]","Prime sentence: The pillow rested on the sofa .
+Event roles: AGENT=woman; PATIENT=worker; VERB=discover
+Sentence: the",Sentence: the,first_noun,-4.1821160316467285,-6.335856914520264,-2.153740882873535,active,0.0
+11,role_labeled,active,active,a lady helps a lawyer .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""AGENT=reader"", ""PATIENT=scientist"", ""VERB=catch""]","Prime sentence: a lady helps a lawyer .
+Event roles: AGENT=reader; PATIENT=scientist; VERB=catch
+Sentence: the",Sentence: the,first_noun,-5.858912467956543,-4.186838150024414,1.672074317932129,passive,1.0
+11,role_labeled,passive,passive,a lawyer is helped by a lady .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""AGENT=reader"", ""PATIENT=scientist"", ""VERB=catch""]","Prime sentence: a lawyer is helped by a lady .
+Event roles: AGENT=reader; PATIENT=scientist; VERB=catch
+Sentence: the",Sentence: the,first_noun,-5.071698188781738,-3.895949125289917,1.1757490634918213,passive,1.0
+11,role_labeled,no_prime_eos,no_prime_eos,,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""AGENT=reader"", ""PATIENT=scientist"", ""VERB=catch""]","Event roles: AGENT=reader; PATIENT=scientist; VERB=catch
+Sentence: the",Sentence: the,first_noun,-4.348245620727539,-4.503138065338135,-0.1548924446105957,active,0.0
+11,role_labeled,filler,filler,The lantern glowed near sunset .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""AGENT=reader"", ""PATIENT=scientist"", ""VERB=catch""]","Prime sentence: The lantern glowed near sunset .
+Event roles: AGENT=reader; PATIENT=scientist; VERB=catch
+Sentence: the",Sentence: the,first_noun,-7.41187047958374,-5.459829330444336,1.9520411491394043,passive,1.0

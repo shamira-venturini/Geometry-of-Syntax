@@ -12,9 +12,30 @@ import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "docs" / "figures" / "emnlp_story"
-DEFAULT_EXP1A_SUMMARY = REPO_ROOT / "behavioral_results" / "transitive_token_profiles" / "transitive_item_summary.csv"
-DEFAULT_EXP1A_PAIRED = REPO_ROOT / "behavioral_results" / "transitive_token_profiles" / "stats" / "paired_effects.csv"
-DEFAULT_EXP1B_ROOT = REPO_ROOT / "behavioral_results" / "processing_experiment_1b_gpt2large"
+DEFAULT_EXP1A_SUMMARY = (
+    REPO_ROOT
+    / "behavioral_results"
+    / "experiment-1"
+    / "experiment-1a"
+    / "transitive_token_profiles"
+    / "transitive_item_summary.csv"
+)
+DEFAULT_EXP1A_PAIRED = (
+    REPO_ROOT
+    / "behavioral_results"
+    / "experiment-1"
+    / "experiment-1a"
+    / "transitive_token_profiles"
+    / "stats"
+    / "paired_effects.csv"
+)
+DEFAULT_EXP1B_ROOT = (
+    REPO_ROOT
+    / "behavioral_results"
+    / "experiment-1"
+    / "experiment-1b"
+    / "processing_experiment_1b_gpt2large_v1_lexical-overlap"
+)
 
 
 def parse_args() -> argparse.Namespace:

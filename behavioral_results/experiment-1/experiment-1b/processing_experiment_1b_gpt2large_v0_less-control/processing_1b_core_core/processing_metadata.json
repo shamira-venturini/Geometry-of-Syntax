@@ -1,0 +1,24 @@
+{
+  "condition_label": "processing_1b_core_core",
+  "model_name": "gpt2-large",
+  "input_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+  "prime_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+  "max_items": 2080,
+  "batch_size": 16,
+  "prime_conditions": [
+    "active",
+    "passive",
+    "no_prime",
+    "filler"
+  ],
+  "seed": 13,
+  "device": "mps",
+  "local_files_only": true,
+  "n_rows": 8320,
+  "n_items": 2080,
+  "prime_alignment_mode": "paired_indices",
+  "filler_sentence_count": 24,
+  "task_type": "processing_experiment_1b",
+  "primary_score": "mean_target_logprob_difference",
+  "secondary_score": "sum_target_logprob_difference"
+}

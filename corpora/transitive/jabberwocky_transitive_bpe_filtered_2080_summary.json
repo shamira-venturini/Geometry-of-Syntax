@@ -1,0 +1,48 @@
+{
+  "source_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered_2080.csv",
+  "summary_json": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered_2080_summary.json",
+  "n_items": 2080,
+  "seed": 13,
+  "sampling": "without_replacement",
+  "sampled_source_row_indices_preview": [
+    14589,
+    14170,
+    11132,
+    3293,
+    4028,
+    6201,
+    1626,
+    7723,
+    11794,
+    587,
+    14020,
+    10025,
+    12000,
+    6269,
+    5007,
+    14604,
+    5594,
+    882,
+    1393,
+    8995,
+    4458,
+    1514,
+    2929,
+    2876,
+    9965
+  ],
+  "within_row_lexical_audit": {
+    "rows_evaluated": 2080,
+    "same_active_verb_rows": 0,
+    "same_active_verb_rate": 0.0,
+    "shared_noun_rows": 0,
+    "shared_noun_rate": 0.0,
+    "shared_both_nouns_rows": 0,
+    "shared_both_nouns_rate": 0.0
+  },
+  "notes": [
+    "This file freezes the Jabberwocky prime pool at the same size as the strict controlled CORE target set.",
+    "Within-row lexical audit compares pa/pp against ta/tp for the sampled rows."
+  ]
+}

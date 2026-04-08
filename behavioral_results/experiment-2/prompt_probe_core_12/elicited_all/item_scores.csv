@@ -1,0 +1,505 @@
+item_index,prompt_template,prime_condition,prime_structure,prime_sentence,target_active,target_passive,agent_det,agent_noun,patient_det,patient_noun,verb_lemma,active_verb_form,passive_verb_form,message_role_order_json,prompt,sentence_stub,choice_target,active_choice_logprob,passive_choice_logprob,passive_minus_active_logprob,chosen_structure,passive_choice_indicator
+0,cue_list,active,active,a cop protects a cousin .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","a cop protects a cousin .
+
+minister, mother, embrace
+The",The,first_noun,-4.14168643951416,-4.446893692016602,-0.3052072525024414,active,0.0
+0,cue_list,passive,passive,a cousin is protected by a cop .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","a cousin is protected by a cop .
+
+minister, mother, embrace
+The",The,first_noun,-4.807825088500977,-4.661968231201172,0.1458568572998047,passive,1.0
+0,cue_list,no_prime_eos,no_prime_eos,,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","minister, mother, embrace
+The",The,first_noun,-4.573483467102051,-4.920995235443115,-0.34751176834106445,active,0.0
+0,cue_list,filler,filler,The witness paused near the doorway .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","The witness paused near the doorway .
+
+minister, mother, embrace
+The",The,first_noun,-2.449012279510498,-4.317759037017822,-1.8687467575073242,active,0.0
+0,another_event,active,active,a cop protects a cousin .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","a cop protects a cousin .
+
+Another event: minister, mother, embrace.
+The",The,first_noun,-3.8811089992523193,-3.9052894115448,-0.02418041229248047,active,0.0
+0,another_event,passive,passive,a cousin is protected by a cop .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","a cousin is protected by a cop .
+
+Another event: minister, mother, embrace.
+The",The,first_noun,-4.146384239196777,-3.952141046524048,0.1942431926727295,passive,1.0
+0,another_event,no_prime_eos,no_prime_eos,,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","Another event: minister, mother, embrace.
+The",The,first_noun,-3.610605001449585,-4.284473419189453,-0.6738684177398682,active,0.0
+0,another_event,filler,filler,The witness paused near the doorway .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","The witness paused near the doorway .
+
+Another event: minister, mother, embrace.
+The",The,first_noun,-2.9092788696289062,-4.014669895172119,-1.105391025543213,active,0.0
+0,same_kind_event,active,active,a cop protects a cousin .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","a cop protects a cousin .
+
+Different people, same kind of event: minister, mother, embrace.
+The",The,first_noun,-5.340076923370361,-4.417994499206543,0.9220824241638184,passive,1.0
+0,same_kind_event,passive,passive,a cousin is protected by a cop .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","a cousin is protected by a cop .
+
+Different people, same kind of event: minister, mother, embrace.
+The",The,first_noun,-5.12488317489624,-4.345111846923828,0.7797713279724121,passive,1.0
+0,same_kind_event,no_prime_eos,no_prime_eos,,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","Different people, same kind of event: minister, mother, embrace.
+The",The,first_noun,-4.046160697937012,-4.271084308624268,-0.22492361068725586,active,0.0
+0,same_kind_event,filler,filler,The witness paused near the doorway .,a minister embraces a mother .,a mother is embraced by a minister .,a,minister,a,mother,embrace,embraces,embraced,"[""minister"", ""mother"", ""embrace""]","The witness paused near the doorway .
+
+Different people, same kind of event: minister, mother, embrace.
+The",The,first_noun,-2.9360640048980713,-3.4362475872039795,-0.5001835823059082,active,0.0
+1,cue_list,active,active,a doctor carries an employee .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","a doctor carries an employee .
+
+girl, guest, catch
+The",The,first_noun,-3.7696011066436768,-4.936772346496582,-1.1671712398529053,active,0.0
+1,cue_list,passive,passive,an employee is carried by a doctor .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","an employee is carried by a doctor .
+
+girl, guest, catch
+The",The,first_noun,-3.379382371902466,-5.906317710876465,-2.526935338973999,active,0.0
+1,cue_list,no_prime_eos,no_prime_eos,,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","girl, guest, catch
+The",The,first_noun,-6.168402194976807,-5.984860420227051,0.18354177474975586,passive,1.0
+1,cue_list,filler,filler,The kettle whistled in the kitchen .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","The kettle whistled in the kitchen .
+
+girl, guest, catch
+The",The,first_noun,-3.408795118331909,-4.496098518371582,-1.0873034000396729,active,0.0
+1,another_event,active,active,a doctor carries an employee .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","a doctor carries an employee .
+
+Another event: girl, guest, catch.
+The",The,first_noun,-2.8764123916625977,-4.512024402618408,-1.6356120109558105,active,0.0
+1,another_event,passive,passive,an employee is carried by a doctor .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","an employee is carried by a doctor .
+
+Another event: girl, guest, catch.
+The",The,first_noun,-2.8176093101501465,-5.303267955780029,-2.485658645629883,active,0.0
+1,another_event,no_prime_eos,no_prime_eos,,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","Another event: girl, guest, catch.
+The",The,first_noun,-3.4179697036743164,-4.67487907409668,-1.2569093704223633,active,0.0
+1,another_event,filler,filler,The kettle whistled in the kitchen .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","The kettle whistled in the kitchen .
+
+Another event: girl, guest, catch.
+The",The,first_noun,-2.2966136932373047,-3.732609748840332,-1.4359960556030273,active,0.0
+1,same_kind_event,active,active,a doctor carries an employee .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","a doctor carries an employee .
+
+Different people, same kind of event: girl, guest, catch.
+The",The,first_noun,-3.6548094749450684,-4.0559983253479,-0.40118885040283203,active,0.0
+1,same_kind_event,passive,passive,an employee is carried by a doctor .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","an employee is carried by a doctor .
+
+Different people, same kind of event: girl, guest, catch.
+The",The,first_noun,-3.5173282623291016,-4.930574893951416,-1.4132466316223145,active,0.0
+1,same_kind_event,no_prime_eos,no_prime_eos,,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","Different people, same kind of event: girl, guest, catch.
+The",The,first_noun,-3.4676003456115723,-4.435316562652588,-0.9677162170410156,active,0.0
+1,same_kind_event,filler,filler,The kettle whistled in the kitchen .,a girl catches a guest .,a guest is caught by a girl .,a,girl,a,guest,catch,catches,caught,"[""girl"", ""guest"", ""catch""]","The kettle whistled in the kitchen .
+
+Different people, same kind of event: girl, guest, catch.
+The",The,first_noun,-2.3768484592437744,-3.511540651321411,-1.1346921920776367,active,0.0
+2,cue_list,active,active,a lady understands a lawyer .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","a lady understands a lawyer .
+
+professor, reader, embrace
+The",The,first_noun,-4.153926849365234,-5.822668075561523,-1.668741226196289,active,0.0
+2,cue_list,passive,passive,a lawyer is understood by a lady .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","a lawyer is understood by a lady .
+
+professor, reader, embrace
+The",The,first_noun,-4.403151988983154,-6.415929794311523,-2.012777805328369,active,0.0
+2,cue_list,no_prime_eos,no_prime_eos,,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","professor, reader, embrace
+The",The,first_noun,-4.390349864959717,-6.118194580078125,-1.7278447151184082,active,0.0
+2,cue_list,filler,filler,The sculpture stood in the hallway .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","The sculpture stood in the hallway .
+
+professor, reader, embrace
+The",The,first_noun,-3.460156202316284,-6.75631046295166,-3.296154260635376,active,0.0
+2,another_event,active,active,a lady understands a lawyer .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","a lady understands a lawyer .
+
+Another event: professor, reader, embrace.
+The",The,first_noun,-4.317658424377441,-6.182896614074707,-1.8652381896972656,active,0.0
+2,another_event,passive,passive,a lawyer is understood by a lady .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","a lawyer is understood by a lady .
+
+Another event: professor, reader, embrace.
+The",The,first_noun,-4.264815330505371,-7.145614147186279,-2.880798816680908,active,0.0
+2,another_event,no_prime_eos,no_prime_eos,,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","Another event: professor, reader, embrace.
+The",The,first_noun,-4.458506107330322,-6.282752990722656,-1.824246883392334,active,0.0
+2,another_event,filler,filler,The sculpture stood in the hallway .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","The sculpture stood in the hallway .
+
+Another event: professor, reader, embrace.
+The",The,first_noun,-3.8493337631225586,-7.397588729858398,-3.54825496673584,active,0.0
+2,same_kind_event,active,active,a lady understands a lawyer .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","a lady understands a lawyer .
+
+Different people, same kind of event: professor, reader, embrace.
+The",The,first_noun,-4.379795551300049,-5.6686906814575195,-1.2888951301574707,active,0.0
+2,same_kind_event,passive,passive,a lawyer is understood by a lady .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","a lawyer is understood by a lady .
+
+Different people, same kind of event: professor, reader, embrace.
+The",The,first_noun,-4.079843044281006,-6.147461414337158,-2.0676183700561523,active,0.0
+2,same_kind_event,no_prime_eos,no_prime_eos,,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","Different people, same kind of event: professor, reader, embrace.
+The",The,first_noun,-4.562471389770508,-6.155063629150391,-1.5925922393798828,active,0.0
+2,same_kind_event,filler,filler,The sculpture stood in the hallway .,a professor embraces a reader .,a reader is embraced by a professor .,a,professor,a,reader,embrace,embraces,embraced,"[""professor"", ""reader"", ""embrace""]","The sculpture stood in the hallway .
+
+Different people, same kind of event: professor, reader, embrace.
+The",The,first_noun,-3.2559683322906494,-6.025735855102539,-2.7697675228118896,active,0.0
+3,cue_list,active,active,a parent discovers a partner .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","a parent discovers a partner .
+
+aunt, author, drag
+The",The,first_noun,-2.917668342590332,-4.4513373374938965,-1.5336689949035645,active,0.0
+3,cue_list,passive,passive,a partner is discovered by a parent .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","a partner is discovered by a parent .
+
+aunt, author, drag
+The",The,first_noun,-3.6372616291046143,-4.87723445892334,-1.2399728298187256,active,0.0
+3,cue_list,no_prime_eos,no_prime_eos,,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","aunt, author, drag
+The",The,first_noun,-10.726385116577148,-5.874514579772949,4.851870536804199,passive,1.0
+3,cue_list,filler,filler,The tourist wandered through the plaza .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","The tourist wandered through the plaza .
+
+aunt, author, drag
+The",The,first_noun,-4.156678199768066,-2.917410135269165,1.2392680644989014,passive,1.0
+3,another_event,active,active,a parent discovers a partner .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","a parent discovers a partner .
+
+Another event: aunt, author, drag.
+The",The,first_noun,-4.984886169433594,-4.914953231811523,0.06993293762207031,passive,1.0
+3,another_event,passive,passive,a partner is discovered by a parent .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","a partner is discovered by a parent .
+
+Another event: aunt, author, drag.
+The",The,first_noun,-4.791006565093994,-5.228373050689697,-0.4373664855957031,active,0.0
+3,another_event,no_prime_eos,no_prime_eos,,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","Another event: aunt, author, drag.
+The",The,first_noun,-5.641120910644531,-4.999281883239746,0.6418390274047852,passive,1.0
+3,another_event,filler,filler,The tourist wandered through the plaza .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","The tourist wandered through the plaza .
+
+Another event: aunt, author, drag.
+The",The,first_noun,-2.8494224548339844,-4.557907581329346,-1.7084851264953613,active,0.0
+3,same_kind_event,active,active,a parent discovers a partner .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","a parent discovers a partner .
+
+Different people, same kind of event: aunt, author, drag.
+The",The,first_noun,-5.007484436035156,-4.528900146484375,0.47858428955078125,passive,1.0
+3,same_kind_event,passive,passive,a partner is discovered by a parent .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","a partner is discovered by a parent .
+
+Different people, same kind of event: aunt, author, drag.
+The",The,first_noun,-4.472573757171631,-4.938114643096924,-0.46554088592529297,active,0.0
+3,same_kind_event,no_prime_eos,no_prime_eos,,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","Different people, same kind of event: aunt, author, drag.
+The",The,first_noun,-4.677095890045166,-4.516748905181885,0.16034698486328125,passive,1.0
+3,same_kind_event,filler,filler,The tourist wandered through the plaza .,an aunt drags an author .,an author is dragged by an aunt .,an,aunt,an,author,drag,drags,dragged,"[""aunt"", ""author"", ""drag""]","The tourist wandered through the plaza .
+
+Different people, same kind of event: aunt, author, drag.
+The",The,first_noun,-2.3326215744018555,-3.127962589263916,-0.7953410148620605,active,0.0
+4,cue_list,active,active,a son discovers a student .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","a son discovers a student .
+
+opponent, parent, carry
+The",The,first_noun,-4.445270538330078,-4.378204822540283,0.06706571578979492,passive,1.0
+4,cue_list,passive,passive,a student is discovered by a son .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","a student is discovered by a son .
+
+opponent, parent, carry
+The",The,first_noun,-4.225004196166992,-4.614027976989746,-0.3890237808227539,active,0.0
+4,cue_list,no_prime_eos,no_prime_eos,,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","opponent, parent, carry
+The",The,first_noun,-3.7789688110351562,-3.8551487922668457,-0.07617998123168945,active,0.0
+4,cue_list,filler,filler,The traveler rested beside the river .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","The traveler rested beside the river .
+
+opponent, parent, carry
+The",The,first_noun,-4.499362945556641,-4.932539463043213,-0.43317651748657227,active,0.0
+4,another_event,active,active,a son discovers a student .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","a son discovers a student .
+
+Another event: opponent, parent, carry.
+The",The,first_noun,-5.0591206550598145,-5.4681077003479,-0.40898704528808594,active,0.0
+4,another_event,passive,passive,a student is discovered by a son .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","a student is discovered by a son .
+
+Another event: opponent, parent, carry.
+The",The,first_noun,-4.794515609741211,-5.128836631774902,-0.3343210220336914,active,0.0
+4,another_event,no_prime_eos,no_prime_eos,,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","Another event: opponent, parent, carry.
+The",The,first_noun,-4.307214260101318,-4.1415300369262695,0.16568422317504883,passive,1.0
+4,another_event,filler,filler,The traveler rested beside the river .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","The traveler rested beside the river .
+
+Another event: opponent, parent, carry.
+The",The,first_noun,-4.7087202072143555,-4.739727020263672,-0.031006813049316406,active,0.0
+4,same_kind_event,active,active,a son discovers a student .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","a son discovers a student .
+
+Different people, same kind of event: opponent, parent, carry.
+The",The,first_noun,-6.585038185119629,-5.781210422515869,0.8038277626037598,passive,1.0
+4,same_kind_event,passive,passive,a student is discovered by a son .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","a student is discovered by a son .
+
+Different people, same kind of event: opponent, parent, carry.
+The",The,first_noun,-5.359994411468506,-4.859027862548828,0.5009665489196777,passive,1.0
+4,same_kind_event,no_prime_eos,no_prime_eos,,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","Different people, same kind of event: opponent, parent, carry.
+The",The,first_noun,-6.188509464263916,-5.233011722564697,0.9554977416992188,passive,1.0
+4,same_kind_event,filler,filler,The traveler rested beside the river .,an opponent carries a parent .,a parent is carried by an opponent .,an,opponent,a,parent,carry,carries,carried,"[""opponent"", ""parent"", ""carry""]","The traveler rested beside the river .
+
+Different people, same kind of event: opponent, parent, carry.
+The",The,first_noun,-5.2892255783081055,-5.647907733917236,-0.35868215560913086,active,0.0
+5,cue_list,active,active,a daughter destroys a doctor .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","a daughter destroys a doctor .
+
+guest, guy, protect
+The",The,first_noun,-4.322559356689453,-4.8877763748168945,-0.5652170181274414,active,0.0
+5,cue_list,passive,passive,a doctor is destroyed by a daughter .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","a doctor is destroyed by a daughter .
+
+guest, guy, protect
+The",The,first_noun,-4.142295837402344,-4.854299545288086,-0.7120037078857422,active,0.0
+5,cue_list,no_prime_eos,no_prime_eos,,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","guest, guy, protect
+The",The,first_noun,-4.334691047668457,-4.143693447113037,0.19099760055541992,passive,1.0
+5,cue_list,filler,filler,The package arrived before noon .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","The package arrived before noon .
+
+guest, guy, protect
+The",The,first_noun,-3.8893821239471436,-4.431962966918945,-0.5425808429718018,active,0.0
+5,another_event,active,active,a daughter destroys a doctor .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","a daughter destroys a doctor .
+
+Another event: guest, guy, protect.
+The",The,first_noun,-4.86838960647583,-4.412195682525635,0.4561939239501953,passive,1.0
+5,another_event,passive,passive,a doctor is destroyed by a daughter .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","a doctor is destroyed by a daughter .
+
+Another event: guest, guy, protect.
+The",The,first_noun,-4.898367404937744,-4.641726970672607,0.2566404342651367,passive,1.0
+5,another_event,no_prime_eos,no_prime_eos,,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","Another event: guest, guy, protect.
+The",The,first_noun,-3.919555902481079,-3.720045328140259,0.1995105743408203,passive,1.0
+5,another_event,filler,filler,The package arrived before noon .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","The package arrived before noon .
+
+Another event: guest, guy, protect.
+The",The,first_noun,-3.3791298866271973,-3.228404998779297,0.1507248878479004,passive,1.0
+5,same_kind_event,active,active,a daughter destroys a doctor .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","a daughter destroys a doctor .
+
+Different people, same kind of event: guest, guy, protect.
+The",The,first_noun,-4.961475372314453,-4.395516395568848,0.5659589767456055,passive,1.0
+5,same_kind_event,passive,passive,a doctor is destroyed by a daughter .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","a doctor is destroyed by a daughter .
+
+Different people, same kind of event: guest, guy, protect.
+The",The,first_noun,-4.895139694213867,-4.633777618408203,0.26136207580566406,passive,1.0
+5,same_kind_event,no_prime_eos,no_prime_eos,,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","Different people, same kind of event: guest, guy, protect.
+The",The,first_noun,-3.7119433879852295,-3.7057807445526123,0.0061626434326171875,passive,1.0
+5,same_kind_event,filler,filler,The package arrived before noon .,a guest protects a guy .,a guy is protected by a guest .,a,guest,a,guy,protect,protects,protected,"[""guest"", ""guy"", ""protect""]","The package arrived before noon .
+
+Different people, same kind of event: guest, guy, protect.
+The",The,first_noun,-3.3191609382629395,-2.6863632202148438,0.6327977180480957,passive,1.0
+6,cue_list,active,active,a mayor kills a minister .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","a mayor kills a minister .
+
+man, manager, follow
+The",The,first_noun,-3.501601457595825,-5.247315406799316,-1.7457139492034912,active,0.0
+6,cue_list,passive,passive,a minister is killed by a mayor .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","a minister is killed by a mayor .
+
+man, manager, follow
+The",The,first_noun,-3.7051923274993896,-5.637119293212891,-1.931926965713501,active,0.0
+6,cue_list,no_prime_eos,no_prime_eos,,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","man, manager, follow
+The",The,first_noun,-5.196737289428711,-6.606449127197266,-1.4097118377685547,active,0.0
+6,cue_list,filler,filler,The package arrived before noon .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","The package arrived before noon .
+
+man, manager, follow
+The",The,first_noun,-3.3962016105651855,-3.2231040000915527,0.1730976104736328,passive,1.0
+6,another_event,active,active,a mayor kills a minister .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","a mayor kills a minister .
+
+Another event: man, manager, follow.
+The",The,first_noun,-2.601957082748413,-4.70445442199707,-2.1024973392486572,active,0.0
+6,another_event,passive,passive,a minister is killed by a mayor .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","a minister is killed by a mayor .
+
+Another event: man, manager, follow.
+The",The,first_noun,-2.91996693611145,-4.836627960205078,-1.916661024093628,active,0.0
+6,another_event,no_prime_eos,no_prime_eos,,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","Another event: man, manager, follow.
+The",The,first_noun,-1.8359122276306152,-3.770371437072754,-1.9344592094421387,active,0.0
+6,another_event,filler,filler,The package arrived before noon .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","The package arrived before noon .
+
+Another event: man, manager, follow.
+The",The,first_noun,-1.9837392568588257,-3.940365791320801,-1.956626534461975,active,0.0
+6,same_kind_event,active,active,a mayor kills a minister .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","a mayor kills a minister .
+
+Different people, same kind of event: man, manager, follow.
+The",The,first_noun,-3.1010055541992188,-5.260644912719727,-2.159639358520508,active,0.0
+6,same_kind_event,passive,passive,a minister is killed by a mayor .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","a minister is killed by a mayor .
+
+Different people, same kind of event: man, manager, follow.
+The",The,first_noun,-3.4564340114593506,-5.707111358642578,-2.2506773471832275,active,0.0
+6,same_kind_event,no_prime_eos,no_prime_eos,,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","Different people, same kind of event: man, manager, follow.
+The",The,first_noun,-3.0199947357177734,-4.46823787689209,-1.4482431411743164,active,0.0
+6,same_kind_event,filler,filler,The package arrived before noon .,a man follows a manager .,a manager is followed by a man .,a,man,a,manager,follow,follows,followed,"[""man"", ""manager"", ""follow""]","The package arrived before noon .
+
+Different people, same kind of event: man, manager, follow.
+The",The,first_noun,-2.358046770095825,-3.6621716022491455,-1.3041248321533203,active,0.0
+7,cue_list,active,active,a cousin understands a daughter .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","a cousin understands a daughter .
+
+guest, guy, catch
+The",The,first_noun,-3.353365421295166,-4.792913436889648,-1.4395480155944824,active,0.0
+7,cue_list,passive,passive,a daughter is understood by a cousin .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","a daughter is understood by a cousin .
+
+guest, guy, catch
+The",The,first_noun,-3.574890375137329,-5.831604957580566,-2.2567145824432373,active,0.0
+7,cue_list,no_prime_eos,no_prime_eos,,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","guest, guy, catch
+The",The,first_noun,-4.718519687652588,-4.193905353546143,0.5246143341064453,passive,1.0
+7,cue_list,filler,filler,The blanket dried on the line .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","The blanket dried on the line .
+
+guest, guy, catch
+The",The,first_noun,-5.496809482574463,-4.434485912322998,1.0623235702514648,passive,1.0
+7,another_event,active,active,a cousin understands a daughter .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","a cousin understands a daughter .
+
+Another event: guest, guy, catch.
+The",The,first_noun,-4.060083389282227,-4.160127639770508,-0.10004425048828125,active,0.0
+7,another_event,passive,passive,a daughter is understood by a cousin .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","a daughter is understood by a cousin .
+
+Another event: guest, guy, catch.
+The",The,first_noun,-4.463088035583496,-5.023106098175049,-0.5600180625915527,active,0.0
+7,another_event,no_prime_eos,no_prime_eos,,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","Another event: guest, guy, catch.
+The",The,first_noun,-3.7965972423553467,-4.118499755859375,-0.3219025135040283,active,0.0
+7,another_event,filler,filler,The blanket dried on the line .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","The blanket dried on the line .
+
+Another event: guest, guy, catch.
+The",The,first_noun,-3.6517081260681152,-2.982966423034668,0.6687417030334473,passive,1.0
+7,same_kind_event,active,active,a cousin understands a daughter .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","a cousin understands a daughter .
+
+Different people, same kind of event: guest, guy, catch.
+The",The,first_noun,-4.014388084411621,-4.0567402839660645,-0.04235219955444336,active,0.0
+7,same_kind_event,passive,passive,a daughter is understood by a cousin .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","a daughter is understood by a cousin .
+
+Different people, same kind of event: guest, guy, catch.
+The",The,first_noun,-4.4905266761779785,-5.2579474449157715,-0.767420768737793,active,0.0
+7,same_kind_event,no_prime_eos,no_prime_eos,,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","Different people, same kind of event: guest, guy, catch.
+The",The,first_noun,-4.0963826179504395,-3.952519416809082,0.14386320114135742,passive,1.0
+7,same_kind_event,filler,filler,The blanket dried on the line .,a guest catches a guy .,a guy is caught by a guest .,a,guest,a,guy,catch,catches,caught,"[""guest"", ""guy"", ""catch""]","The blanket dried on the line .
+
+Different people, same kind of event: guest, guy, catch.
+The",The,first_noun,-4.0448317527771,-2.6761560440063477,1.368675708770752,passive,1.0
+8,cue_list,active,active,an actor washes an actress .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","an actor washes an actress .
+
+author, bishop, judge
+The",The,first_noun,-3.7018113136291504,-5.529237747192383,-1.8274264335632324,active,0.0
+8,cue_list,passive,passive,an actress is washed by an actor .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","an actress is washed by an actor .
+
+author, bishop, judge
+The",The,first_noun,-4.165609836578369,-6.214357376098633,-2.0487475395202637,active,0.0
+8,cue_list,no_prime_eos,no_prime_eos,,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","author, bishop, judge
+The",The,first_noun,-5.862037181854248,-4.265982151031494,1.596055030822754,passive,1.0
+8,cue_list,filler,filler,The teacher listened during assembly .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","The teacher listened during assembly .
+
+author, bishop, judge
+The",The,first_noun,-3.5528910160064697,-3.25738787651062,0.2955031394958496,passive,1.0
+8,another_event,active,active,an actor washes an actress .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","an actor washes an actress .
+
+Another event: author, bishop, judge.
+The",The,first_noun,-4.713335990905762,-6.39105224609375,-1.6777162551879883,active,0.0
+8,another_event,passive,passive,an actress is washed by an actor .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","an actress is washed by an actor .
+
+Another event: author, bishop, judge.
+The",The,first_noun,-4.5435638427734375,-6.800421714782715,-2.2568578720092773,active,0.0
+8,another_event,no_prime_eos,no_prime_eos,,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","Another event: author, bishop, judge.
+The",The,first_noun,-4.456015586853027,-5.1788411140441895,-0.7228255271911621,active,0.0
+8,another_event,filler,filler,The teacher listened during assembly .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","The teacher listened during assembly .
+
+Another event: author, bishop, judge.
+The",The,first_noun,-3.4242234230041504,-3.507216453552246,-0.0829930305480957,active,0.0
+8,same_kind_event,active,active,an actor washes an actress .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","an actor washes an actress .
+
+Different people, same kind of event: author, bishop, judge.
+The",The,first_noun,-3.9721975326538086,-5.26192045211792,-1.2897229194641113,active,0.0
+8,same_kind_event,passive,passive,an actress is washed by an actor .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","an actress is washed by an actor .
+
+Different people, same kind of event: author, bishop, judge.
+The",The,first_noun,-4.012493133544922,-5.888896465301514,-1.8764033317565918,active,0.0
+8,same_kind_event,no_prime_eos,no_prime_eos,,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","Different people, same kind of event: author, bishop, judge.
+The",The,first_noun,-4.523500442504883,-4.356722831726074,0.1667776107788086,passive,1.0
+8,same_kind_event,filler,filler,The teacher listened during assembly .,an author judges a bishop .,a bishop is judged by an author .,an,author,a,bishop,judge,judges,judged,"[""author"", ""bishop"", ""judge""]","The teacher listened during assembly .
+
+Different people, same kind of event: author, bishop, judge.
+The",The,first_noun,-3.9317657947540283,-3.399397611618042,0.5323681831359863,passive,1.0
+9,cue_list,active,active,an employer forgives a father .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","an employer forgives a father .
+
+husband, kid, catch
+The",The,first_noun,-3.64550518989563,-5.894964218139648,-2.2494590282440186,active,0.0
+9,cue_list,passive,passive,a father is forgiven by an employer .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","a father is forgiven by an employer .
+
+husband, kid, catch
+The",The,first_noun,-3.9756922721862793,-6.146393775939941,-2.170701503753662,active,0.0
+9,cue_list,no_prime_eos,no_prime_eos,,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","husband, kid, catch
+The",The,first_noun,-5.797930717468262,-5.606343746185303,0.19158697128295898,passive,1.0
+9,cue_list,filler,filler,The lantern glowed near sunset .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","The lantern glowed near sunset .
+
+husband, kid, catch
+The",The,first_noun,-5.586321830749512,-5.161859512329102,0.42446231842041016,passive,1.0
+9,another_event,active,active,an employer forgives a father .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","an employer forgives a father .
+
+Another event: husband, kid, catch.
+The",The,first_noun,-3.5696628093719482,-5.080574989318848,-1.5109121799468994,active,0.0
+9,another_event,passive,passive,a father is forgiven by an employer .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","a father is forgiven by an employer .
+
+Another event: husband, kid, catch.
+The",The,first_noun,-4.131628036499023,-5.994401931762695,-1.8627738952636719,active,0.0
+9,another_event,no_prime_eos,no_prime_eos,,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","Another event: husband, kid, catch.
+The",The,first_noun,-5.038664817810059,-5.824387073516846,-0.7857222557067871,active,0.0
+9,another_event,filler,filler,The lantern glowed near sunset .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","The lantern glowed near sunset .
+
+Another event: husband, kid, catch.
+The",The,first_noun,-3.8156933784484863,-4.8236002922058105,-1.0079069137573242,active,0.0
+9,same_kind_event,active,active,an employer forgives a father .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","an employer forgives a father .
+
+Different people, same kind of event: husband, kid, catch.
+The",The,first_noun,-4.188887596130371,-5.577327251434326,-1.388439655303955,active,0.0
+9,same_kind_event,passive,passive,a father is forgiven by an employer .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","a father is forgiven by an employer .
+
+Different people, same kind of event: husband, kid, catch.
+The",The,first_noun,-4.667621612548828,-6.143775939941406,-1.4761543273925781,active,0.0
+9,same_kind_event,no_prime_eos,no_prime_eos,,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","Different people, same kind of event: husband, kid, catch.
+The",The,first_noun,-5.346950054168701,-5.691952228546143,-0.3450021743774414,active,0.0
+9,same_kind_event,filler,filler,The lantern glowed near sunset .,a husband catches a kid .,a kid is caught by a husband .,a,husband,a,kid,catch,catches,caught,"[""husband"", ""kid"", ""catch""]","The lantern glowed near sunset .
+
+Different people, same kind of event: husband, kid, catch.
+The",The,first_noun,-4.213789939880371,-4.644453048706055,-0.4306631088256836,active,0.0
+10,cue_list,active,active,a teacher catches an uncle .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","a teacher catches an uncle .
+
+woman, worker, discover
+The",The,first_noun,-3.7671408653259277,-6.785436153411865,-3.0182952880859375,active,0.0
+10,cue_list,passive,passive,an uncle is caught by a teacher .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","an uncle is caught by a teacher .
+
+woman, worker, discover
+The",The,first_noun,-3.7634294033050537,-7.048069953918457,-3.2846405506134033,active,0.0
+10,cue_list,no_prime_eos,no_prime_eos,,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","woman, worker, discover
+The",The,first_noun,-4.946893692016602,-7.105104446411133,-2.1582107543945312,active,0.0
+10,cue_list,filler,filler,The pillow rested on the sofa .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","The pillow rested on the sofa .
+
+woman, worker, discover
+The",The,first_noun,-2.3616645336151123,-5.147707939147949,-2.786043405532837,active,0.0
+10,another_event,active,active,a teacher catches an uncle .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","a teacher catches an uncle .
+
+Another event: woman, worker, discover.
+The",The,first_noun,-3.4596786499023438,-7.117265224456787,-3.6575865745544434,active,0.0
+10,another_event,passive,passive,an uncle is caught by a teacher .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","an uncle is caught by a teacher .
+
+Another event: woman, worker, discover.
+The",The,first_noun,-3.3624987602233887,-7.084014892578125,-3.7215161323547363,active,0.0
+10,another_event,no_prime_eos,no_prime_eos,,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","Another event: woman, worker, discover.
+The",The,first_noun,-2.893141508102417,-6.209717750549316,-3.3165762424468994,active,0.0
+10,another_event,filler,filler,The pillow rested on the sofa .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","The pillow rested on the sofa .
+
+Another event: woman, worker, discover.
+The",The,first_noun,-2.1181938648223877,-5.4959306716918945,-3.377736806869507,active,0.0
+10,same_kind_event,active,active,a teacher catches an uncle .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","a teacher catches an uncle .
+
+Different people, same kind of event: woman, worker, discover.
+The",The,first_noun,-3.6707093715667725,-7.032458305358887,-3.3617489337921143,active,0.0
+10,same_kind_event,passive,passive,an uncle is caught by a teacher .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","an uncle is caught by a teacher .
+
+Different people, same kind of event: woman, worker, discover.
+The",The,first_noun,-3.2374520301818848,-6.487700462341309,-3.250248432159424,active,0.0
+10,same_kind_event,no_prime_eos,no_prime_eos,,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","Different people, same kind of event: woman, worker, discover.
+The",The,first_noun,-3.566056251525879,-6.0895843505859375,-2.5235280990600586,active,0.0
+10,same_kind_event,filler,filler,The pillow rested on the sofa .,a woman discovers a worker .,a worker is discovered by a woman .,a,woman,a,worker,discover,discovers,discovered,"[""woman"", ""worker"", ""discover""]","The pillow rested on the sofa .
+
+Different people, same kind of event: woman, worker, discover.
+The",The,first_noun,-2.0809736251831055,-5.42410945892334,-3.3431358337402344,active,0.0
+11,cue_list,active,active,a lady helps a lawyer .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","a lady helps a lawyer .
+
+reader, scientist, catch
+The",The,first_noun,-2.1813137531280518,-6.082855224609375,-3.9015414714813232,active,0.0
+11,cue_list,passive,passive,a lawyer is helped by a lady .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","a lawyer is helped by a lady .
+
+reader, scientist, catch
+The",The,first_noun,-2.2282803058624268,-6.205631256103516,-3.977350950241089,active,0.0
+11,cue_list,no_prime_eos,no_prime_eos,,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","reader, scientist, catch
+The",The,first_noun,-7.332070350646973,-6.340142250061035,0.9919281005859375,passive,1.0
+11,cue_list,filler,filler,The lantern glowed near sunset .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","The lantern glowed near sunset .
+
+reader, scientist, catch
+The",The,first_noun,-5.107585430145264,-5.830515384674072,-0.7229299545288086,active,0.0
+11,another_event,active,active,a lady helps a lawyer .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","a lady helps a lawyer .
+
+Another event: reader, scientist, catch.
+The",The,first_noun,-4.245141983032227,-6.569581985473633,-2.3244400024414062,active,0.0
+11,another_event,passive,passive,a lawyer is helped by a lady .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","a lawyer is helped by a lady .
+
+Another event: reader, scientist, catch.
+The",The,first_noun,-4.292135238647461,-6.994743347167969,-2.702608108520508,active,0.0
+11,another_event,no_prime_eos,no_prime_eos,,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","Another event: reader, scientist, catch.
+The",The,first_noun,-4.401839733123779,-6.330097198486328,-1.9282574653625488,active,0.0
+11,another_event,filler,filler,The lantern glowed near sunset .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","The lantern glowed near sunset .
+
+Another event: reader, scientist, catch.
+The",The,first_noun,-5.278352737426758,-6.12957239151001,-0.851219654083252,active,0.0
+11,same_kind_event,active,active,a lady helps a lawyer .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","a lady helps a lawyer .
+
+Different people, same kind of event: reader, scientist, catch.
+The",The,first_noun,-4.090478897094727,-6.540822982788086,-2.4503440856933594,active,0.0
+11,same_kind_event,passive,passive,a lawyer is helped by a lady .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","a lawyer is helped by a lady .
+
+Different people, same kind of event: reader, scientist, catch.
+The",The,first_noun,-3.946632146835327,-6.7193708419799805,-2.7727386951446533,active,0.0
+11,same_kind_event,no_prime_eos,no_prime_eos,,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","Different people, same kind of event: reader, scientist, catch.
+The",The,first_noun,-4.709814071655273,-5.797463417053223,-1.0876493453979492,active,0.0
+11,same_kind_event,filler,filler,The lantern glowed near sunset .,a reader catches a scientist .,a scientist is caught by a reader .,a,reader,a,scientist,catch,catches,caught,"[""reader"", ""scientist"", ""catch""]","The lantern glowed near sunset .
+
+Different people, same kind of event: reader, scientist, catch.
+The",The,first_noun,-5.386042594909668,-5.810791969299316,-0.42474937438964844,active,0.0

@@ -1,0 +1,5 @@
+prompt_template,prime_condition,greedy_generation_class,n_items,total_items,share
+role_labeled,active,other,2080,2080,1.0
+role_labeled,filler,other,2080,2080,1.0
+role_labeled,no_prime_eos,other,2080,2080,1.0
+role_labeled,passive,other,2080,2080,1.0

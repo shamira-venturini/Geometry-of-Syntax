@@ -10,10 +10,14 @@ import pandas as pd
 from scipy import stats
 from statsmodels.stats.contingency_tables import mcnemar
 import torch
+from transformers import AutoModelForCausalLM, AutoTokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VERB_LIST_PATH = REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
+LEXICALLY_CONTROLLED_CORE_CSV = (
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
+)
 N_RESAMPLES = 10000
 CORE_FILLER_SENTENCES = [
     "The lantern glowed near sunset .",
@@ -101,6 +105,55 @@ def get_device(user_device: Optional[str]) -> str:
     return "cuda" if torch.cuda.is_available() else "cpu"
 
 
+def resolve_torch_dtype(dtype_name: Optional[str], device: str) -> Optional[torch.dtype]:
+    normalized = (dtype_name or "auto").strip().lower()
+    if normalized in {"", "auto"}:
+        if device.startswith("cuda"):
+            return torch.float16
+        return None
+    if normalized in {"none", "default"}:
+        return None
+
+    lookup = {
+        "float32": torch.float32,
+        "fp32": torch.float32,
+        "float": torch.float32,
+        "float16": torch.float16,
+        "fp16": torch.float16,
+        "half": torch.float16,
+        "bfloat16": torch.bfloat16,
+        "bf16": torch.bfloat16,
+    }
+    if normalized not in lookup:
+        raise ValueError(
+            f"Unsupported torch dtype '{dtype_name}'. Use auto, float32, float16, or bfloat16."
+        )
+    return lookup[normalized]
+
+
+def load_causal_lm_and_tokenizer(
+    model_name: str,
+    device: str,
+    local_files_only: bool,
+    torch_dtype_name: Optional[str] = "auto",
+):
+    tokenizer = AutoTokenizer.from_pretrained(model_name, local_files_only=local_files_only)
+    if tokenizer.pad_token_id is None:
+        tokenizer.pad_token = tokenizer.eos_token
+
+    model_kwargs = {
+        "local_files_only": local_files_only,
+        "low_cpu_mem_usage": True,
+    }
+    resolved_dtype = resolve_torch_dtype(torch_dtype_name, device)
+    if resolved_dtype is not None:
+        model_kwargs["torch_dtype"] = resolved_dtype
+
+    model = AutoModelForCausalLM.from_pretrained(model_name, **model_kwargs).to(device)
+    model.eval()
+    return tokenizer, model, resolved_dtype
+
+
 def normalize_transitive_frame(frame: pd.DataFrame) -> pd.DataFrame:
     frame = frame.copy()
     frame.columns = frame.columns.str.strip().str.lower()
@@ -109,6 +162,38 @@ def normalize_transitive_frame(frame: pd.DataFrame) -> pd.DataFrame:
     if missing:
         raise ValueError(f"Missing required columns: {sorted(missing)}")
     return frame[["pa", "pp", "ta", "tp"]]
+
+
+def lexical_overlap_audit(target_frame: pd.DataFrame, prime_frame: pd.DataFrame) -> Dict[str, object]:
+    if len(target_frame) != len(prime_frame):
+        raise ValueError(
+            f"Target and prime frames must be same length for lexical audit: {len(target_frame)} vs {len(prime_frame)}"
+        )
+
+    same_verb_rows = 0
+    shared_noun_rows = 0
+    shared_both_nouns_rows = 0
+
+    for target_row, prime_row in zip(target_frame.itertuples(index=False), prime_frame.itertuples(index=False)):
+        _, target_agent, target_verb, _, target_patient = parse_active_target(str(target_row.ta))
+        _, prime_agent, prime_verb, _, prime_patient = parse_active_target(str(prime_row.pa))
+        target_nouns = {target_agent.lower(), target_patient.lower()}
+        prime_nouns = {prime_agent.lower(), prime_patient.lower()}
+        overlap = target_nouns & prime_nouns
+        same_verb_rows += int(target_verb.lower() == prime_verb.lower())
+        shared_noun_rows += int(bool(overlap))
+        shared_both_nouns_rows += int(target_nouns == prime_nouns)
+
+    total_rows = len(target_frame)
+    return {
+        "rows_evaluated": int(total_rows),
+        "same_active_verb_rows": int(same_verb_rows),
+        "same_active_verb_rate": float(same_verb_rows / total_rows),
+        "shared_noun_rows": int(shared_noun_rows),
+        "shared_noun_rate": float(shared_noun_rows / total_rows),
+        "shared_both_nouns_rows": int(shared_both_nouns_rows),
+        "shared_both_nouns_rate": float(shared_both_nouns_rows / total_rows),
+    }
 
 
 def load_verb_lookup(path: Path = VERB_LIST_PATH) -> Dict[Tuple[str, str], str]:
@@ -201,11 +286,13 @@ def sample_condition_frames(
 def prompt_templates(mode: str) -> List[str]:
     if mode == "all":
         return ["word_list", "role_labeled"]
+    if mode == "elicited_all":
+        return ["cue_list", "another_event", "same_kind_event"]
     return [mode]
 
 
 def role_sequence(bundle: TargetBundle, template_name: str, rng: random.Random, order_mode: str) -> List[str]:
-    if template_name == "word_list":
+    if template_name in {"word_list", "cue_list", "another_event", "same_kind_event"}:
         elements = [
             bundle.agent_noun,
             bundle.patient_noun,
@@ -238,12 +325,22 @@ def build_prompt(
 ) -> str:
     lines: List[str] = []
     if prime_sentence:
-        lines.append(f"Prime sentence: {prime_sentence.strip()}")
+        if template_name in {"cue_list", "another_event", "same_kind_event"}:
+            lines.append(prime_sentence.strip())
+            lines.append("")
+        else:
+            lines.append(f"Prime sentence: {prime_sentence.strip()}")
 
     if template_name == "word_list":
         lines.append(f"Use these words in one sentence: {', '.join(role_sequence_values)}")
     elif template_name == "role_labeled":
         lines.append(f"Event roles: {'; '.join(role_sequence_values)}")
+    elif template_name == "cue_list":
+        lines.append(", ".join(role_sequence_values))
+    elif template_name == "another_event":
+        lines.append(f"Another event: {', '.join(role_sequence_values)}.")
+    elif template_name == "same_kind_event":
+        lines.append(f"Different people, same kind of event: {', '.join(role_sequence_values)}.")
     else:
         raise ValueError(f"Unknown prompt template: {template_name}")
 
