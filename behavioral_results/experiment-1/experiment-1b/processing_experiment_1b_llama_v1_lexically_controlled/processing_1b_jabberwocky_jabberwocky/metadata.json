@@ -1,0 +1,36 @@
+{
+  "condition_label": "processing_1b_jabberwocky_jabberwocky",
+  "model_name": "meta-llama/Llama-3.2-3B-Instruct",
+  "input_csv": "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+  "prime_csv": "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+  "max_items": 2080,
+  "batch_size": 4,
+  "prime_conditions": [
+    "active",
+    "passive",
+    "no_prime_eos",
+    "no_prime_empty",
+    "filler"
+  ],
+  "seed": 13,
+  "device": "cuda",
+  "torch_dtype": "torch.float16",
+  "local_files_only": false,
+  "n_rows": 10400,
+  "n_items": 2080,
+  "prime_alignment_mode": "paired_indices",
+  "lexical_overlap_audit": {
+    "rows_evaluated": 2080,
+    "same_active_verb_rows": 0,
+    "same_active_verb_rate": 0.0,
+    "shared_noun_rows": 0,
+    "shared_noun_rate": 0.0,
+    "shared_both_nouns_rows": 0,
+    "shared_both_nouns_rate": 0.0
+  },
+  "filler_sentence_count": 24,
+  "filler_domain": "jabberwocky",
+  "task_type": "processing_experiment_1b",
+  "primary_score": "mean_target_logprob_difference",
+  "secondary_score": "sum_target_logprob_difference"
+}

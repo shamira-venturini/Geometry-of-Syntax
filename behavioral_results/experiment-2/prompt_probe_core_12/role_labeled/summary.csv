@@ -1,5 +1,0 @@
-prompt_template,prime_condition,n_items,n_active_choice,n_passive_choice,active_choice_rate,passive_choice_rate,mean_passive_minus_active_logprob,sd_passive_minus_active_logprob
-role_labeled,active,12,8,4,0.6666666666666666,0.3333333333333333,-0.5481295188268026,1.7962376462576188
-role_labeled,filler,12,5,7,0.4166666666666667,0.5833333333333334,-0.05937206745147705,1.8165241354233979
-role_labeled,no_prime_eos,12,9,3,0.75,0.25,-0.3300262689590454,1.891829073087084
-role_labeled,passive,12,7,5,0.5833333333333334,0.4166666666666667,-0.5053357283274332,1.5633332322056037

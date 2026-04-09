@@ -1,0 +1,48 @@
+# Demonstration-based completion-choice production experiment
+
+## Summary
+
+```csv
+prompt_template,prime_condition,n_items,n_active_choice,n_passive_choice,active_choice_rate,passive_choice_rate,mean_passive_minus_active_logprob,sd_passive_minus_active_logprob
+demo__involving_event__did_to__mary_answered,active,2080,1828,252,0.8788461538461538,0.12115384615384615,-1.40768802349384,1.2234141691378548
+demo__involving_event__did_to__mary_answered,filler,2080,1523,557,0.7322115384615384,0.26778846153846153,-0.773363524216872,1.254725549985369
+demo__involving_event__did_to__mary_answered,no_demo,2080,1807,273,0.86875,0.13125,-1.1923480107234075,1.1077985474173822
+demo__involving_event__did_to__mary_answered,passive,2080,688,1392,0.33076923076923076,0.6692307692307692,0.473317630474384,1.0155405373842783
+```
+
+## Pairwise Condition Comparisons
+
+```csv
+prompt_template,condition_a,condition_b,passive_choice_rate_a,passive_choice_rate_b,passive_choice_rate_diff_b_minus_a,active_choice_rate_a,active_choice_rate_b,active_choice_rate_diff_b_minus_a,mean_logprob_a,mean_logprob_b,mean_logprob_diff_b_minus_a
+demo__involving_event__did_to__mary_answered,active,filler,0.12115384615384615,0.26778846153846153,0.14663461538461536,0.8788461538461538,0.7322115384615384,-0.14663461538461542,-1.40768802349384,-0.773363524216872,0.634324499276968
+demo__involving_event__did_to__mary_answered,active,no_demo,0.12115384615384615,0.13125,0.010096153846153852,0.8788461538461538,0.86875,-0.01009615384615381,-1.40768802349384,-1.1923480107234075,0.21534001277043258
+demo__involving_event__did_to__mary_answered,active,passive,0.12115384615384615,0.6692307692307692,0.548076923076923,0.8788461538461538,0.33076923076923076,-0.5480769230769231,-1.40768802349384,0.473317630474384,1.881005653968224
+demo__involving_event__did_to__mary_answered,no_demo,filler,0.13125,0.26778846153846153,0.13653846153846153,0.86875,0.7322115384615384,-0.1365384615384616,-1.1923480107234075,-0.773363524216872,0.4189844865065354
+demo__involving_event__did_to__mary_answered,passive,filler,0.6692307692307692,0.26778846153846153,-0.40144230769230765,0.33076923076923076,0.7322115384615384,0.40144230769230765,0.473317630474384,-0.773363524216872,-1.246681154691256
+demo__involving_event__did_to__mary_answered,passive,no_demo,0.6692307692307692,0.13125,-0.5379807692307692,0.33076923076923076,0.86875,0.5379807692307692,0.473317630474384,-1.1923480107234075,-1.6656656411977915
+```
+
+## Paired Significance Tests
+
+```csv
+prompt_template,metric,condition_a,condition_b,n_items,mean_diff_b_minus_a,sd_diff,effect_size_dz,t_stat,t_p_two_sided,perm_p_two_sided,bootstrap_ci95_low,bootstrap_ci95_high,mcnemar_b,mcnemar_c,mcnemar_p_exact
+demo__involving_event__did_to__mary_answered,logprob_delta,active,filler,2080,0.6343244992769681,1.4734552735941897,0.4305013600648118,19.633882848706154,7.149572167712616e-79,0.0,0.5709079713087816,0.6980248044087336,,,
+demo__involving_event__did_to__mary_answered,passive_choice_delta,active,filler,2080,0.1466346153846154,0.5126004599190597,0.2860602493563295,13.046354656552733,1.8882174628554394e-37,0.0,0.125,0.16875,448.0,143.0,1.4577731922734351e-37
+demo__involving_event__did_to__mary_answered,logprob_delta,active,no_demo,2080,0.2153400127704327,1.3006429965936583,0.16556427346658628,7.550892635239796,6.431745103153588e-14,0.0,0.1605026340484619,0.27083262920379636,,,
+demo__involving_event__did_to__mary_answered,passive_choice_delta,active,no_demo,2080,0.010096153846153847,0.44881758007816513,0.022495005307937185,1.0259300895833856,0.3050438892648494,0.3255,-0.009615384615384616,0.029326923076923077,220.0,199.0,0.3285421658101713
+demo__involving_event__did_to__mary_answered,logprob_delta,active,passive,2080,1.881005653968224,0.777193931781731,2.420252625565391,110.38050264805297,0.0,0.0,1.8476377142392673,1.9139110348774837,,,
+demo__involving_event__did_to__mary_answered,passive_choice_delta,active,passive,2080,0.5480769230769231,0.49780292065007803,1.1009917787569277,50.21295077499344,0.0,0.0,0.5269230769230769,0.5692307692307692,1140.0,0.0,0.0
+demo__involving_event__did_to__mary_answered,logprob_delta,no_demo,filler,2080,0.41898448650653547,0.978909831607448,0.42801131726149844,19.520319424234838,4.695093055190706e-78,0.0,0.37581145506638747,0.46115835483257583,,,
+demo__involving_event__did_to__mary_answered,passive_choice_delta,no_demo,filler,2080,0.13653846153846153,0.4293372617540717,0.318021457025717,14.504009998197764,1.7578938302929824e-45,0.0,0.11778846153846154,0.15528846153846154,353.0,69.0,5.207209623158564e-47
+demo__involving_event__did_to__mary_answered,logprob_delta,passive,filler,2080,-1.246681154691256,1.3734435789283084,-0.9077046729972231,-41.39770245596331,9.992860159743438e-274,0.0,-1.3046682570530816,-1.1872434982886682,,,
+demo__involving_event__did_to__mary_answered,passive_choice_delta,passive,filler,2080,-0.4014423076923077,0.5735033109373019,-0.6999825459354589,-31.924115874957543,2.4708308436460058e-182,0.0,-0.4264423076923077,-0.3764423076923077,92.0,927.0,2.5942382066185403e-174
+demo__involving_event__did_to__mary_answered,logprob_delta,passive,no_demo,2080,-1.6656656411977915,1.2112068264660492,-1.3752115698172884,-62.71929744870718,0.0,0.0,-1.7181932067871093,-1.6137557829343354,,,
+demo__involving_event__did_to__mary_answered,passive_choice_delta,passive,no_demo,2080,-0.5379807692307692,0.5277300893913927,-1.0194240958502068,-46.492892073692545,0.0,0.0,-0.5610576923076923,-0.5149038461538461,31.0,1150.0,0.0
+```
+
+Interpretation:
+- `passive_choice_rate` is the share of items where the passive option outranked the active option.
+- `mean_passive_minus_active_logprob` is the mean passive-vs-active structural preference score.
+- In `comparison.csv` and `stats.csv`, differences are always `condition_b - condition_a`.
+- `passive_choice_delta` tests paired shifts in passive choice rates across prime conditions.
+- `logprob_delta` tests paired shifts in passive-vs-active preference across prime conditions.

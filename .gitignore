@@ -8,7 +8,9 @@ __pycache__/
 paper-notes.tex
 
 # Archived material
-_archive/
+_archive/*
+!_archive/experiment-2_retired_2026-04-08/
+!_archive/experiment-2_retired_2026-04-08/**
 
 # folders
 
@@ -32,3 +34,7 @@ behavioral_results/_timing_*/
 behavioral_results/_timing*/
 behavioral_results/_tmp_*/
 behavioral_results/_tmp*/
+behavioral_results/experiment-2/prompt_probe_*/
+behavioral_results/experiment-2/prompt_ablation_*/
+behavioral_results/experiment-2/demo_prompt_generation_sanity_*/
+behavioral_results/experiment-2/demo_prompt_wording_ablation_*/
