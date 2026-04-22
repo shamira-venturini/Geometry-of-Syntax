@@ -1,0 +1,2 @@
+effect,term,estimate,std.error,statistic,p.value,conf.low,conf.high
+fixed,comparison_conditionno_prime_empty,0.16326493791610294,0.25589892755905846,0.6380055574028278,0.5234700624711106,-0.3382877437820758,0.6648176196142818

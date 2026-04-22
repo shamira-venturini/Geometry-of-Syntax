@@ -34,7 +34,7 @@ def load_demo_module():
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Export wide CSVs of Experiment 2c prompts for core and Jabberwocky demo-prime conditions."
+        description="Export wide CSVs of Experiment 2 prompts for core and Jabberwocky demo-prime conditions."
     )
     parser.add_argument(
         "--core-prime-mode",
@@ -172,9 +172,9 @@ def main() -> None:
         demo_module=demo_module,
     )
 
-    core_path = output_dir / f"experiment_2c_core_demo_prompts_{args.core_prime_mode}.csv"
-    jabber_path = output_dir / f"experiment_2c_jabberwocky_demo_prompts_{args.core_prime_mode}.csv"
-    summary_path = output_dir / f"experiment_2c_demo_prompts_{args.core_prime_mode}_summary.json"
+    core_path = output_dir / f"experiment_2_core_demo_prompts_{args.core_prime_mode}.csv"
+    jabber_path = output_dir / f"experiment_2_jabberwocky_demo_prompts_{args.core_prime_mode}.csv"
+    summary_path = output_dir / f"experiment_2_demo_prompts_{args.core_prime_mode}_summary.json"
 
     core_export.to_csv(core_path, index=False)
     jabber_export.to_csv(jabber_path, index=False)

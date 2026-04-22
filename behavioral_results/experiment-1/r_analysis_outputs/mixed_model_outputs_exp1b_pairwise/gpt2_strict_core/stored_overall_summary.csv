@@ -1,0 +1,6 @@
+dataset_id,dataset_label,prime_condition,passive_choice_rate,active_choice_rate,mean_passive_minus_active_logprob
+gpt2_strict_core,GPT-2 strict-control CORE,active,0.9778846153846154,0.022115384615384648,1.1017049984799492
+gpt2_strict_core,GPT-2 strict-control CORE,filler,0.99375,0.006249999999999978,1.5418608625365993
+gpt2_strict_core,GPT-2 strict-control CORE,no_prime_empty,0.9966346153846154,0.0033653846153846034,1.2670342117020352
+gpt2_strict_core,GPT-2 strict-control CORE,no_prime_eos,0.9855769230769232,0.01442307692307676,1.5306270222233038
+gpt2_strict_core,GPT-2 strict-control CORE,passive,1,0,1.7388704530448995

@@ -1,0 +1,4 @@
+dataset_id,dataset_label,baseline,baseline_passive_choice_rate,active_choice_priming,passive_choice_priming,imbalance_choice_passive_minus_active,active_logprob_priming,passive_logprob_priming,imbalance_logprob_passive_minus_active
+gpt2_overlap_jabberwocky,GPT-2 lexical-overlap Jabberwocky,no_prime_eos,0.9456730769230768,-0.00865384615384615,0.05384615384615385,0.0625,0.1875306341487131,0.09125197799651628,-0.09627865615219684
+gpt2_overlap_jabberwocky,GPT-2 lexical-overlap Jabberwocky,no_prime_empty,0.948076923076923,-0.00625,0.05144230769230769,0.05769230769230769,0.15790757503162475,0.1208750371136047,-0.03703253791802003
+gpt2_overlap_jabberwocky,GPT-2 lexical-overlap Jabberwocky,filler,0.9701923076923076,0.01586538461538461,0.02932692307692307,0.01346153846153846,0.07928024838302644,0.19950236376220296,0.12022211537917651

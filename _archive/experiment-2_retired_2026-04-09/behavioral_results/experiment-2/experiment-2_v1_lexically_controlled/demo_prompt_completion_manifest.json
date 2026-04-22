@@ -1,0 +1,36 @@
+{
+  "model_name": "meta-llama/Llama-3.2-3B-Instruct",
+  "device": "cuda",
+  "batch_size": 4,
+  "torch_dtype": "float16",
+  "max_items": 2080,
+  "prime_conditions": [
+    "active",
+    "passive",
+    "no_demo",
+    "filler"
+  ],
+  "quote_style": "mary_answered",
+  "event_style": "involving_event",
+  "role_style": "did_to",
+  "core_prime_mode": "lexically_controlled",
+  "which": "both",
+  "seed": 13,
+  "local_files_only": false,
+  "experiments": [
+    {
+      "name": "core_demo_primes_counterbalanced_core_production",
+      "input_csv": "/content/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+      "prime_csv": "/content/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+      "filler_domain": "core",
+      "output_dir": "/content/Geometry-of-Syntax/behavioral_results/colab_llama32/experiment-2_lexically_controlled/core_demo_primes_lexically_controlled"
+    },
+    {
+      "name": "jabberwocky_demo_primes_counterbalanced_core_production",
+      "input_csv": "/content/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+      "prime_csv": "/content/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered_2080.csv",
+      "filler_domain": "jabberwocky",
+      "output_dir": "/content/Geometry-of-Syntax/behavioral_results/colab_llama32/experiment-2_lexically_controlled/jabberwocky_demo_primes"
+    }
+  ]
+}

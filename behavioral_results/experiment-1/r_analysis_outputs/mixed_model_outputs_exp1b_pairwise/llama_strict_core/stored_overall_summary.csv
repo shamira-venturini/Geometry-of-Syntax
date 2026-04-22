@@ -1,0 +1,6 @@
+dataset_id,dataset_label,prime_condition,passive_choice_rate,active_choice_rate,mean_passive_minus_active_logprob
+llama_strict_core,LLaMA lexically controlled CORE,active,0.8903846153846153,0.10961538461538467,0.6695756633232219
+llama_strict_core,LLaMA lexically controlled CORE,filler,0.9725961538461538,0.027403846153846168,1.135012964195093
+llama_strict_core,LLaMA lexically controlled CORE,no_prime_empty,0.96875,0.03125,1.2676283780238855
+llama_strict_core,LLaMA lexically controlled CORE,no_prime_eos,0.9653846153846154,0.0346153846153846,1.3939788363762975
+llama_strict_core,LLaMA lexically controlled CORE,passive,0.9990384615384617,9.615384615383471e-4,1.371847643729968

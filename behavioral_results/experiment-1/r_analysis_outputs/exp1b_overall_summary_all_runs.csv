@@ -1,0 +1,36 @@
+dataset_id,dataset_label,prime_condition,passive_choice_rate,active_choice_rate,mean_passive_minus_active_logprob
+gpt2_overlap_core,GPT-2 lexical-overlap CORE,active,0.8346153846153846,0.16538461538461535,0.4692828500299954
+gpt2_overlap_core,GPT-2 lexical-overlap CORE,filler,0.99375,0.006249999999999978,1.5418608131498934
+gpt2_overlap_core,GPT-2 lexical-overlap CORE,no_prime_empty,0.9966346153846154,0.0033653846153846034,1.2670308582875902
+gpt2_overlap_core,GPT-2 lexical-overlap CORE,no_prime_eos,0.9855769230769232,0.01442307692307676,1.530622344921651
+gpt2_overlap_core,GPT-2 lexical-overlap CORE,passive,1,0,1.954839280842643
+gpt2_overlap_jabberwocky,GPT-2 lexical-overlap Jabberwocky,active,0.9543269230769232,0.04567307692307676,0.3520877952665396
+gpt2_overlap_jabberwocky,GPT-2 lexical-overlap Jabberwocky,filler,0.9701923076923076,0.029807692307692424,0.431368043649566
+gpt2_overlap_jabberwocky,GPT-2 lexical-overlap Jabberwocky,no_prime_empty,0.948076923076923,0.05192307692307696,0.5099953702981642
+gpt2_overlap_jabberwocky,GPT-2 lexical-overlap Jabberwocky,no_prime_eos,0.9456730769230768,0.05432692307692322,0.5396184294152526
+gpt2_overlap_jabberwocky,GPT-2 lexical-overlap Jabberwocky,passive,0.9995192307692308,4.8076923076922906e-4,0.6308704074117689
+gpt2_strict_core,GPT-2 strict-control CORE,active,0.9778846153846154,0.022115384615384648,1.1017049984799492
+gpt2_strict_core,GPT-2 strict-control CORE,filler,0.99375,0.006249999999999978,1.5418608625365993
+gpt2_strict_core,GPT-2 strict-control CORE,no_prime_empty,0.9966346153846154,0.0033653846153846034,1.2670342117020352
+gpt2_strict_core,GPT-2 strict-control CORE,no_prime_eos,0.9855769230769232,0.01442307692307676,1.5306270222233038
+gpt2_strict_core,GPT-2 strict-control CORE,passive,1,0,1.7388704530448995
+gpt2_strict_jabberwocky,GPT-2 strict-control Jabberwocky,active,0.9543269230769232,0.04567307692307676,0.3520878006878163
+gpt2_strict_jabberwocky,GPT-2 strict-control Jabberwocky,filler,0.9701923076923076,0.029807692307692424,0.43136800808853687
+gpt2_strict_jabberwocky,GPT-2 strict-control Jabberwocky,no_prime_empty,0.948076923076923,0.05192307692307696,0.5099953991082745
+gpt2_strict_jabberwocky,GPT-2 strict-control Jabberwocky,no_prime_eos,0.9456730769230768,0.05432692307692322,0.5396184633967926
+gpt2_strict_jabberwocky,GPT-2 strict-control Jabberwocky,passive,0.9995192307692308,4.8076923076922906e-4,0.6308704389884459
+llama_overlap_core,LLaMA lexical-overlap CORE,active,0.7336538461538461,0.2663461538461539,0.3139691512372177
+llama_overlap_core,LLaMA lexical-overlap CORE,filler,0.9725961538461538,0.027403846153846168,1.135012964195093
+llama_overlap_core,LLaMA lexical-overlap CORE,no_prime_empty,0.96875,0.03125,1.2676283780238855
+llama_overlap_core,LLaMA lexical-overlap CORE,no_prime_eos,0.9653846153846154,0.0346153846153846,1.3939788363762975
+llama_overlap_core,LLaMA lexical-overlap CORE,passive,1,0,1.6420909049717642
+llama_strict_core,LLaMA lexically controlled CORE,active,0.8903846153846153,0.10961538461538467,0.6695756633232219
+llama_strict_core,LLaMA lexically controlled CORE,filler,0.9725961538461538,0.027403846153846168,1.135012964195093
+llama_strict_core,LLaMA lexically controlled CORE,no_prime_empty,0.96875,0.03125,1.2676283780238855
+llama_strict_core,LLaMA lexically controlled CORE,no_prime_eos,0.9653846153846154,0.0346153846153846,1.3939788363762975
+llama_strict_core,LLaMA lexically controlled CORE,passive,0.9990384615384617,9.615384615383471e-4,1.371847643729968
+llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,active,0.8908653846153847,0.10913461538461533,0.31653646065335656
+llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,filler,0.989423076923077,0.01057692307692304,0.5190897930635989
+llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,no_prime_empty,0.9048076923076924,0.09519230769230758,0.4746114582970422
+llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,no_prime_eos,0.9240384615384616,0.07596153846153841,0.4039060936909231
+llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,passive,1,0,0.7444408667812863

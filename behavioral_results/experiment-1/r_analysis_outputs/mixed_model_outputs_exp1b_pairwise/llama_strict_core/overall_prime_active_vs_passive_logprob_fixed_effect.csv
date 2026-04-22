@@ -1,0 +1,2 @@
+effect,term,estimate,std.error,statistic,df,p.value,conf.low,conf.high
+fixed,comparison_conditionpassive,0.7022719804067533,0.007304666703370059,96.1401811916696,2079.0001001792716,0,0.6879467568880223,0.7165972039254843

@@ -1,2 +1,2 @@
-"passive_choice_after_active","passive_choice_after_passive","passive_choice_shift","passive_choice_ci_low","passive_choice_ci_high","passive_choice_p","logprob_shift","logprob_ci_low","logprob_ci_high","logprob_p"
-0.834615384615385,1,0.165384615384615,0.149519230769231,0.181730769230769,1.04175184804104e-83,1.48555643081265,1.4646978527691,1.50595605659075,0
+passive_choice_after_active,passive_choice_after_passive,passive_choice_shift,passive_choice_ci_low,passive_choice_ci_high,passive_choice_p,logprob_shift,logprob_ci_low,logprob_ci_high,logprob_p
+0.8346153846153846,1,0.16538461538461538,0.14951923076923077,0.1817307692307692,1.0417518480410433e-83,1.4855564308126477,1.4646978527690957,1.5059560565907455,0

@@ -659,6 +659,101 @@ def normalize_generated_text(text: str) -> str:
     return " ".join(normalized.split())
 
 
+DETERMINERS = {"a", "an", "the"}
+BE_FORMS = {"am", "is", "are", "was", "were", "be", "been", "being"}
+
+
+def _drop_final_period(tokens: List[str]) -> List[str]:
+    if tokens and tokens[-1] == ".":
+        return tokens[:-1]
+    return tokens
+
+
+def _last_content_token(tokens: Sequence[str]) -> Optional[str]:
+    for token in reversed(tokens):
+        if token not in DETERMINERS:
+            return token
+    return tokens[-1] if tokens else None
+
+
+def _rough_verb_key(token: str) -> str:
+    token = token.lower()
+    if token.endswith("ies") and len(token) > 4:
+        return token[:-3] + "y"
+    if token.endswith("ied") and len(token) > 4:
+        return token[:-3] + "y"
+    if token.endswith("ing") and len(token) > 5:
+        stem = token[:-3]
+        if len(stem) >= 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiou":
+            stem = stem[:-1]
+        return stem
+    if token.endswith("ed") and len(token) > 4:
+        stem = token[:-2]
+        if len(stem) >= 2 and stem[-1] == stem[-2] and stem[-1] not in "aeiou":
+            stem = stem[:-1]
+        return stem
+    if token.endswith("es") and len(token) > 4:
+        if token.endswith(("ches", "shes", "sses", "xes", "zes", "oes", "ges")):
+            return token[:-2]
+        return token[:-1]
+    if token.endswith("s") and len(token) > 3:
+        return token[:-1]
+    return token
+
+
+def _extract_target_signature(target_active: str, target_passive: str) -> Optional[Dict[str, object]]:
+    active_tokens = _drop_final_period(normalize_generated_text(target_active).split())
+    passive_tokens = _drop_final_period(normalize_generated_text(target_passive).split())
+    if "by" not in passive_tokens:
+        return None
+
+    by_index = passive_tokens.index("by")
+    be_positions = [index for index, token in enumerate(passive_tokens[:by_index]) if token in BE_FORMS]
+    if not be_positions:
+        return None
+
+    be_index = be_positions[-1]
+    patient_phrase = passive_tokens[:be_index]
+    agent_phrase = passive_tokens[by_index + 1:]
+    if not patient_phrase or not agent_phrase or be_index + 1 >= by_index:
+        return None
+
+    passive_verb = passive_tokens[be_index + 1]
+    active_verb = None
+    if (
+        len(active_tokens) > len(agent_phrase) + len(patient_phrase)
+        and active_tokens[: len(agent_phrase)] == agent_phrase
+        and active_tokens[-len(patient_phrase):] == patient_phrase
+    ):
+        active_verb = active_tokens[len(agent_phrase)]
+
+    expected_verb_keys = {_rough_verb_key(passive_verb)}
+    if active_verb is not None:
+        expected_verb_keys.add(_rough_verb_key(active_verb))
+
+    agent_head = _last_content_token(agent_phrase)
+    patient_head = _last_content_token(patient_phrase)
+    if agent_head is None or patient_head is None:
+        return None
+
+    return {
+        "agent_head": agent_head,
+        "patient_head": patient_head,
+        "expected_verb_keys": expected_verb_keys,
+    }
+
+
+def _first_index(tokens: Sequence[str], target: str) -> Optional[int]:
+    for index, token in enumerate(tokens):
+        if token == target:
+            return index
+    return None
+
+
+def _contains_expected_verb(tokens: Sequence[str], expected_verb_keys: Sequence[str]) -> bool:
+    return any(_rough_verb_key(token) in expected_verb_keys for token in tokens)
+
+
 def classify_generated_structure(text: str, target_active: str, target_passive: str) -> str:
     normalized = normalize_generated_text(text)
     active_norm = normalize_generated_text(target_active)
@@ -671,4 +766,29 @@ def classify_generated_structure(text: str, target_active: str, target_passive: 
         return "active_prefix"
     if normalized.startswith(passive_norm):
         return "passive_prefix"
+
+    signature = _extract_target_signature(target_active=target_active, target_passive=target_passive)
+    if signature is None:
+        return "other"
+
+    tokens = _drop_final_period(normalized.split())
+    agent_index = _first_index(tokens, str(signature["agent_head"]))
+    patient_index = _first_index(tokens, str(signature["patient_head"]))
+    expected_verb_keys = signature["expected_verb_keys"]
+    if agent_index is None or patient_index is None:
+        return "other"
+
+    if agent_index < patient_index:
+        span = tokens[agent_index + 1:patient_index]
+        if "by" not in span and _contains_expected_verb(span, expected_verb_keys):
+            return "active_structural"
+
+    if patient_index < agent_index:
+        middle = tokens[patient_index + 1:agent_index]
+        if "by" in middle:
+            by_index = patient_index + 1 + middle.index("by")
+            pre_by = tokens[patient_index + 1:by_index]
+            if any(token in BE_FORMS for token in pre_by) and _contains_expected_verb(pre_by, expected_verb_keys):
+                return "passive_structural"
+
     return "other"

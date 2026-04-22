@@ -1,0 +1,13 @@
+prompt_column,prime_condition,generation_class,n_items,total_items,share
+prompt_active,active,active_structural,1633,2080,0.7850961538461538
+prompt_active,active,other,320,2080,0.15384615384615385
+prompt_active,active,passive_structural,127,2080,0.061057692307692306
+prompt_filler,filler,active_structural,421,2080,0.20240384615384616
+prompt_filler,filler,other,1605,2080,0.7716346153846154
+prompt_filler,filler,passive_structural,54,2080,0.025961538461538463
+prompt_no_demo,no_demo,active_structural,706,2080,0.33942307692307694
+prompt_no_demo,no_demo,other,1318,2080,0.6336538461538461
+prompt_no_demo,no_demo,passive_structural,56,2080,0.026923076923076925
+prompt_passive,passive,active_structural,519,2080,0.24951923076923077
+prompt_passive,passive,other,453,2080,0.21778846153846154
+prompt_passive,passive,passive_structural,1108,2080,0.5326923076923077

@@ -1,0 +1,582 @@
+---
+title: "Experiment 1b Analysis: Baseline-Sensitive Pairwise Mixed Models"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+---
+
+# Overview
+
+This report rewrites the `Experiment 1b` mixed-model analysis around the
+baseline-sensitive questions we have been using in the project write-up.
+
+Instead of fitting one omnibus five-level `prime_condition` model and then
+recovering the interesting comparisons afterwards, this report fits one direct
+pairwise mixed model per planned comparison. That keeps the interpretation
+closer to the substantive question.
+
+The pairwise questions are:
+
+1. **Overall prime contrast**
+   Does a passive prime yield more passive preference than an active prime?
+2. **Baseline bias**
+   Do the baseline conditions differ from one another in passive bias?
+3. **Active priming relative to baseline**
+   Does an active prime increase active preference relative to a given
+   baseline?
+4. **Passive priming relative to baseline**
+   Does a passive prime increase passive preference relative to a given
+   baseline?
+
+For every planned comparison, the report fits:
+
+- a binomial GLMM on the binary choice measure
+- a linear mixed model on the mean target log-probability difference
+
+To keep the signs interpretable, the dependent variable is direction-specific:
+
+- for **active priming** questions, higher values mean **more active**
+  preference
+- for **passive priming**, **baseline bias**, and the **active-vs-passive
+  prime contrast**, higher values mean **more passive** preference
+
+# Setup
+
+```{r setup}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+required_pkgs <- c(
+  "readr", "dplyr", "tidyr", "purrr", "stringr", "forcats",
+  "tibble", "glue", "knitr", "lme4", "lmerTest", "emmeans",
+  "broom.mixed", "performance"
+)
+
+missing_pkgs <- required_pkgs[
+  !vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_pkgs) > 0) {
+  stop(
+    "Install these packages before knitting: ",
+    paste(missing_pkgs, collapse = ", ")
+  )
+}
+
+invisible(lapply(required_pkgs, library, character.only = TRUE))
+
+repo_root <- "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax"
+exp1_root <- file.path(repo_root, "behavioral_results", "experiment-1")
+exp1b_root <- file.path(exp1_root, "experiment-1b")
+
+output_root <- file.path(exp1_root, "r_analysis_outputs")
+model_output_root <- file.path(output_root, "mixed_model_outputs_exp1b_pairwise")
+dir.create(output_root, recursive = TRUE, showWarnings = FALSE)
+dir.create(model_output_root, recursive = TRUE, showWarnings = FALSE)
+
+set.seed(13)
+
+prime_levels <- c("active", "passive", "no_prime_eos", "no_prime_empty", "filler")
+baseline_levels <- c("no_prime_eos", "no_prime_empty", "filler")
+
+read_csv_strict <- function(path) {
+  if (!file.exists(path)) {
+    stop(glue::glue("Missing file: {path}"))
+  }
+  readr::read_csv(path, show_col_types = FALSE)
+}
+
+sanitize_id <- function(x) {
+  stringr::str_replace_all(x, "[^A-Za-z0-9_]+", "_")
+}
+```
+
+# Data Loading
+
+```{r data-loading}
+dataset_specs <- tibble::tribble(
+  ~dataset_id,                   ~dataset_label,                                 ~model_family, ~variant,            ~condition_key,               ~run_dir,                                                    ~item_dir,
+  "gpt2_overlap_core",          "GPT-2 lexical-overlap CORE",                    "gpt2-large",  "lexical_overlap",   "core_core",                  "processing_experiment_1b_gpt2large_v1_lexical-overlap",     "processing_1b_core_core",
+  "gpt2_overlap_jabberwocky",   "GPT-2 lexical-overlap Jabberwocky",             "gpt2-large",  "lexical_overlap",   "jabberwocky_jabberwocky",    "processing_experiment_1b_gpt2large_v1_lexical-overlap",     "processing_1b_jabberwocky_jabberwocky",
+  "gpt2_strict_core",           "GPT-2 strict-control CORE",                     "gpt2-large",  "strict_control",    "core_core",                  "processing_experiment_1b_gpt2large_v3_strict-control",      "processing_1b_core_core_lexically_controlled",
+  "gpt2_strict_jabberwocky",    "GPT-2 strict-control Jabberwocky",              "gpt2-large",  "strict_control",    "jabberwocky_jabberwocky",    "processing_experiment_1b_gpt2large_v3_strict-control",      "processing_1b_jabberwocky_jabberwocky",
+  "llama_overlap_core",         "LLaMA lexical-overlap CORE",                    "llama",       "lexical_overlap",   "core_core",                  "processing_experiment_1b_llama_v1_lexical_overlap",         "processing_1b_core_core_lexical_overlap",
+  "llama_strict_core",          "LLaMA lexically controlled CORE",               "llama",       "strict_control",    "core_core",                  "processing_experiment_1b_llama_v1_lexically_controlled",    "processing_1b_core_core_lexically_controlled",
+  "llama_strict_jabberwocky",   "LLaMA lexically controlled Jabberwocky",        "llama",       "strict_control",    "jabberwocky_jabberwocky",    "processing_experiment_1b_llama_v1_lexically_controlled",    "processing_1b_jabberwocky_jabberwocky"
+)
+
+load_dataset_bundle <- function(spec_row) {
+  run_root <- file.path(exp1b_root, spec_row$run_dir[[1]])
+  item_root <- file.path(run_root, spec_row$item_dir[[1]])
+
+  items <- read_csv_strict(file.path(item_root, "item_scores.csv")) %>%
+    mutate(
+      item_index = factor(item_index),
+      prime_condition = factor(prime_condition, levels = prime_levels),
+      passive_choice_indicator = as.numeric(passive_choice_indicator),
+      active_choice_indicator = 1 - passive_choice_indicator,
+      active_minus_passive_logprob = -passive_minus_active_logprob,
+      dataset_id = spec_row$dataset_id[[1]],
+      dataset_label = spec_row$dataset_label[[1]],
+      model_family = spec_row$model_family[[1]],
+      variant = spec_row$variant[[1]],
+      condition_key = spec_row$condition_key[[1]]
+    )
+
+  list(
+    meta = spec_row,
+    items = items,
+    summary = read_csv_strict(file.path(item_root, "summary.csv")),
+    stats = read_csv_strict(file.path(item_root, "stats.csv")),
+    priming = read_csv_strict(file.path(run_root, "priming_framed_results.csv"))
+  )
+}
+
+dataset_bundles <- purrr::map(
+  seq_len(nrow(dataset_specs)),
+  ~ load_dataset_bundle(dataset_specs[.x, , drop = FALSE])
+)
+names(dataset_bundles) <- dataset_specs$dataset_id
+```
+
+# Descriptive Summaries
+
+```{r descriptive-helpers}
+build_overall_summary <- function(bundle) {
+  bundle$summary %>%
+    select(prime_condition, passive_choice_rate, mean_passive_minus_active_logprob) %>%
+    mutate(
+      dataset_id = bundle$meta$dataset_id[[1]],
+      dataset_label = bundle$meta$dataset_label[[1]],
+      active_choice_rate = 1 - passive_choice_rate
+    ) %>%
+    select(
+      dataset_id,
+      dataset_label,
+      prime_condition,
+      passive_choice_rate,
+      active_choice_rate,
+      mean_passive_minus_active_logprob
+    )
+}
+
+build_baseline_decomposition <- function(bundle) {
+  bundle$priming %>%
+    filter(condition == bundle$meta$condition_key[[1]]) %>%
+    mutate(
+      dataset_id = bundle$meta$dataset_id[[1]],
+      dataset_label = bundle$meta$dataset_label[[1]],
+      baseline = factor(baseline, levels = baseline_levels)
+    ) %>%
+    arrange(baseline) %>%
+    select(
+      dataset_id,
+      dataset_label,
+      baseline,
+      baseline_passive_choice_rate,
+      active_choice_priming,
+      passive_choice_priming,
+      imbalance_choice_passive_minus_active,
+      active_logprob_priming,
+      passive_logprob_priming,
+      imbalance_logprob_passive_minus_active
+    )
+}
+
+overall_summary_all <- purrr::map_dfr(dataset_bundles, build_overall_summary)
+baseline_decomposition_all <- purrr::map_dfr(dataset_bundles, build_baseline_decomposition)
+
+readr::write_csv(overall_summary_all, file.path(output_root, "exp1b_overall_summary_all_runs.csv"))
+readr::write_csv(
+  baseline_decomposition_all,
+  file.path(output_root, "exp1b_baseline_decomposition_all_runs.csv")
+)
+```
+
+# Planned Pairwise Analysis Specification
+
+```{r planned-comparisons}
+analysis_specs <- tibble::tribble(
+  ~analysis_id,                              ~analysis_group,          ~reference_condition, ~target_condition, ~direction, ~question,
+  "overall_prime_active_vs_passive",         "overall_prime_contrast", "active",             "passive",         "passive",  "Does a passive prime yield more passive preference than an active prime?",
+  "baseline_eos_vs_empty",                   "baseline_bias",          "no_prime_eos",       "no_prime_empty",  "passive",  "Is the empty baseline more passive-biased than the EOS baseline?",
+  "baseline_eos_vs_filler",                  "baseline_bias",          "no_prime_eos",       "filler",          "passive",  "Is the filler baseline more passive-biased than the EOS baseline?",
+  "baseline_empty_vs_filler",                "baseline_bias",          "no_prime_empty",     "filler",          "passive",  "Is the filler baseline more passive-biased than the empty baseline?",
+  "active_priming_vs_no_prime_eos",          "active_priming",         "no_prime_eos",       "active",          "active",   "Does an active prime increase active preference relative to the EOS baseline?",
+  "active_priming_vs_no_prime_empty",        "active_priming",         "no_prime_empty",     "active",          "active",   "Does an active prime increase active preference relative to the empty baseline?",
+  "active_priming_vs_filler",                "active_priming",         "filler",             "active",          "active",   "Does an active prime increase active preference relative to the filler baseline?",
+  "passive_priming_vs_no_prime_eos",         "passive_priming",        "no_prime_eos",       "passive",         "passive",  "Does a passive prime increase passive preference relative to the EOS baseline?",
+  "passive_priming_vs_no_prime_empty",       "passive_priming",        "no_prime_empty",     "passive",         "passive",  "Does a passive prime increase passive preference relative to the empty baseline?",
+  "passive_priming_vs_filler",               "passive_priming",        "filler",             "passive",         "passive",  "Does a passive prime increase passive preference relative to the filler baseline?"
+)
+```
+
+# Pairwise Model Helpers
+
+```{r model-helpers}
+# This helper creates the response variables for the specific question being
+# asked. For active-priming models, higher values mean stronger active
+# preference. For passive-priming and baseline-bias models, higher values mean
+# stronger passive preference.
+prepare_pairwise_data <- function(items, reference_condition, target_condition, direction) {
+  if (!direction %in% c("active", "passive")) {
+    stop(glue::glue("Unsupported direction: {direction}"))
+  }
+
+  items %>%
+    filter(prime_condition %in% c(reference_condition, target_condition)) %>%
+    mutate(
+      comparison_condition = factor(
+        as.character(prime_condition),
+        levels = c(reference_condition, target_condition)
+      ),
+      response_choice = if (direction == "active") active_choice_indicator else passive_choice_indicator,
+      response_logprob = if (direction == "active") active_minus_passive_logprob else passive_minus_active_logprob
+    )
+}
+
+fit_choice_model <- function(df) {
+  tryCatch(
+    lme4::glmer(
+      response_choice ~ comparison_condition + (1 | item_index),
+      data = df,
+      family = binomial,
+      control = lme4::glmerControl(
+        optimizer = "bobyqa",
+        optCtrl = list(maxfun = 2e5)
+      )
+    ),
+    error = function(e) e
+  )
+}
+
+fit_logprob_model <- function(df) {
+  tryCatch(
+    lmerTest::lmer(
+      response_logprob ~ comparison_condition + (1 | item_index),
+      data = df
+    ),
+    error = function(e) e
+  )
+}
+
+extract_choice_emmeans <- function(model) {
+  emm <- as.data.frame(emmeans::emmeans(model, ~ comparison_condition, type = "response"))
+  prob_col <- intersect(c("prob", "response"), names(emm))[1]
+  ci_low_col <- intersect(c("asymp.LCL", "lower.CL"), names(emm))[1]
+  ci_high_col <- intersect(c("asymp.UCL", "upper.CL"), names(emm))[1]
+  emm %>%
+    mutate(
+      emmean = .data[[prob_col]],
+      ci_low = .data[[ci_low_col]],
+      ci_high = .data[[ci_high_col]]
+    ) %>%
+    select(comparison_condition, emmean, ci_low, ci_high)
+}
+
+extract_logprob_emmeans <- function(model) {
+  emm <- as.data.frame(emmeans::emmeans(model, ~ comparison_condition))
+  ci_low_col <- intersect(c("lower.CL", "asymp.LCL"), names(emm))[1]
+  ci_high_col <- intersect(c("upper.CL", "asymp.UCL"), names(emm))[1]
+  emm %>%
+    transmute(
+      comparison_condition,
+      emmean,
+      ci_low = .data[[ci_low_col]],
+      ci_high = .data[[ci_high_col]]
+    )
+}
+
+extract_fixed_row <- function(model, target_condition, exponentiate = FALSE) {
+  term_name <- paste0("comparison_condition", target_condition)
+  broom.mixed::tidy(
+    model,
+    effects = "fixed",
+    conf.int = TRUE,
+    conf.method = "Wald",
+    exponentiate = exponentiate
+  ) %>%
+    filter(term == term_name)
+}
+
+extract_pair_contrast <- function(model) {
+  as.data.frame(
+    emmeans::contrast(
+      emmeans::emmeans(model, ~ comparison_condition),
+      method = "revpairwise"
+    )
+  )
+}
+
+observed_means <- function(df, response_column) {
+  df %>%
+    group_by(comparison_condition) %>%
+    summarise(
+      observed_mean = mean(.data[[response_column]], na.rm = TRUE),
+      n_items = dplyr::n(),
+      .groups = "drop"
+    )
+}
+
+pull_or_na <- function(df, column) {
+  if (!column %in% names(df) || nrow(df) == 0) {
+    return(NA_real_)
+  }
+  value <- df[[column]][[1]]
+  if (is.null(value) || length(value) == 0) {
+    return(NA_real_)
+  }
+  as.numeric(value)
+}
+
+build_summary_row <- function(
+  dataset_id,
+  dataset_label,
+  analysis_row,
+  measure_label,
+  observed_df,
+  emmeans_df,
+  fixed_df,
+  model_error = NA_character_
+) {
+  ref <- analysis_row$reference_condition[[1]]
+  tgt <- analysis_row$target_condition[[1]]
+
+  observed_ref <- observed_df %>% filter(comparison_condition == ref)
+  observed_tgt <- observed_df %>% filter(comparison_condition == tgt)
+  emm_ref <- emmeans_df %>% filter(comparison_condition == ref)
+  emm_tgt <- emmeans_df %>% filter(comparison_condition == tgt)
+
+  tibble::tibble(
+    dataset_id = dataset_id,
+    dataset_label = dataset_label,
+    analysis_id = analysis_row$analysis_id[[1]],
+    analysis_group = analysis_row$analysis_group[[1]],
+    measure = measure_label,
+    direction = analysis_row$direction[[1]],
+    question = analysis_row$question[[1]],
+    reference_condition = ref,
+    target_condition = tgt,
+    observed_reference = observed_ref$observed_mean[[1]],
+    observed_target = observed_tgt$observed_mean[[1]],
+    observed_target_minus_reference = observed_tgt$observed_mean[[1]] - observed_ref$observed_mean[[1]],
+    emmean_reference = emm_ref$emmean[[1]],
+    emmean_target = emm_tgt$emmean[[1]],
+    emmean_reference_ci_low = emm_ref$ci_low[[1]],
+    emmean_reference_ci_high = emm_ref$ci_high[[1]],
+    emmean_target_ci_low = emm_tgt$ci_low[[1]],
+    emmean_target_ci_high = emm_tgt$ci_high[[1]],
+    fixed_effect_estimate = pull_or_na(fixed_df, "estimate"),
+    fixed_effect_ci_low = pull_or_na(fixed_df, "conf.low"),
+    fixed_effect_ci_high = pull_or_na(fixed_df, "conf.high"),
+    fixed_effect_statistic = pull_or_na(fixed_df, "statistic"),
+    fixed_effect_p = pull_or_na(fixed_df, "p.value"),
+    model_error = model_error
+  )
+}
+
+run_pairwise_analysis <- function(bundle, analysis_row) {
+  dataset_id <- bundle$meta$dataset_id[[1]]
+  dataset_label <- bundle$meta$dataset_label[[1]]
+  analysis_id <- analysis_row$analysis_id[[1]]
+  dataset_output_dir <- file.path(model_output_root, dataset_id)
+  dir.create(dataset_output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  pair_df <- prepare_pairwise_data(
+    items = bundle$items,
+    reference_condition = analysis_row$reference_condition[[1]],
+    target_condition = analysis_row$target_condition[[1]],
+    direction = analysis_row$direction[[1]]
+  )
+
+  file_stub <- sanitize_id(analysis_id)
+
+  choice_model <- fit_choice_model(pair_df)
+  if (inherits(choice_model, "error")) {
+    choice_error <- conditionMessage(choice_model)
+    choice_fixed <- tibble::tibble(term = NA_character_, estimate = NA_real_, conf.low = NA_real_, conf.high = NA_real_, statistic = NA_real_, p.value = NA_real_)
+    choice_emm <- tibble::tibble(comparison_condition = levels(pair_df$comparison_condition), emmean = NA_real_, ci_low = NA_real_, ci_high = NA_real_)
+    choice_contrast <- tibble::tibble(contrast = NA_character_, estimate = NA_real_, SE = NA_real_, z.ratio = NA_real_, p.value = NA_real_)
+  } else {
+    choice_error <- NA_character_
+    choice_fixed <- extract_fixed_row(choice_model, analysis_row$target_condition[[1]], exponentiate = FALSE)
+    choice_emm <- extract_choice_emmeans(choice_model)
+    choice_contrast <- extract_pair_contrast(choice_model)
+  }
+
+  logprob_model <- fit_logprob_model(pair_df)
+  if (inherits(logprob_model, "error")) {
+    logprob_error <- conditionMessage(logprob_model)
+    logprob_fixed <- tibble::tibble(term = NA_character_, estimate = NA_real_, conf.low = NA_real_, conf.high = NA_real_, statistic = NA_real_, p.value = NA_real_)
+    logprob_emm <- tibble::tibble(comparison_condition = levels(pair_df$comparison_condition), emmean = NA_real_, ci_low = NA_real_, ci_high = NA_real_)
+    logprob_contrast <- tibble::tibble(contrast = NA_character_, estimate = NA_real_, SE = NA_real_, df = NA_real_, t.ratio = NA_real_, p.value = NA_real_)
+  } else {
+    logprob_error <- NA_character_
+    logprob_fixed <- extract_fixed_row(logprob_model, analysis_row$target_condition[[1]], exponentiate = FALSE)
+    logprob_emm <- extract_logprob_emmeans(logprob_model)
+    logprob_contrast <- extract_pair_contrast(logprob_model)
+  }
+
+  choice_observed <- observed_means(pair_df, "response_choice")
+  logprob_observed <- observed_means(pair_df, "response_logprob")
+
+  readr::write_csv(pair_df, file.path(dataset_output_dir, paste0(file_stub, "_analysis_data.csv")))
+  readr::write_csv(choice_observed, file.path(dataset_output_dir, paste0(file_stub, "_choice_observed_means.csv")))
+  readr::write_csv(choice_emm, file.path(dataset_output_dir, paste0(file_stub, "_choice_emmeans.csv")))
+  readr::write_csv(choice_contrast, file.path(dataset_output_dir, paste0(file_stub, "_choice_posthoc_contrast.csv")))
+  readr::write_csv(choice_fixed, file.path(dataset_output_dir, paste0(file_stub, "_choice_fixed_effect.csv")))
+  readr::write_csv(logprob_observed, file.path(dataset_output_dir, paste0(file_stub, "_logprob_observed_means.csv")))
+  readr::write_csv(logprob_emm, file.path(dataset_output_dir, paste0(file_stub, "_logprob_emmeans.csv")))
+  readr::write_csv(logprob_contrast, file.path(dataset_output_dir, paste0(file_stub, "_logprob_posthoc_contrast.csv")))
+  readr::write_csv(logprob_fixed, file.path(dataset_output_dir, paste0(file_stub, "_logprob_fixed_effect.csv")))
+
+  list(
+    choice_summary = build_summary_row(
+      dataset_id = dataset_id,
+      dataset_label = dataset_label,
+      analysis_row = analysis_row,
+      measure_label = "choice",
+      observed_df = choice_observed,
+      emmeans_df = choice_emm,
+      fixed_df = choice_fixed,
+      model_error = choice_error
+    ),
+    logprob_summary = build_summary_row(
+      dataset_id = dataset_id,
+      dataset_label = dataset_label,
+      analysis_row = analysis_row,
+      measure_label = "logprob",
+      observed_df = logprob_observed,
+      emmeans_df = logprob_emm,
+      fixed_df = logprob_fixed,
+      model_error = logprob_error
+    )
+  )
+}
+
+run_dataset_suite <- function(bundle) {
+  analysis_results <- purrr::map(
+    seq_len(nrow(analysis_specs)),
+    ~ run_pairwise_analysis(bundle, analysis_specs[.x, , drop = FALSE])
+  )
+
+  choice_summary <- purrr::map_dfr(analysis_results, "choice_summary")
+  logprob_summary <- purrr::map_dfr(analysis_results, "logprob_summary")
+  overall_summary <- build_overall_summary(bundle)
+  baseline_summary <- build_baseline_decomposition(bundle)
+
+  dataset_output_dir <- file.path(model_output_root, bundle$meta$dataset_id[[1]])
+  dir.create(dataset_output_dir, recursive = TRUE, showWarnings = FALSE)
+
+  readr::write_csv(overall_summary, file.path(dataset_output_dir, "stored_overall_summary.csv"))
+  readr::write_csv(baseline_summary, file.path(dataset_output_dir, "stored_baseline_decomposition.csv"))
+  readr::write_csv(choice_summary, file.path(dataset_output_dir, "pairwise_choice_model_summary.csv"))
+  readr::write_csv(logprob_summary, file.path(dataset_output_dir, "pairwise_logprob_model_summary.csv"))
+
+  list(
+    overall_summary = overall_summary,
+    baseline_summary = baseline_summary,
+    choice_summary = choice_summary,
+    logprob_summary = logprob_summary
+  )
+}
+
+dataset_results <- purrr::map(dataset_bundles, run_dataset_suite)
+```
+
+# Pairwise Mixed-Model Reports
+
+```{r dataset-report, results='asis'}
+for (dataset_id in names(dataset_results)) {
+  bundle <- dataset_bundles[[dataset_id]]
+  result <- dataset_results[[dataset_id]]
+
+  cat("## ", bundle$meta$dataset_label[[1]], "\n\n", sep = "")
+  cat("Run directory: `", bundle$meta$run_dir[[1]], "`  \n", sep = "")
+  cat("Condition key: `", bundle$meta$condition_key[[1]], "`  \n", sep = "")
+  cat("Model family: `", bundle$meta$model_family[[1]], "`  \n", sep = "")
+  cat("Variant: `", bundle$meta$variant[[1]], "`\n\n", sep = "")
+
+  cat("### Stored Overall Summary\n\n")
+  print(knitr::kable(result$overall_summary, digits = 4))
+  cat("\n\n")
+
+  cat("### Stored Baseline Decomposition\n\n")
+  print(knitr::kable(result$baseline_summary, digits = 4))
+  cat("\n\n")
+
+  cat("### Planned Pairwise Mixed Models: Choice Metric\n\n")
+  cat("Each row below is one direct GLMM. The sign and the observed means are\n")
+  cat("already oriented so that larger values mean more of the structure named in\n")
+  cat("the `direction` column.\n\n")
+  print(
+    knitr::kable(
+      result$choice_summary %>%
+        select(
+          analysis_group, analysis_id, direction, reference_condition,
+          target_condition, observed_reference, observed_target,
+          observed_target_minus_reference, fixed_effect_estimate,
+          fixed_effect_p, model_error
+        ),
+      digits = 4
+    )
+  )
+  cat("\n\n")
+
+  cat("### Planned Pairwise Mixed Models: Log-Probability Metric\n\n")
+  cat("Each row below is one direct LMM on the directional log-probability score.\n\n")
+  print(
+    knitr::kable(
+      result$logprob_summary %>%
+        select(
+          analysis_group, analysis_id, direction, reference_condition,
+          target_condition, observed_reference, observed_target,
+          observed_target_minus_reference, fixed_effect_estimate,
+          fixed_effect_p, model_error
+        ),
+      digits = 4
+    )
+  )
+  cat("\n\n")
+}
+```
+
+# Combined Summary Tables
+
+```{r combined-summary-exports}
+pairwise_choice_all <- purrr::map_dfr(dataset_results, "choice_summary")
+pairwise_logprob_all <- purrr::map_dfr(dataset_results, "logprob_summary")
+
+readr::write_csv(
+  pairwise_choice_all,
+  file.path(output_root, "exp1b_pairwise_choice_models_all_runs.csv")
+)
+readr::write_csv(
+  pairwise_logprob_all,
+  file.path(output_root, "exp1b_pairwise_logprob_models_all_runs.csv")
+)
+
+knitr::kable(
+  pairwise_choice_all %>%
+    select(
+      dataset_label, analysis_id, direction,
+      reference_condition, target_condition,
+      observed_target_minus_reference,
+      fixed_effect_estimate, fixed_effect_p
+    ),
+  digits = 4
+)
+```
+
+# Files Written by This Report
+
+```{r generated-files}
+tibble::tibble(
+  file = list.files(model_output_root, recursive = TRUE)
+) %>%
+  knitr::kable()
+```

@@ -11,6 +11,8 @@ paper-notes.tex
 _archive/*
 !_archive/experiment-2_retired_2026-04-08/
 !_archive/experiment-2_retired_2026-04-08/**
+!_archive/experiment-2_retired_2026-04-09/
+!_archive/experiment-2_retired_2026-04-09/**
 
 # folders
 
@@ -20,7 +22,10 @@ PrimeLM/
 
 # Priming checkpoint artifacts
 behavioral_results/**/conditions/
+!behavioral_results/experiment-1/experiment-1a/transitive_token_profiles/conditions/
+!behavioral_results/experiment-1/experiment-1a/transitive_token_profiles/conditions/**
 behavioral_results/**/done.json
+!behavioral_results/experiment-1/experiment-1a/transitive_token_profiles/conditions/**/done.json
 behavioral_results/**/checkpoint*/
 behavioral_results/**/*checkpoint*/
 
