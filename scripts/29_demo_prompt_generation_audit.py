@@ -23,8 +23,12 @@ DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "_smoke_demo_prompt_gene
 PROMPT_COLUMN_TO_CONDITION = {
     "prompt_active": "active",
     "prompt_passive": "passive",
-    "prompt_no_demo": "no_demo",
+    "prompt_no_prime": "no_prime",
+    "prompt_no_demo": "no_prime",
     "prompt_filler": "filler",
+}
+PROMPT_COLUMN_CANONICAL = {
+    "prompt_no_demo": "prompt_no_prime",
 }
 
 
@@ -39,8 +43,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prompt-columns",
         nargs="+",
-        default=["prompt_active", "prompt_passive", "prompt_no_demo", "prompt_filler"],
-        help="Subset of prompt_active prompt_passive prompt_no_demo prompt_filler.",
+        default=["prompt_active", "prompt_passive", "prompt_no_prime", "prompt_filler"],
+        help="Subset of prompt_active prompt_passive prompt_no_prime prompt_filler.",
     )
     parser.add_argument("--batch-size", type=int, default=2)
     parser.add_argument("--max-new-tokens", type=int, default=24)
@@ -119,14 +123,23 @@ def build_generation_rows(frame: pd.DataFrame, prompt_columns: Sequence[str]) ->
     rows: List[Dict[str, object]] = []
     for _, record in frame.iterrows():
         for column in prompt_columns:
+            prompt_text = record.get(column)
+            if pd.isna(prompt_text):
+                if column == "prompt_no_prime":
+                    prompt_text = record.get("prompt_no_demo")
+                elif column == "prompt_no_demo":
+                    prompt_text = record.get("prompt_no_prime")
+            if pd.isna(prompt_text):
+                raise ValueError(f"Prompt column '{column}' is missing from prompt CSV.")
+            canonical_column = PROMPT_COLUMN_CANONICAL.get(column, column)
             rows.append(
                 {
                     "item_index": int(record["item_index"]),
-                    "prompt_column": column,
+                    "prompt_column": canonical_column,
                     "prime_condition": PROMPT_COLUMN_TO_CONDITION[column],
                     "target_active": str(record["target_active"]),
                     "target_passive": str(record["target_passive"]),
-                    "prompt": str(record[column]),
+                    "prompt": str(prompt_text),
                 }
             )
     return rows

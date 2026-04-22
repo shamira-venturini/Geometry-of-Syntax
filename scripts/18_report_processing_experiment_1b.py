@@ -10,8 +10,13 @@ from scipy import stats
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_ROOT = REPO_ROOT / "behavioral_results" / "processing_experiment_1b_gpt2large_v2"
-BASELINE_ORDER = ["no_prime_eos", "no_prime_empty", "filler", "no_prime"]
+BASELINE_ORDER = ["no_prime", "filler"]
 N_BOOTSTRAP = 5000
+LEGACY_PRIME_MAP = {
+    "no_prime_eos": "no_prime",
+    "no_prime_empty": "no_prime",
+    "no_demo": "no_prime",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -70,12 +75,22 @@ def infer_condition_label(run_dir_name: str) -> str:
 
 def summarize_run(run_dir: Path, condition_label: str, rng: np.random.Generator) -> List[Dict[str, object]]:
     item_scores = pd.read_csv(run_dir / "item_scores.csv")
-    summary = pd.read_csv(run_dir / "summary.csv")
+    item_scores = item_scores.copy()
+    item_scores["prime_condition"] = item_scores["prime_condition"].replace(LEGACY_PRIME_MAP)
+    item_scores = (
+        item_scores.groupby(["item_index", "prime_condition"], as_index=False)
+        .agg(
+            passive_choice_indicator=("passive_choice_indicator", "mean"),
+            passive_minus_active_logprob=("passive_minus_active_logprob", "mean"),
+        )
+    )
 
-    passive_by_condition = {
-        row["prime_condition"]: float(row["passive_choice_rate"])
-        for row in summary.to_dict(orient="records")
-    }
+    passive_by_condition = (
+        item_scores.groupby("prime_condition", as_index=False)
+        .agg(passive_choice_rate=("passive_choice_indicator", "mean"))
+        .set_index("prime_condition")["passive_choice_rate"]
+        .to_dict()
+    )
     active_by_condition = {
         key: 1.0 - value
         for key, value in passive_by_condition.items()
@@ -94,9 +109,6 @@ def summarize_run(run_dir: Path, condition_label: str, rng: np.random.Generator)
 
     available_conditions = set(pivot_choice.columns.tolist())
     baselines = [name for name in BASELINE_ORDER if name in available_conditions]
-    if not baselines and "no_prime" in available_conditions:
-        baselines = ["no_prime"]
-
     rows: List[Dict[str, object]] = []
     for baseline in baselines:
         if "active" not in available_conditions or "passive" not in available_conditions:

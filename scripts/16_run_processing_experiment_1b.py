@@ -12,7 +12,7 @@ CORE_COUNTERBALANCED = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_c
 CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED = (
     REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
 )
-JABBERWOCKY = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
+JABBERWOCKY_2080 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2080.csv"
 
 
 def parse_args() -> argparse.Namespace:
@@ -31,8 +31,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prime-conditions",
         nargs="+",
-        default=["active", "passive", "no_prime_eos", "no_prime_empty", "filler"],
-        help="Subset of active passive no_prime_eos no_prime_empty filler.",
+        default=["active", "passive", "no_prime", "filler"],
+        help="Subset of active passive no_prime filler.",
     )
     parser.add_argument(
         "--which",
@@ -86,7 +86,8 @@ def condition_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str,
         {
             "name": "jabberwocky_primes_jabberwocky_targets",
             "input_csv": JABBERWOCKY,
-            "prime_csv": JABBERWOCKY,
+            "input_csv": JABBERWOCKY_2080,
+            "prime_csv": JABBERWOCKY_2080,
             "output_dir": output_root / "processing_1b_jabberwocky_jabberwocky",
             "condition_label": "processing_1b_jabberwocky_jabberwocky",
             "which_key": "jabberwocky",

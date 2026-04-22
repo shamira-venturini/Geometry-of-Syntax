@@ -74,6 +74,17 @@ JABBERWOCKY_FILLER_SENTENCES = [
 # Backward-compatible alias used by older scripts.
 DEFAULT_FILLER_SENTENCES = CORE_FILLER_SENTENCES
 
+PRIME_CONDITION_ALIASES = {
+    "active_prime": "active",
+    "passive_prime": "passive",
+    "filler_prime": "filler",
+    "no_prime": "no_prime",
+    "no_prime_eos": "no_prime",
+    "no_prime_empty": "no_prime",
+    "no_demo": "no_prime",
+    "none": "no_prime",
+}
+
 
 @dataclass(frozen=True)
 class TargetBundle:
@@ -348,19 +359,26 @@ def build_prompt(
     return "\n".join(lines)
 
 
+def canonical_prime_condition(condition: str) -> str:
+    normalized = condition.strip().lower()
+    return PRIME_CONDITION_ALIASES.get(normalized, normalized)
+
+
 def prompt_condition_order(raw_conditions: Sequence[str]) -> List[str]:
-    allowed = {"active", "passive", "no_prime", "no_prime_eos", "no_prime_empty", "filler"}
-    alias_map = {
-        "no_prime": "no_prime_eos",
-    }
-    conditions = [condition.strip() for condition in raw_conditions if condition.strip()]
-    conditions = [alias_map.get(condition, condition) for condition in conditions]
+    allowed = {"active", "passive", "no_prime", "filler"}
+    conditions = [canonical_prime_condition(condition) for condition in raw_conditions if condition.strip()]
     invalid = sorted(set(conditions).difference(allowed))
     if invalid:
         raise ValueError(f"Unsupported prime conditions: {invalid}")
     if not conditions:
         raise ValueError("At least one prime condition is required.")
-    return conditions
+    ordered: List[str] = []
+    seen = set()
+    for condition in conditions:
+        if condition not in seen:
+            ordered.append(condition)
+            seen.add(condition)
+    return ordered
 
 
 def filler_prime_for_item(item_index: int, seed: int, filler_sentences: Sequence[str]) -> str:
@@ -379,13 +397,14 @@ def resolve_prime_sentence(
     filler_seed: int,
     filler_sentences: Sequence[str],
 ) -> Optional[str]:
-    if prime_condition == "active":
+    condition = canonical_prime_condition(prime_condition)
+    if condition == "active":
         return str(prime_row["pa"])
-    if prime_condition == "passive":
+    if condition == "passive":
         return str(prime_row["pp"])
-    if prime_condition in {"no_prime", "no_prime_eos", "no_prime_empty"}:
+    if condition == "no_prime":
         return None
-    if prime_condition == "filler":
+    if condition == "filler":
         return filler_prime_for_item(item_index=item_index, seed=filler_seed, filler_sentences=filler_sentences)
     raise ValueError(f"Unsupported prime condition: {prime_condition}")
 

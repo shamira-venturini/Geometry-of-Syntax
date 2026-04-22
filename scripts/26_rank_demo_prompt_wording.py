@@ -54,18 +54,29 @@ def main() -> None:
         columns={"t_p_two_sided": "logprob_t_p", "effect_size_dz": "logprob_effect_size_dz"}
     )
 
-    no_demo_rows = summary[summary["prime_condition"] == "no_demo"][
+    summary = summary.copy()
+    summary["prime_condition"] = summary["prime_condition"].replace(
+        {"no_demo": "no_prime", "no_prime_empty": "no_prime"}
+    )
+    no_prime_rows = (
+        summary.groupby(["prompt_template", "prime_condition"], as_index=False)
+        .agg(
+            passive_choice_rate=("passive_choice_rate", "mean"),
+            mean_passive_minus_active_logprob=("mean_passive_minus_active_logprob", "mean"),
+        )
+    )
+    no_prime_rows = no_prime_rows[no_prime_rows["prime_condition"] == "no_prime"][
         ["prompt_template", "passive_choice_rate", "mean_passive_minus_active_logprob"]
     ].rename(
         columns={
-            "passive_choice_rate": "no_demo_passive_choice_rate",
-            "mean_passive_minus_active_logprob": "no_demo_mean_logprob",
+            "passive_choice_rate": "no_prime_passive_choice_rate",
+            "mean_passive_minus_active_logprob": "no_prime_mean_logprob",
         }
     )
 
     ranking = active_passive.merge(passive_choice_stats, on="prompt_template", how="left")
     ranking = ranking.merge(logprob_stats, on="prompt_template", how="left")
-    ranking = ranking.merge(no_demo_rows, on="prompt_template", how="left")
+    ranking = ranking.merge(no_prime_rows, on="prompt_template", how="left")
     ranking = ranking.sort_values(
         ["passive_choice_rate_diff_b_minus_a", "mean_logprob_diff_b_minus_a"],
         ascending=[False, False],

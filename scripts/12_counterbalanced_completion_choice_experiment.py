@@ -68,8 +68,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prime-conditions",
         nargs="+",
-        default=["active", "passive", "no_prime_eos", "filler"],
-        help="Subset of active passive no_prime_eos no_prime_empty filler.",
+        default=["active", "passive", "no_prime", "filler"],
+        help="Subset of active passive no_prime filler.",
     )
     parser.add_argument(
         "--filler-domain",

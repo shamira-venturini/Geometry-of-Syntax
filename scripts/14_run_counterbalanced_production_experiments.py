@@ -11,7 +11,7 @@ COUNTERBALANCED_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_c
 COUNTERBALANCED_CORE_LEXICALLY_CONTROLLED = (
     REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
 )
-JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
+JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2080.csv"
 COMPLETION_SCRIPT = REPO_ROOT / "scripts" / "12_counterbalanced_completion_choice_experiment.py"
 GENERATION_SCRIPT = REPO_ROOT / "scripts" / "13_counterbalanced_generation_experiment.py"
 
@@ -37,8 +37,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prime-conditions",
         nargs="+",
-        default=["active", "passive", "no_prime_eos", "filler"],
-        help="Subset of active passive no_prime_eos no_prime_empty filler.",
+        default=["active", "passive", "no_prime", "filler"],
+        help="Subset of active passive no_prime filler.",
     )
     parser.add_argument(
         "--role-order",

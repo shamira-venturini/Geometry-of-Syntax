@@ -11,7 +11,7 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parents[1]
 COMPLETION_SCRIPT = REPO_ROOT / "scripts" / "12_counterbalanced_completion_choice_experiment.py"
 CORE_CSV = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
-JABBERWOCKY_CSV = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
+JABBERWOCKY_CSV_2080 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2080.csv"
 DEFAULT_OUTPUT_ROOT = REPO_ROOT / "behavioral_results" / "experiment-2" / "prompt_ablation"
 
 PROMPT_CONFIGS: List[Dict[str, str]] = [
@@ -72,7 +72,7 @@ def prime_configs(which: str) -> List[Dict[str, object]]:
         {
             "name": "jabberwocky_primes",
             "input_csv": CORE_CSV,
-            "prime_csv": JABBERWOCKY_CSV,
+            "prime_csv": JABBERWOCKY_CSV_2080,
             "filler_domain": "jabberwocky",
             "which_key": "jabberwocky",
         },
@@ -133,7 +133,7 @@ def main() -> None:
                 "--prime-conditions",
                 "active",
                 "passive",
-                "no_prime_eos",
+                "no_prime",
                 "filler",
             ]
             if args.device:
@@ -160,7 +160,7 @@ def main() -> None:
         active_rate = float(summary.loc[summary["prime_condition"] == "active", "passive_choice_rate"].iloc[0])
         passive_rate = float(summary.loc[summary["prime_condition"] == "passive", "passive_choice_rate"].iloc[0])
         filler_rate = float(summary.loc[summary["prime_condition"] == "filler", "passive_choice_rate"].iloc[0])
-        no_prime_rate = float(summary.loc[summary["prime_condition"] == "no_prime_eos", "passive_choice_rate"].iloc[0])
+        no_prime_rate = float(summary.loc[summary["prime_condition"] == "no_prime", "passive_choice_rate"].iloc[0])
 
         active_vs_passive = stats[
             (stats["metric"] == "passive_choice_delta")
@@ -186,7 +186,7 @@ def main() -> None:
                 "passive_choice_active": active_rate,
                 "passive_choice_passive": passive_rate,
                 "passive_choice_filler": filler_rate,
-                "passive_choice_no_prime_eos": no_prime_rate,
+                "passive_choice_no_prime": no_prime_rate,
                 "prime_contrast": float(active_vs_passive["mean_diff_b_minus_a"]),
                 "prime_contrast_p": float(active_vs_passive["t_p_two_sided"]),
                 "active_priming_vs_filler": float(active_vs_filler["mean_diff_b_minus_a"]),

@@ -101,6 +101,19 @@ def load_exp1a(summary_path: Path, paired_path: Path) -> Tuple[pd.DataFrame, pd.
     return summary, paired
 
 
+def normalize_prime_labels(frame: pd.DataFrame) -> pd.DataFrame:
+    normalized = frame.copy()
+    alias_map = {
+        "no_prime_eos": "no_prime",
+        "no_prime_empty": "no_prime",
+        "no_demo": "no_prime",
+    }
+    for column in ["prime_condition", "condition_a", "condition_b", "baseline"]:
+        if column in normalized.columns:
+            normalized[column] = normalized[column].replace(alias_map)
+    return normalized
+
+
 def load_exp1b(exp1b_root: Path) -> Dict[str, Dict[str, pd.DataFrame]]:
     mapping = {
         "Core-Core": exp1b_root / "processing_1b_core_core",
@@ -109,9 +122,9 @@ def load_exp1b(exp1b_root: Path) -> Dict[str, Dict[str, pd.DataFrame]]:
     result: Dict[str, Dict[str, pd.DataFrame]] = {}
     for label, folder in mapping.items():
         result[label] = {
-            "summary": pd.read_csv(folder / "summary.csv"),
-            "stats": pd.read_csv(folder / "stats.csv"),
-            "items": pd.read_csv(folder / "item_scores.csv"),
+            "summary": normalize_prime_labels(pd.read_csv(folder / "summary.csv")),
+            "stats": normalize_prime_labels(pd.read_csv(folder / "stats.csv")),
+            "items": normalize_prime_labels(pd.read_csv(folder / "item_scores.csv")),
         }
     return result
 
@@ -260,10 +273,10 @@ def make_fig2_exp1a_forest(summary: pd.DataFrame, paired: pd.DataFrame, output_b
 
 
 def make_fig3_exp1b_profiles(exp1b: Dict[str, Dict[str, pd.DataFrame]], output_base: Path, dpi: int) -> None:
-    preferred_order = ["active", "passive", "no_prime_eos", "no_prime_empty", "filler", "no_prime"]
+    preferred_order = ["active", "passive", "no_prime", "filler"]
     present_conditions = set()
     for cond_data in exp1b.values():
-        present_conditions.update(cond_data["summary"]["prime_condition"].tolist())
+        present_conditions.update(cond_data["summary"]["prime_condition"].astype(str).tolist())
     prime_order = [p for p in preferred_order if p in present_conditions]
     x = np.arange(len(prime_order))
 
@@ -272,7 +285,16 @@ def make_fig3_exp1b_profiles(exp1b: Dict[str, Dict[str, pd.DataFrame]], output_b
     colors = {"Core-Core": "#2E86DE", "Jabberwocky-Jabberwocky": "#E67E22"}
 
     for r, condition in enumerate(condition_order):
-        summary = exp1b[condition]["summary"]
+        summary = (
+            exp1b[condition]["summary"]
+            .groupby("prime_condition", as_index=False)
+            .agg(
+                n_items=("n_items", "mean"),
+                passive_choice_rate=("passive_choice_rate", "mean"),
+                mean_passive_minus_active_logprob=("mean_passive_minus_active_logprob", "mean"),
+                sd_passive_minus_active_logprob=("sd_passive_minus_active_logprob", "mean"),
+            )
+        )
         row_data = {row["prime_condition"]: row for _, row in summary.iterrows()}
 
         passive_rates = []
@@ -335,7 +357,7 @@ def make_fig4_baseline_decomposition(
 
     # Left: active/passive priming relative to baseline
     left = axes[0]
-    baseline_order = ["no_prime_eos", "no_prime_empty", "filler", "no_prime"]
+    baseline_order = ["no_prime", "filler"]
     plot_rows: List[Tuple[str, str]] = []
     for cond in ("Core-Core", "Jabberwocky-Jabberwocky"):
         available = decomposition[decomposition["condition"] == cond]["baseline"].unique().tolist()
@@ -412,7 +434,7 @@ def write_figure_notes(output_dir: Path) -> None:
         "- 1b choice-rate CIs are normal-approximation proportion CIs.",
         "- 1b logprob CIs are normal-approximation CIs from summary SD and N.",
         "- 1b decomposition CIs are taken from `stats.csv` and sign-adjusted for passive-priming framing.",
-        "- If both `no_prime_eos` and `no_prime_empty` are present, both appear in decomposition panels.",
+        "- `no_prime_empty`, `no_demo`, and `no_prime_eos` are normalized to `no_prime`.",
     ]
     (output_dir / "figure_notes.md").write_text("\n".join(lines))
 

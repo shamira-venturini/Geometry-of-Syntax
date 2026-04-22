@@ -35,10 +35,18 @@ OVERRIDE_COLUMNS = [
     "generation_class_strict",
     "generation_class_lax",
 ]
-PROMPT_ORDER = ["prompt_active", "prompt_filler", "prompt_no_demo", "prompt_passive"]
+PROMPT_ORDER = ["prompt_active", "prompt_filler", "prompt_no_prime", "prompt_passive"]
 PROMPT_ORDER_MAP = {name: index for index, name in enumerate(PROMPT_ORDER)}
-PRIME_ORDER = ["active", "filler", "no_demo", "passive"]
+PROMPT_ALIAS_MAP = {
+    "prompt_no_demo": "prompt_no_prime",
+}
+PRIME_ORDER = ["active", "filler", "no_prime", "passive"]
 PRIME_ORDER_MAP = {name: index for index, name in enumerate(PRIME_ORDER)}
+PRIME_ALIAS_MAP = {
+    "no_demo": "no_prime",
+    "no_prime_empty": "no_prime",
+    "no_prime_eos": "no_prime",
+}
 
 
 def parse_args() -> argparse.Namespace:
@@ -134,9 +142,15 @@ def require_columns(frame: pd.DataFrame, required: Iterable[str], path: Path) ->
 def overlay_manual_review(items_path: Path, review_path: Path) -> pd.DataFrame:
     frame = pd.read_csv(items_path)
     require_columns(frame=frame, required=MERGE_KEYS + OVERRIDE_COLUMNS, path=items_path)
+    frame = frame.copy()
+    frame["prompt_column"] = frame["prompt_column"].replace(PROMPT_ALIAS_MAP)
+    frame["prime_condition"] = frame["prime_condition"].replace(PRIME_ALIAS_MAP)
 
     review = pd.read_csv(review_path)
     require_columns(frame=review, required=MERGE_KEYS + OVERRIDE_COLUMNS, path=review_path)
+    review = review.copy()
+    review["prompt_column"] = review["prompt_column"].replace(PROMPT_ALIAS_MAP)
+    review["prime_condition"] = review["prime_condition"].replace(PRIME_ALIAS_MAP)
 
     duplicated = review.duplicated(subset=MERGE_KEYS, keep=False)
     if duplicated.any():

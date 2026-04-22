@@ -56,7 +56,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prime-conditions",
         nargs="+",
-        default=["active", "passive", "no_demo", "filler"],
+        default=["active", "passive", "no_prime", "filler"],
     )
     parser.add_argument(
         "--filler-domain",

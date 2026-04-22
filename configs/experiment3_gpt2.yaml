@@ -1,0 +1,47 @@
+experiment:
+  dataset_mode: corpora
+  seed: 13
+  output_dir: behavioral_results/experiment-3/gpt2_run
+  run_experiment_3_production: true
+  run_experiment_3_comprehension: true
+  force_bos: false
+  append_eos_to_candidate: false
+  no_prime_mode: empty
+  no_prime_overrides: {}
+  bootstrap_resamples: 2000
+  bootstrap_ci: 95.0
+  create_plots: true
+  question_template: "Who was the agent?"
+  prime_conditions:
+    - active
+    - passive
+    - filler
+    - no_prime
+  max_items_per_corpus: 2080
+  filler_mode: pool
+  filler_seed: 13
+  filler_offset: 137
+  corpora:
+    - name: lexically_controlled
+      path: corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv
+      lexicality_condition: real
+    - name: lexical_overlap
+      path: corpora/transitive/CORE_transitive_constrained_counterbalanced.csv
+      lexicality_condition: real
+    - name: jabberwocky
+      path: corpora/transitive/jabberwocky_transitive_bpe_filtered_2080.csv
+      lexicality_condition: nonce
+
+prompting:
+  additional_question_templates: []
+
+models:
+  - name: gpt2-large
+    model_condition: gpt2_large_plain
+    device: cuda
+    torch_dtype: float16
+    batch_size: 4
+    max_length: 1024
+    local_files_only: false
+    use_chat_template: false
+    prompt_style: plain
