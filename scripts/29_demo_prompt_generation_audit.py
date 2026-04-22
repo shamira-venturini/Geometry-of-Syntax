@@ -17,7 +17,7 @@ from production_priming_common import (
 
 
 DEFAULT_PROMPT_CSV = (
-    REPO_ROOT / "corpora" / "transitive" / "experiment_2c_core_demo_prompts_lexically_controlled.csv"
+    REPO_ROOT / "corpora" / "transitive" / "experiment_2_core_demo_prompts_lexically_controlled.csv"
 )
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "_smoke_demo_prompt_generation_audit"
 PROMPT_COLUMN_TO_CONDITION = {
@@ -30,7 +30,7 @@ PROMPT_COLUMN_TO_CONDITION = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Generate full-sentence continuations from Experiment 2c prompt CSVs."
+        description="Generate full-sentence continuations from Experiment 2 prompt CSVs."
     )
     parser.add_argument("--model-name", default="gpt2-large")
     parser.add_argument("--prompt-csv", type=Path, default=DEFAULT_PROMPT_CSV)
@@ -152,6 +152,9 @@ def quality_summary(frame: pd.DataFrame) -> pd.DataFrame:
     annotated["is_passive_like"] = annotated["generation_class"].str.startswith("passive")
     annotated["is_exact"] = annotated["generation_class"].isin(["active_exact", "passive_exact"])
     annotated["is_prefix"] = annotated["generation_class"].isin(["active_prefix", "passive_prefix"])
+    annotated["is_structural"] = annotated["generation_class"].isin(
+        ["active_structural", "passive_structural"]
+    )
     annotated["is_congruent"] = (
         ((annotated["prime_condition"] == "active") & annotated["is_active_like"])
         | ((annotated["prime_condition"] == "passive") & annotated["is_passive_like"])
@@ -164,6 +167,7 @@ def quality_summary(frame: pd.DataFrame) -> pd.DataFrame:
             passive_like_rate=("is_passive_like", "mean"),
             exact_rate=("is_exact", "mean"),
             prefix_rate=("is_prefix", "mean"),
+            structural_rate=("is_structural", "mean"),
             congruent_rate=("is_congruent", "mean"),
         )
         .sort_values(["prompt_column", "prime_condition"])
