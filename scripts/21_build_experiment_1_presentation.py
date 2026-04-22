@@ -321,10 +321,26 @@ def exp1b_overall_results() -> List[List[str]]:
 
 def exp1b_baseline_rows() -> List[List[str]]:
     priming = pd.read_csv(EXP1B_PRIMING)
+    priming = priming.copy()
+    priming["baseline"] = priming["baseline"].replace(
+        {"no_prime_eos": "no_prime", "no_prime_empty": "no_prime", "no_demo": "no_prime"}
+    )
+    priming = (
+        priming.groupby(["condition", "baseline"], as_index=False)
+        .agg(
+            baseline_passive_choice_rate=("baseline_passive_choice_rate", "mean"),
+            active_choice_priming=("active_choice_priming", "mean"),
+            passive_choice_priming=("passive_choice_priming", "mean"),
+            imbalance_choice_passive_minus_active=("imbalance_choice_passive_minus_active", "mean"),
+        )
+    )
     ordered = []
     for condition in ["core_core", "jabberwocky_jabberwocky"]:
-        for baseline in ["no_prime_eos", "no_prime_empty", "filler"]:
-            row = priming[(priming["condition"] == condition) & (priming["baseline"] == baseline)].iloc[0]
+        for baseline in ["no_prime", "filler"]:
+            subset = priming[(priming["condition"] == condition) & (priming["baseline"] == baseline)]
+            if subset.empty:
+                continue
+            row = subset.iloc[0]
             ordered.append(
                 [
                     "Core" if condition == "core_core" else "Jabberwocky",
@@ -553,7 +569,7 @@ def build_presentation() -> Presentation:
         "Design",
         [
             "Teacher-forced active/passive target competition for the same event, scored under multiple prime conditions.",
-            "Prime conditions: active, passive, no_prime_eos, no_prime_empty, and filler.",
+            "Prime conditions: active, passive, no_prime, and filler.",
             "For each item, both the full active and full passive target sentences are scored.",
             "Primary outputs: passive-choice rate and passive-minus-active mean target log probability.",
             "The analysis emphasizes baseline decomposition, not only the active-vs-passive prime contrast.",
@@ -725,7 +741,7 @@ def build_presentation() -> Presentation:
         "Interpretation",
         [
             "Baseline passive-choice rates are very high in both conditions, so overall prime contrasts need baseline context.",
-            "Core strict-control is small and baseline-sensitive: filler and no_prime_empty favor larger active than passive priming, but no_prime_eos slightly favors passive priming.",
+            "Core strict-control is small and baseline-sensitive: filler and no_prime can differ in active-vs-passive priming strength.",
             "Jabberwocky strict-control remains more consistently passive-skewed, especially against the no-prime baselines.",
         ],
         ORANGE,

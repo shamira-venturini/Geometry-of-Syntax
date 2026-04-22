@@ -5,3 +5,5 @@ statsmodels
 torch
 transformers
 tqdm
+matplotlib
+PyYAML

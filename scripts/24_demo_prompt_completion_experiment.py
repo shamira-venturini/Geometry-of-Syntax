@@ -86,8 +86,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prime-conditions",
         nargs="+",
-        default=["active", "passive", "no_demo", "filler"],
-        help="Subset of active passive no_demo filler.",
+        default=["active", "passive", "no_prime", "filler"],
+        help="Subset of active passive no_prime filler.",
     )
     parser.add_argument(
         "--filler-domain",
@@ -247,17 +247,25 @@ def target_block(bundle: TargetBundle, event_style: str, role_style: str, quote_
 
 def demo_prime_condition_order(raw_conditions: List[str]) -> List[str]:
     alias_map = {
-        "no_prime": "no_demo",
-        "none": "no_demo",
+        "no_prime": "no_prime",
+        "no_prime_empty": "no_prime",
+        "no_demo": "no_prime",
+        "none": "no_prime",
     }
     conditions = [alias_map.get(condition.strip(), condition.strip()) for condition in raw_conditions if condition.strip()]
-    allowed = {"active", "passive", "no_demo", "filler"}
+    allowed = {"active", "passive", "no_prime", "filler"}
     invalid = sorted(set(conditions).difference(allowed))
     if invalid:
         raise ValueError(f"Unsupported prime conditions: {invalid}")
     if not conditions:
         raise ValueError("At least one prime condition is required.")
-    return conditions
+    ordered: List[str] = []
+    seen = set()
+    for condition in conditions:
+        if condition not in seen:
+            ordered.append(condition)
+            seen.add(condition)
+    return ordered
 
 
 def infer_filler_domain(input_csv: Path, prime_csv: Path, requested: str) -> str:
@@ -309,7 +317,7 @@ def build_prompt(
             raise ValueError("Filler demo requested without filler sentence.")
         lines.extend(filler_demo_lines(filler_sentence=filler_sentence, quote_style=quote_style))
         lines.append("")
-    elif prime_condition == "no_demo":
+    elif prime_condition == "no_prime":
         pass
     else:
         raise ValueError(f"Unsupported prime condition: {prime_condition}")

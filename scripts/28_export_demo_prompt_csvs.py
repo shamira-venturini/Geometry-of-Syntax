@@ -87,7 +87,7 @@ def build_prompt_export_frame(
         filler_sentence = filler_sentences[item_index % len(filler_sentences)]
 
         prompts = {}
-        for prime_condition in ["active", "passive", "no_demo", "filler"]:
+        for prime_condition in ["active", "passive", "no_prime", "filler"]:
             if prime_condition == "active":
                 prime_sentence = str(prime_row["pa"])
             elif prime_condition == "passive":
@@ -119,7 +119,7 @@ def build_prompt_export_frame(
                 "quote_style": quote_style,
                 "prompt_active": prompts["active"],
                 "prompt_passive": prompts["passive"],
-                "prompt_no_demo": prompts["no_demo"],
+                "prompt_no_prime": prompts["no_prime"],
                 "prompt_filler": prompts["filler"],
             }
         )

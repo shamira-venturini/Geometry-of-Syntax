@@ -56,8 +56,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--prime-conditions",
         nargs="+",
-        default=["active", "passive", "no_prime_eos", "no_prime_empty", "filler"],
-        help="Subset of active passive no_prime_eos no_prime_empty filler (no_prime aliases to no_prime_eos).",
+        default=["active", "passive", "no_prime", "filler"],
+        help="Subset of active passive no_prime filler.",
     )
     parser.add_argument(
         "--filler-domain",
@@ -105,12 +105,9 @@ def build_prompt_groups(
             )
             if prime_sentence:
                 prompt = prime_sentence.strip() + " "
-            elif prime_condition == "no_prime_empty":
-                # True empty-context baseline; batched scorer handles prompt_len=0 safely.
-                prompt = ""
             else:
-                # Boundary-cued baseline.
-                prompt = f"{tokenizer.eos_token} "
+                # Empty-context no-prime baseline; scorer handles prompt_len=0 safely.
+                prompt = ""
 
             prompt_groups.append(
                 (
