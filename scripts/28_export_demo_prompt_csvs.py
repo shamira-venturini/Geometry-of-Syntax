@@ -2,8 +2,7 @@ import argparse
 import importlib.util
 import json
 from pathlib import Path
-from typing import Dict, List
-
+from typing import Dict, List, Tuple
 import pandas as pd
 
 from production_priming_common import (
@@ -18,8 +17,10 @@ from production_priming_common import (
 
 
 STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
-LEXICAL_OVERLAP_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
-JABBERWOCKY_2080 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2080.csv"
+JABBERWOCKY_PRIME_POOL = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
+MIXED_CORE_TARGETS_JABBER_PRIMES = (
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
+)
 DEMO_MODULE_PATH = REPO_ROOT / "scripts" / "24_demo_prompt_completion_experiment.py"
 
 
@@ -38,11 +39,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--core-prime-mode",
-        choices=("lexically_controlled", "lexical_overlap"),
+        choices=("lexically_controlled",),
         default="lexically_controlled",
-        help="Use the repaired core corpus or the older lexical-overlap version.",
+        help="Strict Sinclair-controlled core mode.",
     )
-    parser.add_argument("--max-items", type=int, default=2080)
+    parser.add_argument("--max-items", type=int, default=2048)
     parser.add_argument("--seed", type=int, default=13)
     parser.add_argument(
         "--event-style",
@@ -127,16 +128,95 @@ def build_prompt_export_frame(
     return pd.DataFrame(rows)
 
 
+def _passive_aux(sentence: str) -> str:
+    tokens = str(sentence).strip().split()
+    if len(tokens) != 8:
+        raise ValueError(f"Unexpected passive sentence format: {sentence}")
+    return tokens[2].lower()
+
+
+def _det_family(sentence: str) -> str:
+    tokens = str(sentence).strip().split()
+    if len(tokens) != 6:
+        raise ValueError(f"Unexpected active sentence format for determiner audit: {sentence}")
+    det = tokens[0].lower()
+    if det == "the":
+        return "def"
+    if det in {"a", "an"}:
+        return "indef"
+    raise ValueError(f"Unexpected determiner in active sentence: {sentence}")
+
+
+def assert_auxiliary_mismatch(
+    *,
+    target_frame: pd.DataFrame,
+    prime_frame: pd.DataFrame,
+    label: str,
+) -> None:
+    same_aux_rows = 0
+    same_det_family_rows = 0
+    preview: List[Dict[str, object]] = []
+    for item_index, target_row in target_frame.iterrows():
+        prime_row = prime_frame.loc[item_index]
+        prime_aux = _passive_aux(str(prime_row["pp"]))
+        target_aux = _passive_aux(str(target_row["tp"]))
+        prime_det_family = _det_family(str(prime_row["pa"]))
+        target_det_family = _det_family(str(target_row["ta"]))
+        if prime_aux == target_aux:
+            same_aux_rows += 1
+            if len(preview) < 5:
+                preview.append(
+                    {
+                        "item_index": int(item_index),
+                        "prime_aux": prime_aux,
+                        "target_aux": target_aux,
+                        "prime_pp": str(prime_row["pp"]),
+                        "target_tp": str(target_row["tp"]),
+                    }
+                )
+        if prime_det_family == target_det_family:
+            same_det_family_rows += 1
+            if len(preview) < 5:
+                preview.append(
+                    {
+                        "item_index": int(item_index),
+                        "prime_det_family": prime_det_family,
+                        "target_det_family": target_det_family,
+                        "prime_pa": str(prime_row["pa"]),
+                        "target_ta": str(target_row["ta"]),
+                    }
+                )
+    if same_aux_rows:
+        raise ValueError(
+            f"{label}: found {same_aux_rows}/{len(target_frame)} rows where prime/target passive auxiliaries overlap. "
+            f"Preview: {preview}"
+        )
+    if same_det_family_rows:
+        raise ValueError(
+            f"{label}: found {same_det_family_rows}/{len(target_frame)} rows where prime/target determiner families overlap. "
+            f"Preview: {preview}"
+        )
+
+
 def main() -> None:
     args = parse_args()
     demo_module = load_demo_module()
     output_dir = args.output_dir.resolve()
     output_dir.mkdir(parents=True, exist_ok=True)
 
-    core_csv = STRICT_CORE if args.core_prime_mode == "lexically_controlled" else LEXICAL_OVERLAP_CORE
+    if args.core_prime_mode != "lexically_controlled":
+        raise ValueError(
+            f"Unsupported core-prime-mode '{args.core_prime_mode}'. Only 'lexically_controlled' is allowed."
+        )
+    core_csv = STRICT_CORE
     target_frame = normalize_transitive_frame(pd.read_csv(core_csv))
     core_prime_frame = normalize_transitive_frame(pd.read_csv(core_csv))
-    jabber_prime_frame = normalize_transitive_frame(pd.read_csv(JABBERWOCKY_2080))
+    if not MIXED_CORE_TARGETS_JABBER_PRIMES.exists():
+        raise FileNotFoundError(
+            f"Missing mixed corpus: {MIXED_CORE_TARGETS_JABBER_PRIMES}. "
+            "Run scripts/34_build_mixed_core_targets_jabberwocky_primes.py first."
+        )
+    mixed_frame = normalize_transitive_frame(pd.read_csv(MIXED_CORE_TARGETS_JABBER_PRIMES))
 
     target_core_sample, core_prime_sample, core_alignment_mode = sample_condition_frames(
         target_frame=target_frame,
@@ -144,11 +224,38 @@ def main() -> None:
         max_items=args.max_items,
         seed=args.seed,
     )
-    target_jabber_sample, jabber_prime_sample, jabber_alignment_mode = sample_condition_frames(
-        target_frame=target_frame,
-        prime_frame=jabber_prime_frame,
-        max_items=args.max_items,
-        seed=args.seed,
+
+    mixed_lookup: Dict[Tuple[str, str], Tuple[str, str]] = {}
+    for row in mixed_frame.itertuples(index=False):
+        key = (str(row.ta), str(row.tp))
+        value = (str(row.pa), str(row.pp))
+        if key in mixed_lookup:
+            raise ValueError(f"Duplicate target key in mixed corpus for ta/tp: {key}")
+        mixed_lookup[key] = value
+
+    target_jabber_sample = target_core_sample.copy().reset_index(drop=True)
+    jabber_prime_rows: List[Dict[str, str]] = []
+    for _, target_row in target_jabber_sample.iterrows():
+        key = (str(target_row["ta"]), str(target_row["tp"]))
+        if key not in mixed_lookup:
+            raise ValueError(
+                "Mixed corpus is missing a target row from sampled strict CORE set. "
+                f"Missing key: {key}"
+            )
+        pa, pp = mixed_lookup[key]
+        jabber_prime_rows.append({"pa": pa, "pp": pp, "ta": key[0], "tp": key[1]})
+    jabber_prime_sample = pd.DataFrame(jabber_prime_rows, columns=["pa", "pp", "ta", "tp"])
+    jabber_alignment_mode = "prebuilt_mixed_lookup"
+
+    assert_auxiliary_mismatch(
+        target_frame=target_core_sample,
+        prime_frame=core_prime_sample,
+        label=f"core/{args.core_prime_mode}",
+    )
+    assert_auxiliary_mismatch(
+        target_frame=target_jabber_sample,
+        prime_frame=jabber_prime_sample,
+        label=f"jabberwocky/{args.core_prime_mode}",
     )
 
     core_export = build_prompt_export_frame(
@@ -188,6 +295,8 @@ def main() -> None:
         "seed": int(args.seed),
         "core_prompt_csv": str(core_path),
         "jabberwocky_prompt_csv": str(jabber_path),
+        "mixed_core_targets_jabberwocky_primes_csv": str(MIXED_CORE_TARGETS_JABBER_PRIMES),
+        "jabberwocky_prime_pool_csv": str(JABBERWOCKY_PRIME_POOL),
         "core_alignment_mode": core_alignment_mode,
         "jabberwocky_alignment_mode": jabber_alignment_mode,
         "core_lexical_overlap_audit": lexical_overlap_audit(target_frame=target_core_sample, prime_frame=core_prime_sample),

@@ -4,9 +4,15 @@ import json
 import random
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 
 import pandas as pd
+
+REPO_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_VERB_LIST_PATH = REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
+DEFAULT_ASSOCIATION_CSV_PATH = (
+    REPO_ROOT / "corpora" / "transitive" / "usf_association_edges_core_vocab.csv"
+)
 
 
 REQUIRED_COLUMNS: Sequence[str] = (
@@ -367,6 +373,234 @@ def _load_corpus(path: Path, max_items: Optional[int]) -> pd.DataFrame:
     return frame.reset_index(drop=True)
 
 
+def _passive_aux(sentence: str) -> str:
+    tokens = str(sentence).strip().split()
+    if len(tokens) != 8:
+        raise DatasetValidationError(
+            f"Could not parse passive sentence for auxiliary audit: '{sentence}'"
+        )
+    return tokens[2].lower()
+
+
+def _parse_active_sentence(sentence: str) -> Tuple[str, str, str, str, str]:
+    tokens = str(sentence).strip().split()
+    if len(tokens) != 6:
+        raise DatasetValidationError(
+            f"Could not parse active sentence for strict validation: '{sentence}'"
+        )
+    return tokens[0].lower(), tokens[1].lower(), tokens[2].lower(), tokens[3].lower(), tokens[4].lower()
+
+
+def _det_family(det: str) -> str:
+    token = str(det).strip().lower()
+    if token == "the":
+        return "def"
+    if token in {"a", "an"}:
+        return "indef"
+    return "unknown"
+
+
+def _load_verb_maps(path: Path) -> Tuple[Dict[str, str], Dict[str, str]]:
+    resolved = path.expanduser().resolve()
+    if not resolved.exists():
+        raise DatasetValidationError(f"Verb list for strict validation not found: {resolved}")
+
+    frame = pd.read_csv(resolved, sep=";")
+    required = {"v", "pres_3s", "past_a", "past_p"}
+    frame.columns = [str(column).strip().lower() for column in frame.columns]
+    missing = sorted(required.difference(frame.columns))
+    if missing:
+        raise DatasetValidationError(
+            f"Verb list is missing required columns for strict validation: {missing}"
+        )
+
+    form_to_lemma: Dict[str, str] = {}
+    form_to_tense: Dict[str, str] = {}
+    for row in frame.itertuples(index=False):
+        lemma = str(row.v).strip().lower()
+        pres_3s = str(row.pres_3s).strip().lower()
+        past_a = str(row.past_a).strip().lower()
+        past_p = str(row.past_p).strip().lower()
+        form_to_lemma[pres_3s] = lemma
+        form_to_lemma[past_a] = lemma
+        form_to_lemma[past_p] = lemma
+        form_to_tense[pres_3s] = "present"
+        form_to_tense[past_a] = "past"
+    return form_to_lemma, form_to_tense
+
+
+def _load_semantic_edges(path: Path) -> Dict[str, Set[str]]:
+    resolved = path.expanduser().resolve()
+    if not resolved.exists():
+        raise DatasetValidationError(
+            f"USF association CSV for strict validation not found: {resolved}. "
+            "Run scripts/33_build_usf_association_edges.py first."
+        )
+
+    frame = pd.read_csv(resolved)
+    frame.columns = [str(column).strip().lower() for column in frame.columns]
+    required = {"cue", "target"}
+    missing = sorted(required.difference(frame.columns))
+    if missing:
+        raise DatasetValidationError(
+            f"Association CSV is missing required columns: {missing}"
+        )
+
+    edges: Dict[str, Set[str]] = {}
+    for row in frame.itertuples(index=False):
+        cue = str(row.cue).strip().lower()
+        target = str(row.target).strip().lower()
+        if not cue or not target:
+            continue
+        edges.setdefault(cue, set()).add(target)
+        edges.setdefault(target, set()).add(cue)
+    return edges
+
+
+def _active_tense(verb_form: str, form_to_tense: Mapping[str, str]) -> str:
+    token = str(verb_form).strip().lower()
+    mapped = form_to_tense.get(token)
+    if mapped:
+        return mapped
+    if token.endswith("ed"):
+        return "past"
+    if token.endswith("s"):
+        return "present"
+    return "unknown"
+
+
+def _active_lemma(verb_form: str, form_to_lemma: Mapping[str, str]) -> str:
+    token = str(verb_form).strip().lower()
+    return str(form_to_lemma.get(token, token))
+
+
+def _validate_corpus_strict_controls(
+    *,
+    frame: pd.DataFrame,
+    corpus_name: str,
+    lexicality_condition: str,
+    form_to_lemma: Mapping[str, str],
+    form_to_tense: Mapping[str, str],
+    semantic_edges: Mapping[str, Set[str]],
+    enforce_semantic_nonassociation: bool,
+) -> None:
+    violations: Dict[str, int] = {
+        "shared_aux_rows": 0,
+        "shared_noun_rows": 0,
+        "shared_verb_rows": 0,
+        "same_det_family_rows": 0,
+        "det_side_mismatch_rows": 0,
+        "prime_tense_mismatch_rows": 0,
+        "target_tense_mismatch_rows": 0,
+        "semantic_association_rows": 0,
+        "unknown_tokenization_rows": 0,
+    }
+    preview: List[Dict[str, object]] = []
+
+    for item_index, row in frame.iterrows():
+        try:
+            pa_det_a, pa_agent, pa_verb, pa_det_p, pa_patient = _parse_active_sentence(str(row["pa"]))
+            ta_det_a, ta_agent, ta_verb, ta_det_p, ta_patient = _parse_active_sentence(str(row["ta"]))
+            pp_aux = _passive_aux(str(row["pp"]))
+            tp_aux = _passive_aux(str(row["tp"]))
+        except DatasetValidationError:
+            violations["unknown_tokenization_rows"] += 1
+            if len(preview) < 5:
+                preview.append(
+                    {
+                        "item_index": int(item_index),
+                        "error": "tokenization",
+                        "pa": str(row["pa"]),
+                        "pp": str(row["pp"]),
+                        "ta": str(row["ta"]),
+                        "tp": str(row["tp"]),
+                    }
+                )
+            continue
+
+        prime_det_family = _det_family(pa_det_a)
+        target_det_family = _det_family(ta_det_a)
+        if prime_det_family == "unknown" or target_det_family == "unknown":
+            violations["det_side_mismatch_rows"] += 1
+        if _det_family(pa_det_p) != prime_det_family or _det_family(ta_det_p) != target_det_family:
+            violations["det_side_mismatch_rows"] += 1
+        if prime_det_family == target_det_family:
+            violations["same_det_family_rows"] += 1
+
+        if pp_aux == tp_aux:
+            violations["shared_aux_rows"] += 1
+
+        prime_nouns = {pa_agent, pa_patient}
+        target_nouns = {ta_agent, ta_patient}
+        if prime_nouns.intersection(target_nouns):
+            violations["shared_noun_rows"] += 1
+
+        prime_lemma = _active_lemma(pa_verb, form_to_lemma)
+        target_lemma = _active_lemma(ta_verb, form_to_lemma)
+        if prime_lemma == target_lemma:
+            violations["shared_verb_rows"] += 1
+
+        prime_expected_tense = "present" if pp_aux == "is" else "past" if pp_aux == "was" else "unknown"
+        target_expected_tense = "present" if tp_aux == "is" else "past" if tp_aux == "was" else "unknown"
+        prime_actual_tense = _active_tense(pa_verb, form_to_tense)
+        target_actual_tense = _active_tense(ta_verb, form_to_tense)
+        if prime_expected_tense != prime_actual_tense:
+            violations["prime_tense_mismatch_rows"] += 1
+        if target_expected_tense != target_actual_tense:
+            violations["target_tense_mismatch_rows"] += 1
+
+        if enforce_semantic_nonassociation and lexicality_condition == "real":
+            prime_content = [pa_agent, pa_patient, prime_lemma]
+            target_content = [ta_agent, ta_patient, target_lemma]
+            associated = False
+            for target_word in target_content:
+                for prime_word in prime_content:
+                    if str(prime_word) in semantic_edges.get(str(target_word), set()):
+                        associated = True
+                        break
+                if associated:
+                    break
+            if associated:
+                violations["semantic_association_rows"] += 1
+
+        if len(preview) < 5:
+            # Keep preview only for rows with at least one strict violation.
+            if any(
+                (
+                    pp_aux == tp_aux,
+                    bool(prime_nouns.intersection(target_nouns)),
+                    prime_lemma == target_lemma,
+                    prime_det_family == target_det_family,
+                    prime_expected_tense != prime_actual_tense,
+                    target_expected_tense != target_actual_tense,
+                )
+            ):
+                preview.append(
+                    {
+                        "item_index": int(item_index),
+                        "prime_lemma": prime_lemma,
+                        "target_lemma": target_lemma,
+                        "prime_nouns": sorted(prime_nouns),
+                        "target_nouns": sorted(target_nouns),
+                        "prime_aux": pp_aux,
+                        "target_aux": tp_aux,
+                        "prime_det_family": prime_det_family,
+                        "target_det_family": target_det_family,
+                        "prime_expected_tense": prime_expected_tense,
+                        "prime_actual_tense": prime_actual_tense,
+                        "target_expected_tense": target_expected_tense,
+                        "target_actual_tense": target_actual_tense,
+                    }
+                )
+
+    violated = {name: count for name, count in violations.items() if count > 0}
+    if violated:
+        raise DatasetValidationError(
+            f"Corpus '{corpus_name}' failed strict Sinclair-style validation: {violated}. "
+            f"Preview: {preview}"
+        )
+
+
 def _build_rows_from_corpus(
     corpus_name: str,
     lexicality_condition: str,
@@ -487,6 +721,15 @@ def load_dataset_from_experiment_config(experiment_cfg: Mapping[str, object]) ->
     filler_mode = str(experiment_cfg.get("filler_mode", "pool")).strip().lower()
     filler_offset = int(experiment_cfg.get("filler_offset", 137))
     filler_seed = int(experiment_cfg.get("filler_seed", int(experiment_cfg.get("seed", 13))))
+    enforce_aux_mismatch_default = bool(experiment_cfg.get("enforce_aux_mismatch", True))
+    enforce_strict_controls_default = bool(experiment_cfg.get("enforce_strict_controls", True))
+    enforce_semantic_default = bool(experiment_cfg.get("enforce_semantic_nonassociation", True))
+    verb_list_path = Path(str(experiment_cfg.get("verb_list_path", DEFAULT_VERB_LIST_PATH)))
+    association_csv_path = Path(
+        str(experiment_cfg.get("association_csv_path", DEFAULT_ASSOCIATION_CSV_PATH))
+    )
+    form_to_lemma, form_to_tense = _load_verb_maps(verb_list_path)
+    semantic_edges: Optional[Dict[str, Set[str]]] = None
     core_filler_sentences_cfg = experiment_cfg.get("core_filler_sentences")
     nonce_filler_sentences_cfg = experiment_cfg.get("nonce_filler_sentences")
     core_filler_sentences = (
@@ -514,11 +757,43 @@ def load_dataset_from_experiment_config(experiment_cfg: Mapping[str, object]) ->
             raise DatasetValidationError(f"Corpus '{name}' is missing 'path'.")
 
         lexicality = str(entry.get("lexicality_condition", "real")).strip().lower()
+        enforce_aux_mismatch = bool(entry.get("enforce_aux_mismatch", enforce_aux_mismatch_default))
+        enforce_strict_controls = bool(entry.get("enforce_strict_controls", enforce_strict_controls_default))
+        enforce_semantic_nonassociation = bool(
+            entry.get("enforce_semantic_nonassociation", enforce_semantic_default)
+        )
         max_items_raw = entry.get("max_items", max_items_default)
         max_items = int(max_items_raw) if max_items_raw is not None else None
 
         corpus_path = Path(path_raw)
         frame = _load_corpus(path=corpus_path, max_items=max_items)
+        if enforce_strict_controls:
+            if enforce_semantic_nonassociation:
+                if semantic_edges is None:
+                    semantic_edges = _load_semantic_edges(association_csv_path)
+                semantic_edges_for_validation: Mapping[str, Set[str]] = semantic_edges
+            else:
+                semantic_edges_for_validation = {}
+            _validate_corpus_strict_controls(
+                frame=frame,
+                corpus_name=name,
+                lexicality_condition=lexicality,
+                form_to_lemma=form_to_lemma,
+                form_to_tense=form_to_tense,
+                semantic_edges=semantic_edges_for_validation,
+                enforce_semantic_nonassociation=enforce_semantic_nonassociation,
+            )
+        elif enforce_aux_mismatch:
+            # Backward-compatible minimal check for legacy configurations.
+            _validate_corpus_strict_controls(
+                frame=frame,
+                corpus_name=name,
+                lexicality_condition=lexicality,
+                form_to_lemma=form_to_lemma,
+                form_to_tense=form_to_tense,
+                semantic_edges={},
+                enforce_semantic_nonassociation=False,
+            )
         fillers_for_corpus = nonce_filler_sentences if lexicality == "nonce" else core_filler_sentences
 
         rows = _build_rows_from_corpus(
