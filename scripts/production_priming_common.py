@@ -416,18 +416,47 @@ def batched_choice_log_probs(
     prompt_groups: List[Tuple[str, int, List[str], List[int]]],
     batch_size: int,
 ) -> List[List[float]]:
-    all_scores: List[List[float]] = []
+    detailed_scores = batched_choice_detailed_scores(
+        tokenizer=tokenizer,
+        model=model,
+        device=device,
+        prompt_groups=prompt_groups,
+        batch_size=batch_size,
+    )
+    return [
+        [float(choice["total_logprob"]) for choice in group]
+        for group in detailed_scores
+    ]
+
+
+def batched_choice_detailed_scores(
+    tokenizer,
+    model,
+    device: str,
+    prompt_groups: List[Tuple[str, int, List[str], List[int]]],
+    batch_size: int,
+) -> List[List[Dict[str, object]]]:
+    """Score each continuation and return per-token diagnostics.
+
+    The scoring convention matches batched_choice_log_probs, including the
+    no-prime behavior where an empty prompt cannot score the first continuation
+    token (so token 2 onward is used).
+    """
+    all_scores: List[List[Dict[str, object]]] = []
     for batch_start in range(0, len(prompt_groups), batch_size):
         batch_groups = prompt_groups[batch_start:batch_start + batch_size]
         full_texts: List[str] = []
         prompt_lens: List[int] = []
-        continuation_lens: List[int] = []
+        continuation_texts: List[str] = []
+        continuation_ids_list: List[List[int]] = []
 
-        for prompt, prompt_len, continuations, continuation_len_group in batch_groups:
-            for continuation, continuation_len in zip(continuations, continuation_len_group):
+        for prompt, prompt_len, continuations, _ in batch_groups:
+            for continuation in continuations:
+                continuation_ids = list(tokenizer(continuation, add_special_tokens=False)["input_ids"])
                 full_texts.append(prompt + continuation)
-                prompt_lens.append(prompt_len)
-                continuation_lens.append(continuation_len)
+                prompt_lens.append(int(prompt_len))
+                continuation_texts.append(str(continuation))
+                continuation_ids_list.append(continuation_ids)
 
         inputs = tokenizer(full_texts, return_tensors="pt", padding=True, add_special_tokens=False).to(device)
         with torch.no_grad():
@@ -440,22 +469,48 @@ def batched_choice_log_probs(
 
         row_offset = 0
         for _, _, continuations, _ in batch_groups:
-            group_scores: List[float] = []
-            for continuation_index in range(len(continuations)):
+            group_scores: List[Dict[str, object]] = []
+            for _ in range(len(continuations)):
                 prompt_len = int(prompt_lens[row_offset])
-                continuation_len = int(continuation_lens[row_offset])
+                continuation_text = continuation_texts[row_offset]
+                continuation_ids = continuation_ids_list[row_offset]
 
                 # With empty prompt, GPT-style causal scoring has no previous token for
                 # the first continuation token, so we score from token 2 onward.
                 if prompt_len == 0:
                     start_idx = 0
-                    scored_len = max(0, continuation_len - 1)
+                    candidate_token_ids = continuation_ids[1:]
                 else:
                     start_idx = prompt_len - 1
-                    scored_len = continuation_len
+                    candidate_token_ids = continuation_ids
 
+                scored_len = int(len(candidate_token_ids))
                 end_idx = start_idx + scored_len
-                group_scores.append(float(observed_log_probs[row_offset, start_idx:end_idx].sum().item()))
+                token_logprobs = [
+                    float(value)
+                    for value in observed_log_probs[row_offset, start_idx:end_idx].tolist()
+                ]
+
+                if len(token_logprobs) != scored_len:
+                    raise ValueError(
+                        "Candidate token/logprob length mismatch while scoring continuations: "
+                        f"tokens={scored_len} logprobs={len(token_logprobs)}"
+                    )
+
+                total_logprob = float(sum(token_logprobs))
+                mean_logprob = float(total_logprob / max(1, scored_len))
+
+                group_scores.append(
+                    {
+                        "candidate_text": continuation_text,
+                        "total_logprob": total_logprob,
+                        "mean_logprob": mean_logprob,
+                        "token_count": scored_len,
+                        "candidate_token_ids": [int(token_id) for token_id in candidate_token_ids],
+                        "candidate_tokens": tokenizer.convert_ids_to_tokens(candidate_token_ids),
+                        "candidate_token_logprobs": token_logprobs,
+                    }
+                )
                 row_offset += 1
             all_scores.append(group_scores)
 
@@ -498,6 +553,8 @@ def pairwise_stats(
         ("passive_choice_indicator", "passive_choice_delta"),
         ("passive_minus_active_logprob", "logprob_delta"),
     ]
+    if "passive_minus_active_logprob_sum" in frame.columns:
+        metrics.append(("passive_minus_active_logprob_sum", "logprob_sum_delta"))
 
     for template_name, subset in frame.groupby("prompt_template"):
         pivot = subset.pivot(index="item_index", columns="prime_condition")
@@ -557,25 +614,30 @@ def pairwise_stats(
 
 def summarize_results(frame: pd.DataFrame) -> pd.DataFrame:
     summary_rows: List[Dict[str, object]] = []
+    include_sum_metric = "passive_minus_active_logprob_sum" in frame.columns
     for (template_name, prime_condition), subset in frame.groupby(["prompt_template", "prime_condition"]):
         n_items = len(subset)
-        n_active = int((subset["chosen_structure"] == "active").sum())
-        n_passive = int((subset["chosen_structure"] == "passive").sum())
-        summary_rows.append(
-            {
-                "prompt_template": template_name,
-                "prime_condition": prime_condition,
-                "n_items": n_items,
-                "n_active_choice": n_active,
-                "n_passive_choice": n_passive,
-                "active_choice_rate": n_active / n_items,
-                "passive_choice_rate": n_passive / n_items,
-                "mean_passive_minus_active_logprob": float(subset["passive_minus_active_logprob"].mean()),
-                "sd_passive_minus_active_logprob": float(
-                    subset["passive_minus_active_logprob"].std(ddof=1)
-                ) if n_items > 1 else 0.0,
-            }
-        )
+        n_active = int((subset["chosen_structure"] == "active").sum()) if "chosen_structure" in subset.columns else 0
+        n_passive = int((subset["chosen_structure"] == "passive").sum()) if "chosen_structure" in subset.columns else 0
+        row = {
+            "prompt_template": template_name,
+            "prime_condition": prime_condition,
+            "n_items": n_items,
+            "n_active_choice": n_active,
+            "n_passive_choice": n_passive,
+            "active_choice_rate": n_active / n_items if n_items else 0.0,
+            "passive_choice_rate": n_passive / n_items if n_items else 0.0,
+            "mean_passive_minus_active_logprob": float(subset["passive_minus_active_logprob"].mean()),
+            "sd_passive_minus_active_logprob": float(
+                subset["passive_minus_active_logprob"].std(ddof=1)
+            ) if n_items > 1 else 0.0,
+        }
+        if include_sum_metric:
+            row["mean_passive_minus_active_logprob_sum"] = float(subset["passive_minus_active_logprob_sum"].mean())
+            row["sd_passive_minus_active_logprob_sum"] = float(
+                subset["passive_minus_active_logprob_sum"].std(ddof=1)
+            ) if n_items > 1 else 0.0
+        summary_rows.append(row)
     return pd.DataFrame(summary_rows).sort_values(["prompt_template", "prime_condition"])
 
 
@@ -584,6 +646,7 @@ def build_contrast_table(
     prime_condition_ordering: Sequence[str],
 ) -> pd.DataFrame:
     rows: List[Dict[str, object]] = []
+    include_sum_metric = "mean_passive_minus_active_logprob_sum" in summary.columns
     for template_name, subset in summary.groupby("prompt_template"):
         available = {
             row["prime_condition"]: row
@@ -616,6 +679,12 @@ def build_contrast_table(
                         ),
                     }
                 )
+                if include_sum_metric:
+                    rows[-1]["mean_logprob_sum_a"] = float(row_a["mean_passive_minus_active_logprob_sum"])
+                    rows[-1]["mean_logprob_sum_b"] = float(row_b["mean_passive_minus_active_logprob_sum"])
+                    rows[-1]["mean_logprob_sum_diff_b_minus_a"] = float(
+                        row_b["mean_passive_minus_active_logprob_sum"] - row_a["mean_passive_minus_active_logprob_sum"]
+                    )
     return pd.DataFrame(rows).sort_values(["prompt_template", "condition_a", "condition_b"])
 
 
@@ -667,6 +736,14 @@ def write_common_outputs(
         "- `passive_choice_delta` tests paired shifts in passive choice rates across prime conditions.",
         "- `logprob_delta` tests paired shifts in passive-vs-active preference across prime conditions.",
     ]
+    if "mean_passive_minus_active_logprob_sum" in summary.columns:
+        report_lines.append(
+            "- `mean_passive_minus_active_logprob_sum` is the summed passive-vs-active preference score."
+        )
+    if "logprob_sum_delta" in stats_table.get("metric", pd.Series(dtype=str)).astype(str).tolist():
+        report_lines.append(
+            "- `logprob_sum_delta` tests paired shifts in summed passive-vs-active preference across prime conditions."
+        )
     (output_dir / "report.md").write_text("\n".join(report_lines))
 
     if extra_metadata is not None:

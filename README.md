@@ -1,9 +1,6 @@
-# Experiment 3 Controlled Disambiguation Pipeline
+# Experiment 3 Demo-Prompt Continuation Pipeline
 
-This repository includes **Experiment 3**, an additional (non-substitutive) experiment that runs deterministic, teacher-forced disambiguation scoring for two matched subtasks:
-
-1. **Experiment 3 production-like task** (active vs passive completion scoring)
-2. **Experiment 3 comprehension-like task** (role-commitment answer scoring)
+This repository includes **Experiment 3**, a deterministic, teacher-forced continuation-scoring pipeline that uses an Experiment 2-style demo prompt and scores **active vs passive full-sentence continuations**.
 
 The pipeline is configured to run on the **same corpora family used elsewhere in this project**, specifically:
 
@@ -16,7 +13,7 @@ No toy dataset is used.
 ## Project Structure
 
 - `src/data.py` - corpus-driven dataset construction + optional table loader
-- `src/prompts.py` - prompt rendering for both tasks
+- `src/prompts.py` - demo-prime + target continuation prompt rendering
 - `src/models.py` - model wrapper with optional chat-template mode
 - `src/scoring.py` - full-candidate batched logprob scoring
 - `src/analysis.py` - baseline/priming contrasts, bootstrap CIs, paired tests
@@ -51,10 +48,11 @@ Filler behavior:
 - `filler` uses domain-matched **intransitive filler pools** by default (`real` vs `nonce`).
 - Legacy offset fillers can still be requested with `experiment.filler_mode: offset_target`.
 
-For each corpus row (`pa`, `pp`, `ta`, `tp`):
+For each corpus row (`pa`, `pp`, `ta`, `tp`), Experiment 3 builds a demo prompt in the Experiment 2 discourse frame:
 
-- Experiment 3 production-like scores active vs passive full completions.
-- Experiment 3 comprehension-like scores correct vs incorrect role-answer candidates against active/passive target sentences.
+- prime as solved example (`active`, `passive`, `filler`, or omitted for `no_prime`)
+- target event scaffold ending at `Mary answered, "`
+- continuation candidates: active target sentence vs passive target sentence
 
 All scores are teacher-forced and deterministic.
 
@@ -69,8 +67,15 @@ For each candidate, the pipeline stores:
 
 Primary preferences:
 
-- production-like: `active_minus_passive_logprob_total` and `_mean`
-- comprehension-like: `answer_preference_logprob_total` and `_mean`
+- continuation preference: `active_minus_passive_logprob_total` and `_mean`
+- 1B-compatible deltas: `passive_minus_active_logprob_sum` and `passive_minus_active_logprob`
+
+1B-compatible item-level fields are also exported:
+
+- `active_choice_logprob`, `passive_choice_logprob`
+- `active_choice_logprob_sum`, `passive_choice_logprob_sum`
+- `active_target_token_count`, `passive_target_token_count`
+- `chosen_structure`, `passive_choice_indicator`
 
 Additional location/token-wise preference metrics are exported, including first/second/last-token, divergence-token, aligned-position means, and token-position summaries.
 
@@ -145,3 +150,20 @@ Each run writes:
 2. Instruction/chat formatting can change scores materially; compare `plain` vs `chat_template` explicitly.
 3. Legacy labels (`active_prime`, `passive_prime`, `filler_prime`, `no_prime_eos`, `no_prime_empty`, `no_demo`) are normalized to canonical labels at load/analysis time.
 4. Tokenization boundary artifacts are logged in item-level debug fields.
+
+## Experiment 4 (Additional)
+
+Experiment 4 is a Ferreira-inspired free-answer comprehension probe aligned to Experiment 1B materials.  
+Use:
+
+```bash
+python run_experiment.py --experiment exp4 --config configs/exp4.yaml
+```
+
+Toy run:
+
+```bash
+python run_experiment.py --experiment exp4 --config configs/exp4_toy.yaml
+```
+
+See [docs/experiment4.md](docs/experiment4.md) for prompt format, outputs, and diagnostics.

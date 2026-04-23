@@ -1,0 +1,30 @@
+experiment:
+  dataset_mode: corpora
+  seed: 13
+  output_dir: behavioral_results/experiment-4/toy_run
+  prime_conditions:
+    - active
+    - passive
+    - filler
+    - no_prime
+  filler_mode: pool
+  filler_seed: 13
+  question_template: "Who did the {nominalized_verb}?"
+  answer_prefix: "The"
+  max_new_tokens: 8
+  ceiling_threshold: 0.95
+  corpora:
+    - name: toy_real
+      path: data/exp4_toy_1b.csv
+      lexicality_condition: real
+
+models:
+  - name: gpt2-large
+    model_condition: gpt2_large_toy
+    device: cpu
+    torch_dtype: auto
+    batch_size: 2
+    max_length: 512
+    local_files_only: false
+    use_chat_template: false
+    prompt_style: plain

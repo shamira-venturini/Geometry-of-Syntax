@@ -1,16 +1,8 @@
 experiment:
   dataset_mode: corpora
   seed: 13
-  output_dir: behavioral_results/experiment-3/llama_plain_run
-  run_experiment_3_continuation: true
-  force_bos: false
-  append_eos_to_candidate: false
-  no_prime_mode: empty
-  no_prime_overrides: {}
-  bootstrap_resamples: 2000
-  bootstrap_ci: 95.0
-  create_plots: true
-  question_template: "Who was the agent?"
+  output_dir: behavioral_results/experiment-4/default_run
+  # Keep 1B design: same prime conditions + target materials; only DV changes.
   prime_conditions:
     - active
     - passive
@@ -20,23 +12,38 @@ experiment:
   filler_mode: pool
   filler_seed: 13
   filler_offset: 137
+  question_template: "Who did the {nominalized_verb}?"
+  answer_prefix: "The"
+  max_new_tokens: 10
+  ceiling_threshold: 0.95
+  # Optional overrides for irregular nominalizations.
+  nominalization_overrides:
+    be: being
+    do: doing
+    have: having
+    lie: lying
+    die: dying
+    tie: tying
   corpora:
     - name: lexically_controlled
       path: corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv
-      lexicality_condition: real
-    - name: lexical_overlap
-      path: corpora/transitive/CORE_transitive_constrained_counterbalanced.csv
       lexicality_condition: real
     - name: jabberwocky
       path: corpora/transitive/jabberwocky_transitive_bpe_filtered_2080.csv
       lexicality_condition: nonce
 
-prompting:
-  additional_question_templates: []
-
 models:
+  - name: gpt2-large
+    model_condition: gpt2_large
+    device: cuda
+    torch_dtype: float16
+    batch_size: 8
+    max_length: 1024
+    local_files_only: false
+    use_chat_template: false
+    prompt_style: plain
   - name: meta-llama/Llama-3.2-3B-Instruct
-    model_condition: llama32_3b_instruct_plain
+    model_condition: llama32_3b_instruct
     device: cuda
     torch_dtype: float16
     batch_size: 2

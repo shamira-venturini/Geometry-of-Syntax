@@ -8,7 +8,7 @@ import random
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, Iterable, List, Sequence
+from typing import Dict, List, Sequence
 
 import numpy as np
 import pandas as pd
@@ -20,9 +20,7 @@ from src.data import DatasetBundle, ExperimentItem, load_dataset_from_experiment
 from src.models import CausalLMWrapper, ModelConfig
 from src.plots import save_all_default_plots
 from src.prompts import (
-    question_templates_for_item,
-    render_experiment_1_prompt,
-    render_experiment_2_prompt,
+    render_experiment_2_continuation_prompt,
 )
 from src.scoring import score_candidates_batched
 
@@ -115,10 +113,29 @@ def _location_metrics(
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Run Experiment 3 controlled disambiguation with deterministic structural scoring."
+        description=(
+            "Run structural-priming experiments. "
+            "exp3 = demo-prompt continuation preference scoring; "
+            "exp4 = Ferreira-inspired free-answer comprehension probe."
+        )
+    )
+    parser.add_argument(
+        "--experiment",
+        choices=("exp3", "exp4"),
+        default="exp3",
+        help="Experiment to run. Default: exp3.",
     )
     parser.add_argument("--config", type=Path, required=True, help="Path to YAML config.")
     parser.add_argument("--output-dir", type=Path, default=None, help="Optional override for output directory.")
+    parser.add_argument(
+        "--model-filter",
+        action="append",
+        default=None,
+        help=(
+            "Optional model selector. Repeatable. Matches either config model name "
+            "(e.g., 'gpt2-large') or model_condition (e.g., 'gpt2_large_plain')."
+        ),
+    )
     return parser.parse_args()
 
 
@@ -181,39 +198,6 @@ def _software_versions() -> Dict[str, str]:
     }
 
 
-def _resolve_no_prime_text(
-    *,
-    experiment_cfg: Dict[str, object],
-    model_cfg: ModelConfig,
-    model_wrapper: CausalLMWrapper,
-) -> str:
-    mode = str(
-        experiment_cfg.get(
-            "no_prime_mode",
-            experiment_cfg.get("no_prime_eos_mode", "empty"),
-        )
-    ).strip().lower()
-    if mode == "tokenizer_eos":
-        eos_text = model_wrapper.eos_token_text or ""
-    elif mode == "empty":
-        eos_text = ""
-    elif mode == "custom_text":
-        eos_text = str(experiment_cfg.get("no_prime_text", experiment_cfg.get("no_prime_eos_text", "")))
-    else:
-        raise ValueError(
-            f"Unsupported experiment.no_prime_mode='{mode}'. "
-            "Use tokenizer_eos, empty, or custom_text."
-        )
-
-    overrides = experiment_cfg.get("no_prime_overrides", experiment_cfg.get("no_prime_eos_overrides", {}))
-    if isinstance(overrides, dict):
-        if model_cfg.model_condition in overrides:
-            eos_text = str(overrides[model_cfg.model_condition])
-        elif model_cfg.name in overrides:
-            eos_text = str(overrides[model_cfg.name])
-    return eos_text
-
-
 def _build_model_configs(config: Dict[str, object]) -> List[ModelConfig]:
     model_entries = config.get("models", [])
     if not isinstance(model_entries, list) or not model_entries:
@@ -239,6 +223,32 @@ def _build_model_configs(config: Dict[str, object]) -> List[ModelConfig]:
     return model_configs
 
 
+def _filter_model_configs(
+    model_configs: Sequence[ModelConfig],
+    model_filters: Sequence[str] | None,
+) -> List[ModelConfig]:
+    if not model_filters:
+        return list(model_configs)
+
+    requested = [token.strip() for token in model_filters if str(token).strip()]
+    if not requested:
+        return list(model_configs)
+
+    filtered = [
+        cfg
+        for cfg in model_configs
+        if cfg.name in requested or cfg.model_condition in requested
+    ]
+    if filtered:
+        return filtered
+
+    available = ", ".join(f"{cfg.name} ({cfg.model_condition})" for cfg in model_configs)
+    raise ValueError(
+        "No models matched --model-filter values "
+        f"{requested}. Available: {available}"
+    )
+
+
 def _base_metadata_for_item(item: ExperimentItem, model_cfg: ModelConfig) -> Dict[str, object]:
     return {
         "experiment_id": "experiment_3",
@@ -253,27 +263,27 @@ def _base_metadata_for_item(item: ExperimentItem, model_cfg: ModelConfig) -> Dic
     }
 
 
-def build_experiment_1_requests(
+def build_experiment_3_continuation_requests(
     items: Sequence[ExperimentItem],
     model_cfg: ModelConfig,
-    eos_token_text: str,
 ) -> List[PairwiseRequest]:
     requests: List[PairwiseRequest] = []
     for item in items:
-        prefix = render_experiment_1_prompt(item=item, eos_token_text=eos_token_text)
-        active_candidate = _safe_candidate_join(prefix, item.active_completion)
-        passive_candidate = _safe_candidate_join(prefix, item.passive_completion)
+        prefix = render_experiment_2_continuation_prompt(item=item)
+        active_candidate = _safe_candidate_join(prefix, f'{item.active_completion}"')
+        passive_candidate = _safe_candidate_join(prefix, f'{item.passive_completion}"')
 
         metadata = _base_metadata_for_item(item=item, model_cfg=model_cfg)
         metadata.update(
             {
-                "task": "experiment_3_production_disambiguation",
-                "task_short": "experiment_3_production",
-                "task_family": "production_like_disambiguation",
+                "task": "experiment_3_demo_prompt_continuation",
+                "task_short": "experiment_3_continuation",
+                "task_family": "demo_prompt_full_sentence_continuation",
                 "pairing_key": item.item_id,
                 "question_template_used": "",
-                "target_voice": "",
+                "target_voice": "active_vs_passive",
                 "target_sentence_used": "",
+                "choice_target": "full_sentence_processing",
             }
         )
         requests.append(
@@ -286,62 +296,6 @@ def build_experiment_1_requests(
                 candidate_b_label="passive_completion",
             )
         )
-    return requests
-
-
-def build_experiment_2_requests(
-    items: Sequence[ExperimentItem],
-    model_cfg: ModelConfig,
-    eos_token_text: str,
-    additional_question_templates: Iterable[str],
-) -> List[PairwiseRequest]:
-    requests: List[PairwiseRequest] = []
-    for item in items:
-        templates = question_templates_for_item(item=item, additional_templates=additional_question_templates)
-        for question_template in templates:
-            for target_voice in ("active", "passive"):
-                if target_voice == "active":
-                    target_sentence = item.target_sentence_active
-                    correct = item.correct_answer_for_active
-                    incorrect = item.incorrect_answer_for_active
-                else:
-                    target_sentence = item.target_sentence_passive
-                    correct = item.correct_answer_for_passive
-                    incorrect = item.incorrect_answer_for_passive
-
-                prefix = render_experiment_2_prompt(
-                    item=item,
-                    target_sentence=target_sentence,
-                    question_template=question_template,
-                    eos_token_text=eos_token_text,
-                )
-
-                correct_candidate = _safe_candidate_join(prefix, correct)
-                incorrect_candidate = _safe_candidate_join(prefix, incorrect)
-
-                pairing_key = f"{item.item_id}|{target_voice}|{question_template}"
-                metadata = _base_metadata_for_item(item=item, model_cfg=model_cfg)
-                metadata.update(
-                    {
-                        "task": "experiment_3_comprehension_disambiguation",
-                        "task_short": "experiment_3_comprehension",
-                        "task_family": "comprehension_role_commitment",
-                        "pairing_key": pairing_key,
-                        "question_template_used": question_template,
-                        "target_voice": target_voice,
-                        "target_sentence_used": target_sentence,
-                    }
-                )
-                requests.append(
-                    PairwiseRequest(
-                        metadata=metadata,
-                        prefix=prefix,
-                        candidate_a=correct_candidate,
-                        candidate_b=incorrect_candidate,
-                        candidate_a_label="correct_answer",
-                        candidate_b_label="incorrect_answer",
-                    )
-                )
     return requests
 
 
@@ -409,6 +363,30 @@ def score_requests(
             )
 
             if request.candidate_a_label == "active_completion" and request.candidate_b_label == "passive_completion":
+                active_sum = float(score_a.total_logprob)
+                passive_sum = float(score_b.total_logprob)
+                active_token_count = len(
+                    model_wrapper.tokenizer(request.candidate_a, add_special_tokens=False)["input_ids"]
+                )
+                passive_token_count = len(
+                    model_wrapper.tokenizer(request.candidate_b, add_special_tokens=False)["input_ids"]
+                )
+                active_mean = active_sum / float(max(1, active_token_count))
+                passive_mean = passive_sum / float(max(1, passive_token_count))
+                chosen_structure = "passive" if passive_mean > active_mean else "active"
+
+                # 1B-compatible naming for direct comparability.
+                row["active_choice_logprob"] = active_mean
+                row["passive_choice_logprob"] = passive_mean
+                row["passive_minus_active_logprob"] = passive_mean - active_mean
+                row["active_choice_logprob_sum"] = active_sum
+                row["passive_choice_logprob_sum"] = passive_sum
+                row["passive_minus_active_logprob_sum"] = passive_sum - active_sum
+                row["active_target_token_count"] = int(active_token_count)
+                row["passive_target_token_count"] = int(passive_token_count)
+                row["chosen_structure"] = chosen_structure
+                row["passive_choice_indicator"] = 1.0 if chosen_structure == "passive" else 0.0
+
                 row["active_minus_passive_logprob_total"] = row["preference_total"]
                 row["active_minus_passive_logprob_mean"] = row["preference_mean"]
             else:
@@ -424,20 +402,18 @@ def run_for_model(
     dataset: DatasetBundle,
     model_cfg: ModelConfig,
     experiment_cfg: Dict[str, object],
-    prompting_cfg: Dict[str, object],
 ) -> List[Dict[str, object]]:
     force_bos = bool(experiment_cfg.get("force_bos", False))
     append_eos_to_candidate = bool(experiment_cfg.get("append_eos_to_candidate", False))
-    run_experiment_1 = bool(
-        experiment_cfg.get(
-            "run_experiment_3_production",
-            experiment_cfg.get("run_experiment_1", True),
-        )
+    legacy_any_enabled = bool(
+        experiment_cfg.get("run_experiment_3_production", True)
+    ) or bool(
+        experiment_cfg.get("run_experiment_3_comprehension", True)
     )
-    run_experiment_2 = bool(
+    run_experiment_3_continuation = bool(
         experiment_cfg.get(
-            "run_experiment_3_comprehension",
-            experiment_cfg.get("run_experiment_2", True),
+            "run_experiment_3_continuation",
+            legacy_any_enabled,
         )
     )
 
@@ -447,57 +423,21 @@ def run_for_model(
         append_eos_to_candidate=append_eos_to_candidate,
     )
 
-    no_prime_text = _resolve_no_prime_text(
-        experiment_cfg=experiment_cfg,
-        model_cfg=model_cfg,
-        model_wrapper=wrapper,
-    )
-    LOGGER.info(
-        "Using no-prime prefix text for model=%s model_condition=%s repr=%r",
-        model_cfg.name,
-        model_cfg.model_condition,
-        no_prime_text,
-    )
     all_rows: List[Dict[str, object]] = []
 
-    if run_experiment_1:
-        requests_1 = build_experiment_1_requests(
+    if run_experiment_3_continuation:
+        requests = build_experiment_3_continuation_requests(
             items=dataset.items,
             model_cfg=model_cfg,
-            eos_token_text=no_prime_text,
         )
         LOGGER.info(
-            "Scoring Experiment 3 production-like requests for %s: %d",
+            "Scoring Experiment 3 demo-prompt continuation requests for %s: %d",
             model_cfg.name,
-            len(requests_1),
+            len(requests),
         )
         all_rows.extend(
             score_requests(
-                requests=requests_1,
-                model_wrapper=wrapper,
-                batch_size=max(1, int(model_cfg.batch_size)),
-            )
-        )
-
-    if run_experiment_2:
-        additional_templates = prompting_cfg.get("additional_question_templates", [])
-        if not isinstance(additional_templates, list):
-            raise ValueError("prompting.additional_question_templates must be a list")
-
-        requests_2 = build_experiment_2_requests(
-            items=dataset.items,
-            model_cfg=model_cfg,
-            eos_token_text=no_prime_text,
-            additional_question_templates=[str(template) for template in additional_templates],
-        )
-        LOGGER.info(
-            "Scoring Experiment 3 comprehension-like requests for %s: %d",
-            model_cfg.name,
-            len(requests_2),
-        )
-        all_rows.extend(
-            score_requests(
-                requests=requests_2,
+                requests=requests,
                 model_wrapper=wrapper,
                 batch_size=max(1, int(model_cfg.batch_size)),
             )
@@ -538,15 +478,22 @@ def write_outputs(
 def main() -> None:
     args = parse_args()
     config_path = args.config.expanduser().resolve()
+
+    if args.experiment == "exp4":
+        from src.exp4_pipeline import run_experiment_4
+
+        run_experiment_4(
+            config_path=config_path,
+            output_dir_override=args.output_dir,
+            model_filters=args.model_filter,
+        )
+        return
+
     config = _load_yaml(config_path)
 
     experiment_cfg = config.get("experiment", {})
-    prompting_cfg = config.get("prompting", {})
-
     if not isinstance(experiment_cfg, dict):
         raise ValueError("Config key 'experiment' must be a mapping.")
-    if not isinstance(prompting_cfg, dict):
-        raise ValueError("Config key 'prompting' must be a mapping.")
 
     output_dir = (
         args.output_dir.expanduser().resolve()
@@ -559,9 +506,12 @@ def main() -> None:
     set_global_seed(seed)
 
     dataset = load_dataset_from_experiment_config(experiment_cfg)
-    model_configs = _build_model_configs(config)
+    model_configs = _filter_model_configs(
+        _build_model_configs(config),
+        args.model_filter,
+    )
 
-    LOGGER.info("Starting Experiment 3 controlled disambiguation run")
+    LOGGER.info("Starting Experiment 3 demo-prompt continuation run")
     LOGGER.info("Config path: %s", config_path)
     LOGGER.info("Output dir: %s", output_dir)
     LOGGER.info("Dataset rows: %d", len(dataset.items))
@@ -574,13 +524,12 @@ def main() -> None:
             dataset=dataset,
             model_cfg=model_cfg,
             experiment_cfg=experiment_cfg,
-            prompting_cfg=prompting_cfg,
         )
         all_rows.extend(model_rows)
 
     if not all_rows:
         raise RuntimeError(
-            "No results produced. Check run_experiment_3_production/run_experiment_3_comprehension flags."
+            "No results produced. Check experiment.run_experiment_3_continuation."
         )
 
     item_level = pd.DataFrame(all_rows)
@@ -607,6 +556,7 @@ def main() -> None:
         "config_path": str(config_path),
         "dataset_path": str(dataset.path),
         "seed": seed,
+        "model_filter": list(args.model_filter or []),
         "software_versions": _software_versions(),
     }
     (output_dir / "run_metadata.json").write_text(json.dumps(metadata, indent=2) + "\n", encoding="utf-8")
