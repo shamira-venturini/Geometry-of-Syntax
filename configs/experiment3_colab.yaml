@@ -21,6 +21,8 @@ experiment:
   filler_mode: pool
   filler_seed: 13
   filler_offset: 137
+  verb_list_path: corpora/transitive/vocabulary_lists/verblist_T_usf_freq.csv
+  association_csv_path: corpora/transitive/usf_association_edges_core_vocab.csv
   corpora:
     - name: lexically_controlled
       path: corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv

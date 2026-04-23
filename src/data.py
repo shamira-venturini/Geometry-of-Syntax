@@ -9,7 +9,9 @@ from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Set, Tuple
 import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_VERB_LIST_PATH = REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
+BUNDLED_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
+LEGACY_VOCAB_DIR = REPO_ROOT / "PrimeLM" / "vocabulary_lists"
+DEFAULT_VERB_LIST_PATH = BUNDLED_VOCAB_DIR / "verblist_T_usf_freq.csv"
 DEFAULT_ASSOCIATION_CSV_PATH = (
     REPO_ROOT / "corpora" / "transitive" / "usf_association_edges_core_vocab.csv"
 )
@@ -401,9 +403,27 @@ def _det_family(det: str) -> str:
 
 
 def _load_verb_maps(path: Path) -> Tuple[Dict[str, str], Dict[str, str]]:
-    resolved = path.expanduser().resolve()
-    if not resolved.exists():
-        raise DatasetValidationError(f"Verb list for strict validation not found: {resolved}")
+    requested = path.expanduser().resolve()
+    fallback_candidates = [
+        requested,
+        (BUNDLED_VOCAB_DIR / "verblist_T_usf_freq.csv").resolve(),
+        (LEGACY_VOCAB_DIR / "verblist_T_usf_freq.csv").resolve(),
+    ]
+    seen: Set[Path] = set()
+    candidate_paths: List[Path] = []
+    for candidate in fallback_candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        candidate_paths.append(candidate)
+
+    resolved: Optional[Path] = next((candidate for candidate in candidate_paths if candidate.exists()), None)
+    if resolved is None:
+        checked = ", ".join(str(candidate) for candidate in candidate_paths)
+        raise DatasetValidationError(
+            "Verb list for strict validation not found. "
+            f"Checked: {checked}"
+        )
 
     frame = pd.read_csv(resolved, sep=";")
     required = {"v", "pres_3s", "past_a", "past_p"}
@@ -430,10 +450,25 @@ def _load_verb_maps(path: Path) -> Tuple[Dict[str, str], Dict[str, str]]:
 
 
 def _load_semantic_edges(path: Path) -> Dict[str, Set[str]]:
-    resolved = path.expanduser().resolve()
-    if not resolved.exists():
+    requested = path.expanduser().resolve()
+    fallback_candidates = [
+        requested,
+        DEFAULT_ASSOCIATION_CSV_PATH.resolve(),
+    ]
+    seen: Set[Path] = set()
+    candidate_paths: List[Path] = []
+    for candidate in fallback_candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        candidate_paths.append(candidate)
+
+    resolved: Optional[Path] = next((candidate for candidate in candidate_paths if candidate.exists()), None)
+    if resolved is None:
+        checked = ", ".join(str(candidate) for candidate in candidate_paths)
         raise DatasetValidationError(
-            f"USF association CSV for strict validation not found: {resolved}. "
+            "USF association CSV for strict validation not found. "
+            f"Checked: {checked}. "
             "Run scripts/33_build_usf_association_edges.py first."
         )
 
