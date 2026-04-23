@@ -1,9 +1,0 @@
-{
-  "root": "/content/Geometry-of-Syntax/behavioral_results/colab_gpt2_large/experiment-2/experiment-2_lexical_overlap",
-  "run_dirs": [
-    "core_demo_primes_lexical_overlap"
-  ],
-  "n_rows": 2,
-  "seed": 13,
-  "bootstrap_resamples": 5000
-}
