@@ -12,7 +12,7 @@ CORE_COUNTERBALANCED = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_c
 CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED = (
     REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
 )
-JABBERWOCKY_2080 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2080.csv"
+JABBERWOCKY_2048 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2048.csv"
 
 
 def parse_args() -> argparse.Namespace:
@@ -41,9 +41,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--core-prime-mode",
-        choices=("lexically_controlled", "lexical_overlap"),
+        choices=("lexically_controlled",),
         default="lexically_controlled",
-        help="Use the repaired core prime-target corpus or the older lexical-overlap version for comparison.",
+        help="Strict Sinclair-controlled core mode.",
     )
     parser.add_argument(
         "--local-files-only",
@@ -64,14 +64,13 @@ def run_command(command: List[str], cwd: Path) -> None:
 
 
 def condition_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str, object]]:
-    if core_prime_mode == "lexically_controlled":
-        core_csv = CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED
-        core_output = output_root / "processing_1b_core_core_lexically_controlled"
-        condition_label = "processing_1b_core_core_lexically_controlled"
-    else:
-        core_csv = CORE_COUNTERBALANCED
-        core_output = output_root / "processing_1b_core_core_lexical_overlap"
-        condition_label = "processing_1b_core_core_lexical_overlap"
+    if core_prime_mode != "lexically_controlled":
+        raise ValueError(
+            f"Unsupported core-prime-mode '{core_prime_mode}'. Only 'lexically_controlled' is allowed."
+        )
+    core_csv = CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED
+    core_output = output_root / "processing_1b_core_core_lexically_controlled"
+    condition_label = "processing_1b_core_core_lexically_controlled"
 
     return [
         {
@@ -85,8 +84,8 @@ def condition_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str,
         },
         {
             "name": "jabberwocky_primes_jabberwocky_targets",
-            "input_csv": JABBERWOCKY_2080,
-            "prime_csv": JABBERWOCKY_2080,
+            "input_csv": JABBERWOCKY_2048,
+            "prime_csv": JABBERWOCKY_2048,
             "output_dir": output_root / "processing_1b_jabberwocky_jabberwocky",
             "condition_label": "processing_1b_jabberwocky_jabberwocky",
             "which_key": "jabberwocky",

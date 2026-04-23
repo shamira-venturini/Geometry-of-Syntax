@@ -1,0 +1,22 @@
+{
+  "noun_source": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/PrimeLM/vocabulary_lists/nounlist_usf_freq.csv",
+  "verb_source": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/PrimeLM/vocabulary_lists/verblist_T_usf_freq.csv",
+  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/usf_association_edges_core_vocab.csv",
+  "max_rank": 5000,
+  "vocab": {
+    "noun_rows_kept": 118,
+    "verb_rows_kept": 48,
+    "vocab_words": 166
+  },
+  "usf": {
+    "usf_files": 8,
+    "usf_rows_parsed": 72176,
+    "directed_edges_kept": 410
+  },
+  "covered_vocab_words": 156,
+  "uncovered_vocab_words": 10,
+  "notes": [
+    "Edges are directed cue->target links from USF Appendix A where FSG > 0.",
+    "Generation/matching code should treat these edges as undirected semantic associations by checking both directions."
+  ]
+}

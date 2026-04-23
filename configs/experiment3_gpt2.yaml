@@ -16,7 +16,8 @@ experiment:
     - passive
     - filler
     - no_prime
-  max_items_per_corpus: 2080
+  max_items_per_corpus: 2048
+  enforce_aux_mismatch: true
   filler_mode: pool
   filler_seed: 13
   filler_offset: 137
@@ -24,11 +25,8 @@ experiment:
     - name: lexically_controlled
       path: corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv
       lexicality_condition: real
-    - name: lexical_overlap
-      path: corpora/transitive/CORE_transitive_constrained_counterbalanced.csv
-      lexicality_condition: real
     - name: jabberwocky
-      path: corpora/transitive/jabberwocky_transitive_bpe_filtered_2080.csv
+      path: corpora/transitive/jabberwocky_transitive_bpe_filtered_2048.csv
       lexicality_condition: nonce
 
 prompting:

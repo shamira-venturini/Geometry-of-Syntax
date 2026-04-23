@@ -1,0 +1,58 @@
+{
+  "core_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+  "jabberwocky_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_core_targets_jabberwocky_primes_2048.csv",
+  "summary_json": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_core_targets_jabberwocky_primes_2048_summary.json",
+  "n_items": 2048,
+  "seed": 13,
+  "selected_prime_source_row_indices_preview": [
+    6967,
+    2173,
+    11360,
+    2552,
+    13792,
+    3612,
+    7658,
+    559,
+    4034,
+    5042,
+    5506,
+    10052,
+    6480,
+    12176,
+    12531,
+    5166,
+    4971,
+    13849,
+    3303,
+    2114,
+    1164,
+    4063,
+    11841,
+    700,
+    7823
+  ],
+  "strict_audit": {
+    "same_aux_rows": 0,
+    "same_det_family_rows": 0,
+    "shared_noun_rows": 0,
+    "same_active_verb_rows": 0,
+    "prime_tense_mismatch_rows": 0,
+    "target_tense_mismatch_rows": 0
+  },
+  "lexical_overlap_audit": {
+    "rows_evaluated": 2048,
+    "same_active_verb_rows": 0,
+    "same_active_verb_rate": 0.0,
+    "shared_noun_rows": 0,
+    "shared_noun_rate": 0.0,
+    "shared_both_nouns_rows": 0,
+    "shared_both_nouns_rate": 0.0
+  },
+  "constraints": [
+    "Prime and target passive auxiliaries are always opposite (is/was mismatch).",
+    "Prime and target determiner families are always opposite (a/an vs the).",
+    "Prime and target keep no noun or active-verb overlap.",
+    "Prime and target active tense matches their own passive auxiliary."
+  ]
+}

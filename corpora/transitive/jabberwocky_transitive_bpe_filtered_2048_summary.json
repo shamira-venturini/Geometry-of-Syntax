@@ -1,0 +1,61 @@
+{
+  "source_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered_2048.csv",
+  "summary_json": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered_2048_summary.json",
+  "n_items": 2048,
+  "seed": 13,
+  "sampling": "without_replacement",
+  "sampled_source_row_indices_preview": [
+    4286,
+    3576,
+    5762,
+    6561,
+    12699,
+    13035,
+    8561,
+    4532,
+    12063,
+    13864,
+    8759,
+    14795,
+    3845,
+    14785,
+    4902,
+    4398,
+    10395,
+    10111,
+    10274,
+    1346,
+    12526,
+    7333,
+    6606,
+    9253,
+    2875
+  ],
+  "within_row_lexical_audit": {
+    "rows_evaluated": 2048,
+    "same_active_verb_rows": 0,
+    "same_active_verb_rate": 0.0,
+    "shared_noun_rows": 0,
+    "shared_noun_rate": 0.0,
+    "shared_both_nouns_rows": 0,
+    "shared_both_nouns_rate": 0.0
+  },
+  "within_row_strict_audit": {
+    "rows_evaluated": 2048,
+    "same_active_verb_rows": 0,
+    "same_active_verb_rate": 0.0,
+    "shared_noun_rows": 0,
+    "shared_noun_rate": 0.0,
+    "same_aux_rows": 0,
+    "same_aux_rate": 0.0,
+    "same_det_family_rows": 0,
+    "same_det_family_rate": 0.0,
+    "prime_tense_mismatch_rows": 0,
+    "target_tense_mismatch_rows": 0
+  },
+  "notes": [
+    "This file freezes the Jabberwocky prime pool at the strict-core matched size.",
+    "Within-row strict audit enforces no noun/verb overlap, aux mismatch, determiner-family mismatch, and tense matching."
+  ]
+}

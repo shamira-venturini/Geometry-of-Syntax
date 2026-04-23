@@ -3,6 +3,7 @@ import json
 from pathlib import Path
 from typing import Dict, List, Optional, Tuple
 
+import numpy as np
 import pandas as pd
 import torch
 
@@ -24,7 +25,7 @@ from production_priming_common import (
 )
 
 
-DEFAULT_JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2080.csv"
+DEFAULT_JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2048.csv"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "experiment-2" / "demo_prompt_completion"
 REAL_VERB_ING = {
     "ask": "asking",
@@ -275,6 +276,124 @@ def infer_filler_domain(input_csv: Path, prime_csv: Path, requested: str) -> str
     return "jabberwocky" if "jabberwocky" in probe else "core"
 
 
+def _passive_aux(sentence: str) -> str:
+    tokens = str(sentence).strip().split()
+    if len(tokens) != 8:
+        raise ValueError(f"Unexpected passive sentence format: {sentence}")
+    return tokens[2].lower()
+
+
+def _det_family_from_active(sentence: str) -> str:
+    tokens = str(sentence).strip().split()
+    if len(tokens) != 6:
+        raise ValueError(f"Unexpected active sentence format: {sentence}")
+    det = tokens[0].lower()
+    if det == "the":
+        return "def"
+    if det in {"a", "an"}:
+        return "indef"
+    raise ValueError(f"Unexpected determiner in active sentence: {sentence}")
+
+
+def assert_aux_det_mismatch(
+    *,
+    target_frame: pd.DataFrame,
+    prime_frame: pd.DataFrame,
+    label: str,
+) -> None:
+    same_aux_rows = 0
+    same_det_family_rows = 0
+    preview: List[Dict[str, object]] = []
+    for item_index, target_row in target_frame.iterrows():
+        prime_row = prime_frame.loc[item_index]
+        prime_aux = _passive_aux(str(prime_row["pp"]))
+        target_aux = _passive_aux(str(target_row["tp"]))
+        prime_det_family = _det_family_from_active(str(prime_row["pa"]))
+        target_det_family = _det_family_from_active(str(target_row["ta"]))
+        if prime_aux == target_aux:
+            same_aux_rows += 1
+            if len(preview) < 5:
+                preview.append(
+                    {
+                        "item_index": int(item_index),
+                        "prime_aux": prime_aux,
+                        "target_aux": target_aux,
+                        "prime_pp": str(prime_row["pp"]),
+                        "target_tp": str(target_row["tp"]),
+                    }
+                )
+        if prime_det_family == target_det_family:
+            same_det_family_rows += 1
+            if len(preview) < 5:
+                preview.append(
+                    {
+                        "item_index": int(item_index),
+                        "prime_det_family": prime_det_family,
+                        "target_det_family": target_det_family,
+                        "prime_pa": str(prime_row["pa"]),
+                        "target_ta": str(target_row["ta"]),
+                    }
+                )
+    if same_aux_rows:
+        raise ValueError(
+            f"{label}: found {same_aux_rows}/{len(target_frame)} rows where prime/target passive auxiliaries overlap. "
+            f"Preview: {preview}"
+        )
+    if same_det_family_rows:
+        raise ValueError(
+            f"{label}: found {same_det_family_rows}/{len(target_frame)} rows where prime/target determiner families overlap. "
+            f"Preview: {preview}"
+        )
+
+
+def sample_prime_frame_with_aux_det_mismatch(
+    *,
+    target_sample: pd.DataFrame,
+    prime_frame: pd.DataFrame,
+    seed: int,
+) -> pd.DataFrame:
+    if len(prime_frame) < len(target_sample):
+        raise ValueError(
+            f"Prime corpus has too few rows to align with aux+determiner mismatch: "
+            f"{len(prime_frame)} < {len(target_sample)}"
+        )
+
+    prime_aux = prime_frame["pp"].map(_passive_aux)
+    prime_det = prime_frame["pa"].map(_det_family_from_active)
+    unexpected_aux = sorted(set(prime_aux).difference({"is", "was"}))
+    if unexpected_aux:
+        raise ValueError(f"Unexpected passive auxiliaries in prime frame: {unexpected_aux}")
+    unexpected_det = sorted(set(prime_det).difference({"def", "indef"}))
+    if unexpected_det:
+        raise ValueError(f"Unexpected determiner families in prime frame: {unexpected_det}")
+
+    buckets: Dict[Tuple[str, str], List[int]] = {}
+    for aux in ("is", "was"):
+        for det in ("def", "indef"):
+            mask = prime_aux.eq(aux) & prime_det.eq(det)
+            buckets[(aux, det)] = prime_aux[mask].index.tolist()
+
+    rng = np.random.default_rng(seed + 104729)
+    for key in buckets:
+        rng.shuffle(buckets[key])
+
+    selected_indices: List[int] = []
+    for _, target_row in target_sample.iterrows():
+        target_aux = _passive_aux(str(target_row["tp"]))
+        target_det = _det_family_from_active(str(target_row["ta"]))
+        required_prime_aux = "was" if target_aux == "is" else "is"
+        required_prime_det = "def" if target_det == "indef" else "indef"
+        pool = buckets[(required_prime_aux, required_prime_det)]
+        if not pool:
+            raise ValueError(
+                "Cannot satisfy strict mismatch: exhausted prime rows with "
+                f"aux='{required_prime_aux}' and det='{required_prime_det}'."
+            )
+        selected_indices.append(pool.pop())
+
+    return prime_frame.loc[selected_indices].reset_index(drop=True)
+
+
 def build_prompt(
     target_bundle: TargetBundle,
     prime_condition: str,
@@ -432,14 +551,35 @@ def main() -> None:
     torch.manual_seed(args.seed)
 
     input_csv = args.input_csv.resolve()
-    target_frame = normalize_transitive_frame(pd.read_csv(input_csv))
     prime_csv = args.prime_csv.resolve() if args.prime_csv else input_csv
-    prime_frame = normalize_transitive_frame(pd.read_csv(prime_csv))
-    target_frame, prime_frame, prime_alignment_mode = sample_condition_frames(
+    target_source = normalize_transitive_frame(pd.read_csv(input_csv))
+    prime_source = normalize_transitive_frame(pd.read_csv(prime_csv))
+
+    if input_csv == prime_csv:
+        target_frame, prime_frame, prime_alignment_mode = sample_condition_frames(
+            target_frame=target_source,
+            prime_frame=prime_source,
+            max_items=args.max_items,
+            seed=args.seed,
+        )
+    else:
+        target_frame, _, _ = sample_condition_frames(
+            target_frame=target_source,
+            prime_frame=target_source,
+            max_items=args.max_items,
+            seed=args.seed,
+        )
+        prime_frame = sample_prime_frame_with_aux_det_mismatch(
+            target_sample=target_frame,
+            prime_frame=prime_source,
+            seed=args.seed,
+        )
+        prime_alignment_mode = "aux_det_mismatch_matched"
+
+    assert_aux_det_mismatch(
         target_frame=target_frame,
         prime_frame=prime_frame,
-        max_items=args.max_items,
-        seed=args.seed,
+        label=f"{input_csv.name}<-{prime_csv.name}",
     )
     overlap_audit = lexical_overlap_audit(target_frame=target_frame, prime_frame=prime_frame)
 

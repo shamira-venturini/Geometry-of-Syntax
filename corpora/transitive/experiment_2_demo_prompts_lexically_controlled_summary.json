@@ -3,14 +3,16 @@
   "event_style": "involving_event",
   "role_style": "did_to",
   "quote_style": "mary_answered",
-  "max_items": 2080,
+  "max_items": 2048,
   "seed": 13,
   "core_prompt_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/experiment_2_core_demo_prompts_lexically_controlled.csv",
   "jabberwocky_prompt_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/experiment_2_jabberwocky_demo_prompts_lexically_controlled.csv",
+  "mixed_core_targets_jabberwocky_primes_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_core_targets_jabberwocky_primes_2048.csv",
+  "jabberwocky_prime_pool_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
   "core_alignment_mode": "paired_indices",
-  "jabberwocky_alignment_mode": "paired_indices",
+  "jabberwocky_alignment_mode": "prebuilt_mixed_lookup",
   "core_lexical_overlap_audit": {
-    "rows_evaluated": 2080,
+    "rows_evaluated": 2048,
     "same_active_verb_rows": 0,
     "same_active_verb_rate": 0.0,
     "shared_noun_rows": 0,
@@ -19,7 +21,7 @@
     "shared_both_nouns_rate": 0.0
   },
   "jabberwocky_lexical_overlap_audit": {
-    "rows_evaluated": 2080,
+    "rows_evaluated": 2048,
     "same_active_verb_rows": 0,
     "same_active_verb_rate": 0.0,
     "shared_noun_rows": 0,
@@ -27,6 +29,6 @@
     "shared_both_nouns_rows": 0,
     "shared_both_nouns_rate": 0.0
   },
-  "n_core_rows": 2080,
-  "n_jabberwocky_rows": 2080
+  "n_core_rows": 2048,
+  "n_jabberwocky_rows": 2048
 }

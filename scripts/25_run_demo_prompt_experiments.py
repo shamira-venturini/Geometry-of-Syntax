@@ -8,8 +8,9 @@ from typing import Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
-LEXICAL_OVERLAP_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
-JABBERWOCKY_2080 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2080.csv"
+MIXED_CORE_TARGETS_JABBER_PRIMES = (
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
+)
 SCRIPT = REPO_ROOT / "scripts" / "24_demo_prompt_completion_experiment.py"
 
 
@@ -20,7 +21,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--model-name", default="gpt2-large")
     parser.add_argument("--device", default=None)
     parser.add_argument("--batch-size", type=int, default=128)
-    parser.add_argument("--max-items", type=int, default=2080)
+    parser.add_argument("--max-items", type=int, default=2048)
     parser.add_argument(
         "--torch-dtype",
         default="auto",
@@ -53,9 +54,9 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument(
         "--core-prime-mode",
-        choices=("lexically_controlled", "lexical_overlap"),
+        choices=("lexically_controlled",),
         default="lexically_controlled",
-        help="Use the repaired core corpus or the older lexical-overlap version for comparison.",
+        help="Strict Sinclair-controlled core mode.",
     )
     parser.add_argument(
         "--local-files-only",
@@ -80,12 +81,12 @@ def run_command(command: List[str], cwd: Path) -> None:
 
 
 def experiment_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str, object]]:
-    if core_prime_mode == "lexically_controlled":
-        core_csv = STRICT_CORE
-        core_output = output_root / "core_demo_primes_lexically_controlled"
-    else:
-        core_csv = LEXICAL_OVERLAP_CORE
-        core_output = output_root / "core_demo_primes_lexical_overlap"
+    if core_prime_mode != "lexically_controlled":
+        raise ValueError(
+            f"Unsupported core-prime-mode '{core_prime_mode}'. Only 'lexically_controlled' is allowed."
+        )
+    core_csv = STRICT_CORE
+    core_output = output_root / "core_demo_primes_lexically_controlled"
 
     return [
         {
@@ -99,8 +100,8 @@ def experiment_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str
         {
             "key": "jabberwocky",
             "name": "jabberwocky_demo_primes_counterbalanced_core_production",
-            "input_csv": core_csv,
-            "prime_csv": JABBERWOCKY_2080,
+            "input_csv": MIXED_CORE_TARGETS_JABBER_PRIMES,
+            "prime_csv": MIXED_CORE_TARGETS_JABBER_PRIMES,
             "filler_domain": "jabberwocky",
             "output_dir": output_root / "jabberwocky_demo_primes",
         },

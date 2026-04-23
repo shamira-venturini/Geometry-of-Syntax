@@ -6,18 +6,7 @@ import pandas as pd
 
 
 BASE_DIR = Path("behavioral_results/experiment-2/llama323binstruct/experiment-2_generation_audit_lexically_controlled")
-DATASETS: Dict[str, Dict[str, Path]] = {
-    "core": {
-        "items": BASE_DIR / "core" / "item_generations.csv",
-        "review": BASE_DIR / "core_unclassified_for_manual_review.csv",
-        "output_dir": BASE_DIR / "core",
-    },
-    "jabberwocky": {
-        "items": BASE_DIR / "jabberwocky" / "item_generations.csv",
-        "review": BASE_DIR / "jabberwocky_unclassified_for_manual_review.csv",
-        "output_dir": BASE_DIR / "jabberwocky",
-    },
-}
+DATASET_NAMES = ("core", "jabberwocky")
 MERGE_KEYS = [
     "item_index",
     "prompt_column",
@@ -57,9 +46,18 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument(
+        "--base-dir",
+        type=Path,
+        default=BASE_DIR,
+        help=(
+            "Experiment 2 mode output root containing domain subdirectories and "
+            "manual-review CSV exports."
+        ),
+    )
+    parser.add_argument(
         "--dataset",
         action="append",
-        choices=sorted(DATASETS),
+        choices=sorted(DATASET_NAMES),
         help="Subset of datasets to process. Defaults to all.",
     )
     parser.add_argument(
@@ -68,6 +66,21 @@ def parse_args() -> argparse.Namespace:
         help="Print summaries without writing reviewed output files.",
     )
     return parser.parse_args()
+
+
+def build_dataset_paths(base_dir: Path) -> Dict[str, Dict[str, Path]]:
+    return {
+        "core": {
+            "items": base_dir / "core" / "item_generations.csv",
+            "review": base_dir / "core_unclassified_for_manual_review.csv",
+            "output_dir": base_dir / "core",
+        },
+        "jabberwocky": {
+            "items": base_dir / "jabberwocky" / "item_generations.csv",
+            "review": base_dir / "jabberwocky_unclassified_for_manual_review.csv",
+            "output_dir": base_dir / "jabberwocky",
+        },
+    }
 
 
 def sorted_frame(frame: pd.DataFrame, label_column: str) -> pd.DataFrame:
@@ -216,9 +229,17 @@ def write_dataset_outputs(dataset_name: str, frame: pd.DataFrame, output_dir: Pa
 
 def main() -> None:
     args = parse_args()
-    dataset_names = args.dataset if args.dataset else sorted(DATASETS)
+    base_dir = args.base_dir.resolve()
+    datasets = build_dataset_paths(base_dir=base_dir)
+    dataset_names = args.dataset if args.dataset else sorted(datasets)
     for dataset_name in dataset_names:
-        paths = DATASETS[dataset_name]
+        paths = datasets[dataset_name]
+        if not paths["items"].exists():
+            raise FileNotFoundError(f"Missing item_generations.csv for dataset '{dataset_name}': {paths['items']}")
+        if not paths["review"].exists():
+            raise FileNotFoundError(
+                f"Missing manual-review CSV for dataset '{dataset_name}': {paths['review']}"
+            )
         frame = overlay_manual_review(
             items_path=paths["items"].resolve(),
             review_path=paths["review"].resolve(),
