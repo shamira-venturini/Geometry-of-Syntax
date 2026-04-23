@@ -20,7 +20,10 @@ LEGACY_PRIME_MAP = {
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Create priming-framed summaries for any choice-based priming runs."
+        description=(
+            "Create priming-framed summaries for any choice-based priming runs, "
+            "including Sinclair et al. style PE (same-prime minus other-prime)."
+        )
     )
     parser.add_argument("--root", type=Path, required=True)
     parser.add_argument(
@@ -296,12 +299,47 @@ def main() -> None:
 
     results = pd.DataFrame(rows).sort_values(["condition", "baseline"])
     results.to_csv(root / "priming_framed_results.csv", index=False)
+    results.to_csv(root / "sinclair2022_aligned_results.csv", index=False)
+
+    pe_columns = [
+        "condition",
+        "n_items",
+        "pe_active_target_logprob_same_minus_other",
+        "pe_active_target_logprob_ci95_low",
+        "pe_active_target_logprob_ci95_high",
+        "pe_active_target_logprob_p",
+        "pe_passive_target_logprob_same_minus_other",
+        "pe_passive_target_logprob_ci95_low",
+        "pe_passive_target_logprob_ci95_high",
+        "pe_passive_target_logprob_p",
+        "pe_logprob_imbalance_passive_minus_active",
+        "pe_logprob_imbalance_ci95_low",
+        "pe_logprob_imbalance_ci95_high",
+        "pe_logprob_imbalance_p",
+        "pe_active_target_logprob_sum_same_minus_other",
+        "pe_active_target_logprob_sum_ci95_low",
+        "pe_active_target_logprob_sum_ci95_high",
+        "pe_active_target_logprob_sum_p",
+        "pe_passive_target_logprob_sum_same_minus_other",
+        "pe_passive_target_logprob_sum_ci95_low",
+        "pe_passive_target_logprob_sum_ci95_high",
+        "pe_passive_target_logprob_sum_p",
+        "pe_logprob_sum_imbalance_passive_minus_active",
+        "pe_logprob_sum_imbalance_ci95_low",
+        "pe_logprob_sum_imbalance_ci95_high",
+        "pe_logprob_sum_imbalance_p",
+    ]
+    available_pe_cols = [column for column in pe_columns if column in results.columns]
+    pe_only = results[available_pe_cols].drop_duplicates().sort_values(["condition"]).reset_index(drop=True)
+    pe_only.to_csv(root / "sinclair2022_pe_only.csv", index=False)
+
     (root / "priming_framed_manifest.json").write_text(
         json.dumps(
             {
                 "root": str(root),
                 "run_dirs": [run_dir.name for run_dir in run_dirs],
                 "n_rows": int(len(results)),
+                "n_pe_rows": int(len(pe_only)),
                 "seed": int(args.seed),
                 "bootstrap_resamples": int(N_BOOTSTRAP),
             },

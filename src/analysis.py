@@ -128,6 +128,201 @@ def _safe_mean(frame: pd.DataFrame, condition: str, value_col: str) -> float:
     return float(subset.astype(float).mean())
 
 
+def _one_sample_stats(values: Sequence[float], seed: int = 13) -> Dict[str, float]:
+    data = np.asarray(list(values), dtype=float)
+    data = data[np.isfinite(data)]
+    if data.size == 0:
+        return {
+            "n_items": 0,
+            "mean": float("nan"),
+            "ci95_low": float("nan"),
+            "ci95_high": float("nan"),
+            "t_stat": float("nan"),
+            "p_value": float("nan"),
+        }
+    if data.size == 1:
+        return {
+            "n_items": 1,
+            "mean": float(data.mean()),
+            "ci95_low": float(data[0]),
+            "ci95_high": float(data[0]),
+            "t_stat": float("nan"),
+            "p_value": float("nan"),
+        }
+    t_stat, p_value = stats.ttest_1samp(data, popmean=0.0)
+    ci = bootstrap_mean_ci(values=data, n_resamples=5000, ci=95.0, seed=seed)
+    return {
+        "n_items": int(data.size),
+        "mean": float(data.mean()),
+        "ci95_low": float(ci.ci_low),
+        "ci95_high": float(ci.ci_high),
+        "t_stat": float(t_stat),
+        "p_value": float(p_value),
+    }
+
+
+def compute_sinclair_pe(
+    frame: pd.DataFrame | None = None,
+    seed: int = 13,
+    item_level: pd.DataFrame | None = None,
+) -> tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Sinclair et al. PE definition:
+      active target PE = logP(active target | active prime) - logP(active target | passive prime)
+      passive target PE = logP(passive target | passive prime) - logP(passive target | active prime)
+    """
+    # Backward-compatibility: older call sites passed `item_level=...`.
+    if frame is None:
+        frame = item_level
+    if frame is None:
+        return pd.DataFrame(), pd.DataFrame()
+
+    required = {"prime_condition", "active_choice_logprob", "passive_choice_logprob"}
+    if not required.issubset(frame.columns):
+        return pd.DataFrame(), pd.DataFrame()
+
+    grouping = ["model_name", "model_condition", "prompt_format_used", "task", "lexicality_condition"]
+    pair_col = "pairing_key"
+    if pair_col not in frame.columns:
+        if "item_id" in frame.columns:
+            pair_col = "item_id"
+        elif "item_index" in frame.columns:
+            pair_col = "item_index"
+        else:
+            return pd.DataFrame(), pd.DataFrame()
+
+    agg_map: Dict[str, str] = {
+        "active_choice_logprob": "mean",
+        "passive_choice_logprob": "mean",
+    }
+    include_sum = {"active_choice_logprob_sum", "passive_choice_logprob_sum"}.issubset(frame.columns)
+    if include_sum:
+        agg_map["active_choice_logprob_sum"] = "mean"
+        agg_map["passive_choice_logprob_sum"] = "mean"
+
+    collapsed = (
+        frame.groupby(grouping + [pair_col, "prime_condition"], as_index=False)
+        .agg(agg_map)
+    )
+
+    item_rows: List[pd.DataFrame] = []
+    summary_rows: List[Dict[str, float]] = []
+
+    for keys, group_frame in collapsed.groupby(grouping, dropna=False):
+        if not isinstance(keys, tuple):
+            keys = (keys,)
+        base = {column: value for column, value in zip(grouping, keys)}
+
+        pivot_active = group_frame.pivot(index=pair_col, columns="prime_condition", values="active_choice_logprob")
+        pivot_passive = group_frame.pivot(index=pair_col, columns="prime_condition", values="passive_choice_logprob")
+        if not {"active", "passive"}.issubset(set(pivot_active.columns)) or not {"active", "passive"}.issubset(
+            set(pivot_passive.columns)
+        ):
+            continue
+
+        item_table = pd.DataFrame(
+            {
+                **base,
+                pair_col: pivot_active.index.astype(str),
+                "logp_active_target_given_active_prime": pivot_active["active"].astype(float).to_numpy(),
+                "logp_active_target_given_passive_prime": pivot_active["passive"].astype(float).to_numpy(),
+                "logp_passive_target_given_active_prime": pivot_passive["active"].astype(float).to_numpy(),
+                "logp_passive_target_given_passive_prime": pivot_passive["passive"].astype(float).to_numpy(),
+            }
+        )
+        item_table["pe_active_target_logprob_same_minus_other"] = (
+            item_table["logp_active_target_given_active_prime"]
+            - item_table["logp_active_target_given_passive_prime"]
+        )
+        item_table["pe_passive_target_logprob_same_minus_other"] = (
+            item_table["logp_passive_target_given_passive_prime"]
+            - item_table["logp_passive_target_given_active_prime"]
+        )
+        item_table["pe_logprob_imbalance_passive_minus_active"] = (
+            item_table["pe_passive_target_logprob_same_minus_other"]
+            - item_table["pe_active_target_logprob_same_minus_other"]
+        )
+
+        if include_sum:
+            pivot_active_sum = group_frame.pivot(index=pair_col, columns="prime_condition", values="active_choice_logprob_sum")
+            pivot_passive_sum = group_frame.pivot(index=pair_col, columns="prime_condition", values="passive_choice_logprob_sum")
+            if {"active", "passive"}.issubset(set(pivot_active_sum.columns)) and {"active", "passive"}.issubset(
+                set(pivot_passive_sum.columns)
+            ):
+                item_table["logp_sum_active_target_given_active_prime"] = pivot_active_sum["active"].astype(float).to_numpy()
+                item_table["logp_sum_active_target_given_passive_prime"] = pivot_active_sum["passive"].astype(float).to_numpy()
+                item_table["logp_sum_passive_target_given_active_prime"] = pivot_passive_sum["active"].astype(float).to_numpy()
+                item_table["logp_sum_passive_target_given_passive_prime"] = pivot_passive_sum["passive"].astype(float).to_numpy()
+
+                item_table["pe_active_target_logprob_sum_same_minus_other"] = (
+                    item_table["logp_sum_active_target_given_active_prime"]
+                    - item_table["logp_sum_active_target_given_passive_prime"]
+                )
+                item_table["pe_passive_target_logprob_sum_same_minus_other"] = (
+                    item_table["logp_sum_passive_target_given_passive_prime"]
+                    - item_table["logp_sum_passive_target_given_active_prime"]
+                )
+                item_table["pe_logprob_sum_imbalance_passive_minus_active"] = (
+                    item_table["pe_passive_target_logprob_sum_same_minus_other"]
+                    - item_table["pe_active_target_logprob_sum_same_minus_other"]
+                )
+
+        item_table = item_table.replace([np.inf, -np.inf], np.nan).dropna().reset_index(drop=True)
+        if item_table.empty:
+            continue
+        item_rows.append(item_table)
+
+        active_stats = _one_sample_stats(item_table["pe_active_target_logprob_same_minus_other"], seed=seed)
+        passive_stats = _one_sample_stats(item_table["pe_passive_target_logprob_same_minus_other"], seed=seed)
+        imbalance_stats = _one_sample_stats(item_table["pe_logprob_imbalance_passive_minus_active"], seed=seed)
+
+        summary_row: Dict[str, float] = {
+            **base,
+            "n_items": int(len(item_table)),
+            "pe_active_target_logprob_same_minus_other": active_stats["mean"],
+            "pe_active_target_logprob_ci95_low": active_stats["ci95_low"],
+            "pe_active_target_logprob_ci95_high": active_stats["ci95_high"],
+            "pe_active_target_logprob_p": active_stats["p_value"],
+            "pe_passive_target_logprob_same_minus_other": passive_stats["mean"],
+            "pe_passive_target_logprob_ci95_low": passive_stats["ci95_low"],
+            "pe_passive_target_logprob_ci95_high": passive_stats["ci95_high"],
+            "pe_passive_target_logprob_p": passive_stats["p_value"],
+            "pe_logprob_imbalance_passive_minus_active": imbalance_stats["mean"],
+            "pe_logprob_imbalance_ci95_low": imbalance_stats["ci95_low"],
+            "pe_logprob_imbalance_ci95_high": imbalance_stats["ci95_high"],
+            "pe_logprob_imbalance_p": imbalance_stats["p_value"],
+        }
+
+        if "pe_active_target_logprob_sum_same_minus_other" in item_table.columns:
+            active_sum_stats = _one_sample_stats(item_table["pe_active_target_logprob_sum_same_minus_other"], seed=seed)
+            passive_sum_stats = _one_sample_stats(item_table["pe_passive_target_logprob_sum_same_minus_other"], seed=seed)
+            imbalance_sum_stats = _one_sample_stats(item_table["pe_logprob_sum_imbalance_passive_minus_active"], seed=seed)
+            summary_row.update(
+                {
+                    "pe_active_target_logprob_sum_same_minus_other": active_sum_stats["mean"],
+                    "pe_active_target_logprob_sum_ci95_low": active_sum_stats["ci95_low"],
+                    "pe_active_target_logprob_sum_ci95_high": active_sum_stats["ci95_high"],
+                    "pe_active_target_logprob_sum_p": active_sum_stats["p_value"],
+                    "pe_passive_target_logprob_sum_same_minus_other": passive_sum_stats["mean"],
+                    "pe_passive_target_logprob_sum_ci95_low": passive_sum_stats["ci95_low"],
+                    "pe_passive_target_logprob_sum_ci95_high": passive_sum_stats["ci95_high"],
+                    "pe_passive_target_logprob_sum_p": passive_sum_stats["p_value"],
+                    "pe_logprob_sum_imbalance_passive_minus_active": imbalance_sum_stats["mean"],
+                    "pe_logprob_sum_imbalance_ci95_low": imbalance_sum_stats["ci95_low"],
+                    "pe_logprob_sum_imbalance_ci95_high": imbalance_sum_stats["ci95_high"],
+                    "pe_logprob_sum_imbalance_p": imbalance_sum_stats["p_value"],
+                }
+            )
+
+        summary_rows.append(summary_row)
+
+    if not item_rows:
+        return pd.DataFrame(), pd.DataFrame()
+    item_frame = pd.concat(item_rows, ignore_index=True)
+    summary_frame = pd.DataFrame(summary_rows).sort_values(grouping).reset_index(drop=True)
+    return item_frame, summary_frame
+
+
 def normalize_prime_labels(frame: pd.DataFrame) -> pd.DataFrame:
     result = frame.copy()
     if "prime_condition" in result.columns:
@@ -185,15 +380,26 @@ def paired_condition_tests(
     ]
 
     rows: List[Dict[str, float]] = []
+    if "pairing_key" in frame.columns:
+        pairing_col = "pairing_key"
+    elif "item_id" in frame.columns:
+        pairing_col = "item_id"
+    elif "item_index" in frame.columns:
+        pairing_col = "item_index"
+    else:
+        raise ValueError(
+            "Paired-condition tests require one of pairing_key, item_id, or item_index."
+        )
+
     for keys, group_frame in frame.groupby(grouping, dropna=False):
         if not isinstance(keys, tuple):
             keys = (keys,)
         base_row = {column: key for column, key in zip(grouping, keys)}
 
         pivot = (
-            group_frame.groupby(["pairing_key", "prime_condition"], as_index=False)[preference_col]
+            group_frame.groupby([pairing_col, "prime_condition"], as_index=False)[preference_col]
             .mean()
-            .pivot(index="pairing_key", columns="prime_condition", values=preference_col)
+            .pivot(index=pairing_col, columns="prime_condition", values=preference_col)
         )
 
         for condition_a, condition_b in condition_pairs:
@@ -325,6 +531,12 @@ def run_analysis(
     token_position_summary, token_position_preference_summary = token_position_summaries(item_level=item_level)
     result["token_position_summary"] = token_position_summary
     result["token_position_preference_summary"] = token_position_preference_summary
+
+    sinclair_item, sinclair_summary = compute_sinclair_pe(frame=item_level, seed=seed)
+    if not sinclair_item.empty:
+        result["sinclair_pe_item_level"] = sinclair_item
+    if not sinclair_summary.empty:
+        result["sinclair_pe_summary"] = sinclair_summary
 
     return result
 
