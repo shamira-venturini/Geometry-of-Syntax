@@ -1,0 +1,11 @@
+{
+  "root": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/behavioral_results/experiment-1/experiment-1b/llama323binstruct",
+  "run_dirs": [
+    "processing_1b_core_core_lexically_controlled",
+    "processing_1b_jabberwocky_jabberwocky"
+  ],
+  "n_rows": 4,
+  "n_pe_rows": 2,
+  "seed": 13,
+  "bootstrap_resamples": 5000
+}

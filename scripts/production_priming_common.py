@@ -612,6 +612,221 @@ def pairwise_stats(
     return pd.DataFrame(rows).sort_values(["prompt_template", "condition_a", "condition_b", "metric"])
 
 
+def one_sample_summary(values: np.ndarray, rng: np.random.Generator) -> Dict[str, float]:
+    clean = np.asarray(values, dtype=float)
+    clean = clean[np.isfinite(clean)]
+    n = int(len(clean))
+    if n == 0:
+        return {
+            "n_items": 0,
+            "mean": float("nan"),
+            "sd": float("nan"),
+            "t_stat": float("nan"),
+            "t_p_two_sided": float("nan"),
+            "perm_p_two_sided": float("nan"),
+            "bootstrap_ci95_low": float("nan"),
+            "bootstrap_ci95_high": float("nan"),
+        }
+    if n == 1:
+        return {
+            "n_items": 1,
+            "mean": float(clean.mean()),
+            "sd": 0.0,
+            "t_stat": float("nan"),
+            "t_p_two_sided": float("nan"),
+            "perm_p_two_sided": float("nan"),
+            "bootstrap_ci95_low": float(clean[0]),
+            "bootstrap_ci95_high": float(clean[0]),
+        }
+
+    mean_value = float(clean.mean())
+    sd_value = float(clean.std(ddof=1))
+    t_stat, t_p = stats.ttest_1samp(clean, popmean=0.0)
+    ci_low, ci_high = bootstrap_mean_ci(clean, rng)
+    return {
+        "n_items": n,
+        "mean": mean_value,
+        "sd": sd_value,
+        "t_stat": float(t_stat),
+        "t_p_two_sided": float(t_p),
+        "perm_p_two_sided": sign_flip_pvalue(clean, rng),
+        "bootstrap_ci95_low": ci_low,
+        "bootstrap_ci95_high": ci_high,
+    }
+
+
+def compute_sinclair_pe_tables(
+    frame: pd.DataFrame,
+    rng: np.random.Generator,
+) -> Tuple[pd.DataFrame, pd.DataFrame]:
+    """
+    Sinclair et al. style PE tables:
+      - active target PE = logP(active target | active prime) - logP(active target | passive prime)
+      - passive target PE = logP(passive target | passive prime) - logP(passive target | active prime)
+    """
+    required = {"item_index", "prompt_template", "prime_condition", "active_choice_logprob", "passive_choice_logprob"}
+    if not required.issubset(frame.columns):
+        return pd.DataFrame(), pd.DataFrame()
+
+    include_sum = {"active_choice_logprob_sum", "passive_choice_logprob_sum"}.issubset(frame.columns)
+    agg_map: Dict[str, str] = {
+        "active_choice_logprob": "mean",
+        "passive_choice_logprob": "mean",
+    }
+    if include_sum:
+        agg_map["active_choice_logprob_sum"] = "mean"
+        agg_map["passive_choice_logprob_sum"] = "mean"
+
+    collapsed = (
+        frame.groupby(["prompt_template", "item_index", "prime_condition"], as_index=False)
+        .agg(agg_map)
+    )
+
+    item_rows: List[pd.DataFrame] = []
+    summary_rows: List[Dict[str, object]] = []
+
+    for template_name, subset in collapsed.groupby("prompt_template"):
+        active_lp = subset.pivot(index="item_index", columns="prime_condition", values="active_choice_logprob")
+        passive_lp = subset.pivot(index="item_index", columns="prime_condition", values="passive_choice_logprob")
+
+        needed = {"active", "passive"}
+        if not needed.issubset(set(active_lp.columns)) or not needed.issubset(set(passive_lp.columns)):
+            continue
+
+        item_table = pd.DataFrame(
+            {
+                "item_index": active_lp.index.astype(int),
+                "logp_active_target_given_active_prime": active_lp["active"].astype(float),
+                "logp_active_target_given_passive_prime": active_lp["passive"].astype(float),
+                "logp_passive_target_given_active_prime": passive_lp["active"].astype(float),
+                "logp_passive_target_given_passive_prime": passive_lp["passive"].astype(float),
+            }
+        ).reset_index(drop=True)
+
+        item_table["pe_active_target_logprob_same_minus_other"] = (
+            item_table["logp_active_target_given_active_prime"]
+            - item_table["logp_active_target_given_passive_prime"]
+        )
+        item_table["pe_passive_target_logprob_same_minus_other"] = (
+            item_table["logp_passive_target_given_passive_prime"]
+            - item_table["logp_passive_target_given_active_prime"]
+        )
+        item_table["pe_logprob_imbalance_passive_minus_active"] = (
+            item_table["pe_passive_target_logprob_same_minus_other"]
+            - item_table["pe_active_target_logprob_same_minus_other"]
+        )
+
+        if include_sum:
+            active_sum = subset.pivot(index="item_index", columns="prime_condition", values="active_choice_logprob_sum")
+            passive_sum = subset.pivot(index="item_index", columns="prime_condition", values="passive_choice_logprob_sum")
+            if needed.issubset(set(active_sum.columns)) and needed.issubset(set(passive_sum.columns)):
+                item_table["logp_sum_active_target_given_active_prime"] = active_sum.loc[
+                    item_table["item_index"], "active"
+                ].astype(float).to_numpy()
+                item_table["logp_sum_active_target_given_passive_prime"] = active_sum.loc[
+                    item_table["item_index"], "passive"
+                ].astype(float).to_numpy()
+                item_table["logp_sum_passive_target_given_active_prime"] = passive_sum.loc[
+                    item_table["item_index"], "active"
+                ].astype(float).to_numpy()
+                item_table["logp_sum_passive_target_given_passive_prime"] = passive_sum.loc[
+                    item_table["item_index"], "passive"
+                ].astype(float).to_numpy()
+
+                item_table["pe_active_target_logprob_sum_same_minus_other"] = (
+                    item_table["logp_sum_active_target_given_active_prime"]
+                    - item_table["logp_sum_active_target_given_passive_prime"]
+                )
+                item_table["pe_passive_target_logprob_sum_same_minus_other"] = (
+                    item_table["logp_sum_passive_target_given_passive_prime"]
+                    - item_table["logp_sum_passive_target_given_active_prime"]
+                )
+                item_table["pe_logprob_sum_imbalance_passive_minus_active"] = (
+                    item_table["pe_passive_target_logprob_sum_same_minus_other"]
+                    - item_table["pe_active_target_logprob_sum_same_minus_other"]
+                )
+
+        item_table = item_table.replace([np.inf, -np.inf], np.nan).dropna().reset_index(drop=True)
+        if item_table.empty:
+            continue
+        item_table.insert(0, "prompt_template", template_name)
+        item_rows.append(item_table)
+
+        active_stats = one_sample_summary(
+            item_table["pe_active_target_logprob_same_minus_other"].to_numpy(dtype=float),
+            rng=rng,
+        )
+        passive_stats = one_sample_summary(
+            item_table["pe_passive_target_logprob_same_minus_other"].to_numpy(dtype=float),
+            rng=rng,
+        )
+        imbalance_stats = one_sample_summary(
+            item_table["pe_logprob_imbalance_passive_minus_active"].to_numpy(dtype=float),
+            rng=rng,
+        )
+
+        row: Dict[str, object] = {
+            "prompt_template": template_name,
+            "n_items": int(len(item_table)),
+            "pe_active_target_logprob_same_minus_other": active_stats["mean"],
+            "pe_active_target_logprob_ci95_low": active_stats["bootstrap_ci95_low"],
+            "pe_active_target_logprob_ci95_high": active_stats["bootstrap_ci95_high"],
+            "pe_active_target_logprob_p": active_stats["t_p_two_sided"],
+            "pe_active_target_logprob_perm_p": active_stats["perm_p_two_sided"],
+            "pe_passive_target_logprob_same_minus_other": passive_stats["mean"],
+            "pe_passive_target_logprob_ci95_low": passive_stats["bootstrap_ci95_low"],
+            "pe_passive_target_logprob_ci95_high": passive_stats["bootstrap_ci95_high"],
+            "pe_passive_target_logprob_p": passive_stats["t_p_two_sided"],
+            "pe_passive_target_logprob_perm_p": passive_stats["perm_p_two_sided"],
+            "pe_logprob_imbalance_passive_minus_active": imbalance_stats["mean"],
+            "pe_logprob_imbalance_ci95_low": imbalance_stats["bootstrap_ci95_low"],
+            "pe_logprob_imbalance_ci95_high": imbalance_stats["bootstrap_ci95_high"],
+            "pe_logprob_imbalance_p": imbalance_stats["t_p_two_sided"],
+            "pe_logprob_imbalance_perm_p": imbalance_stats["perm_p_two_sided"],
+        }
+
+        if "pe_active_target_logprob_sum_same_minus_other" in item_table.columns:
+            active_sum_stats = one_sample_summary(
+                item_table["pe_active_target_logprob_sum_same_minus_other"].to_numpy(dtype=float),
+                rng=rng,
+            )
+            passive_sum_stats = one_sample_summary(
+                item_table["pe_passive_target_logprob_sum_same_minus_other"].to_numpy(dtype=float),
+                rng=rng,
+            )
+            imbalance_sum_stats = one_sample_summary(
+                item_table["pe_logprob_sum_imbalance_passive_minus_active"].to_numpy(dtype=float),
+                rng=rng,
+            )
+            row.update(
+                {
+                    "pe_active_target_logprob_sum_same_minus_other": active_sum_stats["mean"],
+                    "pe_active_target_logprob_sum_ci95_low": active_sum_stats["bootstrap_ci95_low"],
+                    "pe_active_target_logprob_sum_ci95_high": active_sum_stats["bootstrap_ci95_high"],
+                    "pe_active_target_logprob_sum_p": active_sum_stats["t_p_two_sided"],
+                    "pe_active_target_logprob_sum_perm_p": active_sum_stats["perm_p_two_sided"],
+                    "pe_passive_target_logprob_sum_same_minus_other": passive_sum_stats["mean"],
+                    "pe_passive_target_logprob_sum_ci95_low": passive_sum_stats["bootstrap_ci95_low"],
+                    "pe_passive_target_logprob_sum_ci95_high": passive_sum_stats["bootstrap_ci95_high"],
+                    "pe_passive_target_logprob_sum_p": passive_sum_stats["t_p_two_sided"],
+                    "pe_passive_target_logprob_sum_perm_p": passive_sum_stats["perm_p_two_sided"],
+                    "pe_logprob_sum_imbalance_passive_minus_active": imbalance_sum_stats["mean"],
+                    "pe_logprob_sum_imbalance_ci95_low": imbalance_sum_stats["bootstrap_ci95_low"],
+                    "pe_logprob_sum_imbalance_ci95_high": imbalance_sum_stats["bootstrap_ci95_high"],
+                    "pe_logprob_sum_imbalance_p": imbalance_sum_stats["t_p_two_sided"],
+                    "pe_logprob_sum_imbalance_perm_p": imbalance_sum_stats["perm_p_two_sided"],
+                }
+            )
+
+        summary_rows.append(row)
+
+    if not item_rows:
+        return pd.DataFrame(), pd.DataFrame()
+    item_frame = pd.concat(item_rows, ignore_index=True)
+    summary_frame = pd.DataFrame(summary_rows).sort_values(["prompt_template"]).reset_index(drop=True)
+    return item_frame, summary_frame
+
+
 def summarize_results(frame: pd.DataFrame) -> pd.DataFrame:
     summary_rows: List[Dict[str, object]] = []
     include_sum_metric = "passive_minus_active_logprob_sum" in frame.columns
@@ -702,11 +917,16 @@ def write_common_outputs(
     summary = summarize_results(frame)
     contrasts = build_contrast_table(summary, prime_condition_ordering=prime_condition_ordering)
     stats_table = pairwise_stats(frame, rng=rng, prime_condition_ordering=prime_condition_ordering)
+    pe_item_table, pe_summary = compute_sinclair_pe_tables(frame=frame, rng=rng)
 
     frame.to_csv(output_dir / "item_scores.csv", index=False)
     summary.to_csv(output_dir / "summary.csv", index=False)
     contrasts.to_csv(output_dir / "comparison.csv", index=False)
     stats_table.to_csv(output_dir / "stats.csv", index=False)
+    if not pe_item_table.empty:
+        pe_item_table.to_csv(output_dir / "sinclair_pe_item_scores.csv", index=False)
+    if not pe_summary.empty:
+        pe_summary.to_csv(output_dir / "sinclair_pe_summary.csv", index=False)
 
     report_lines = [
         f"# {title}",
@@ -729,13 +949,31 @@ def write_common_outputs(
         stats_table.to_csv(index=False).strip(),
         "```",
         "",
+    ]
+    if not pe_summary.empty:
+        report_lines.extend(
+            [
+                "## Sinclair-Style PE (Same Minus Other)",
+                "",
+                "```csv",
+                pe_summary.to_csv(index=False).strip(),
+                "```",
+                "",
+            ]
+        )
+    report_lines.extend(
+        [
         "Interpretation:",
         "- `passive_choice_rate` is the share of items where the passive option outranked the active option.",
         "- `mean_passive_minus_active_logprob` is the mean passive-vs-active structural preference score.",
         "- In `comparison.csv` and `stats.csv`, differences are always `condition_b - condition_a`.",
         "- `passive_choice_delta` tests paired shifts in passive choice rates across prime conditions.",
         "- `logprob_delta` tests paired shifts in passive-vs-active preference across prime conditions.",
+        "- `sinclair_pe_summary.csv` reports paper-style PE: same-prime minus other-prime for each target form.",
+        "- `pe_active_target_logprob_same_minus_other = logP(active|active prime) - logP(active|passive prime)`.",
+        "- `pe_passive_target_logprob_same_minus_other = logP(passive|passive prime) - logP(passive|active prime)`.",
     ]
+    )
     if "mean_passive_minus_active_logprob_sum" in summary.columns:
         report_lines.append(
             "- `mean_passive_minus_active_logprob_sum` is the summed passive-vs-active preference score."

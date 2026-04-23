@@ -1,0 +1,5 @@
+prompt_column,prime_condition,n_items,active_rate,passive_rate,other_rate,congruent_rate
+prompt_active,active,2048,0.94970703125,0.0,0.05029296875,0.94970703125
+prompt_filler,filler,2048,0.36767578125,0.19873046875,0.43359375,0.0
+prompt_no_prime,no_prime,2048,0.373046875,0.107421875,0.51953125,0.0
+prompt_passive,passive,2048,0.2333984375,0.73291015625,0.03369140625,0.73291015625
