@@ -4,7 +4,7 @@ else
 PYTHON ?= .venv/bin/python
 endif
 
-.PHONY: python-version transitive-priming transitive-report transitive-stats processing-experiment-1b processing-experiment-1b-suite processing-experiment-1b-report core-completion-choice-pilot counterbalanced-completion-choice counterbalanced-generation-choice counterbalanced-production-suite emnlp-story-figures jabberwocky-lexicon-audit jabberwocky-semantic-audit jabberwocky-tokenizer-filter regenerate-jabberwocky-transitive regenerate-jabberwocky-transitive-bpe
+.PHONY: python-version transitive-priming transitive-report transitive-stats colab-experiment-1a processing-experiment-1b processing-experiment-1b-suite processing-experiment-1b-report core-completion-choice-pilot counterbalanced-completion-choice counterbalanced-generation-choice counterbalanced-production-suite emnlp-story-figures jabberwocky-lexicon-audit jabberwocky-semantic-audit jabberwocky-tokenizer-filter regenerate-jabberwocky-transitive regenerate-jabberwocky-transitive-bpe
 
 python-version:
 	$(PYTHON) --version
@@ -18,6 +18,9 @@ transitive-report:
 transitive-stats:
 	$(PYTHON) scripts/5_analyze_transitive_statistics.py
 
+colab-experiment-1a:
+	$(PYTHON) scripts/10_run_colab_experiment_1a.py
+
 processing-experiment-1b:
 	$(PYTHON) scripts/15_counterbalanced_processing_experiment_1b.py
 
@@ -28,16 +31,16 @@ processing-experiment-1b-report:
 	$(PYTHON) scripts/18_report_processing_experiment_1b.py
 
 core-completion-choice-pilot:
-	$(PYTHON) scripts/7_core_completion_choice_pilot.py
+	@echo "Retired: completion-choice pilot path. Use 'make colab-experiment-1a' for Experiment 1a."
 
 counterbalanced-completion-choice:
-	$(PYTHON) scripts/12_counterbalanced_completion_choice_experiment.py
+	@echo "Retired: Experiment 2a completion-choice."
 
 counterbalanced-generation-choice:
-	$(PYTHON) scripts/13_counterbalanced_generation_experiment.py
+	@echo "Retired: Experiment 2b generation-choice."
 
 counterbalanced-production-suite:
-	$(PYTHON) scripts/14_run_counterbalanced_production_experiments.py
+	@echo "Retired: 2a/2b production suite wrapper."
 
 emnlp-story-figures:
 	mkdir -p .cache/matplotlib
