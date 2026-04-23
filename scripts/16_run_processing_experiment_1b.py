@@ -85,7 +85,6 @@ def condition_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str,
         },
         {
             "name": "jabberwocky_primes_jabberwocky_targets",
-            "input_csv": JABBERWOCKY,
             "input_csv": JABBERWOCKY_2080,
             "prime_csv": JABBERWOCKY_2080,
             "output_dir": output_root / "processing_1b_jabberwocky_jabberwocky",
