@@ -29,6 +29,9 @@ class BootstrapResult:
 DEFAULT_PREFERENCE_MEASURES: Sequence[str] = (
     "preference_total",
     "preference_mean",
+    "passive_minus_active_logprob_sum",
+    "passive_minus_active_logprob",
+    "passive_choice_indicator",
     "preference_first_token",
     "preference_second_token",
     "preference_last_token",

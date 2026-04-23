@@ -1,6 +1,0 @@
-dataset_id,dataset_label,prime_condition,passive_choice_rate,active_choice_rate,mean_passive_minus_active_logprob
-llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,active,0.8908653846153847,0.10913461538461533,0.31653646065335656
-llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,filler,0.989423076923077,0.01057692307692304,0.5190897930635989
-llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,no_prime_empty,0.9048076923076924,0.09519230769230758,0.4746114582970422
-llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,no_prime_eos,0.9240384615384616,0.07596153846153841,0.4039060936909231
-llama_strict_jabberwocky,LLaMA lexically controlled Jabberwocky,passive,1,0,0.7444408667812863

@@ -1,6 +1,0 @@
-dataset_id,dataset_label,prime_condition,passive_choice_rate,active_choice_rate,mean_passive_minus_active_logprob
-gpt2_overlap_core,GPT-2 lexical-overlap CORE,active,0.8346153846153846,0.16538461538461535,0.4692828500299954
-gpt2_overlap_core,GPT-2 lexical-overlap CORE,filler,0.99375,0.006249999999999978,1.5418608131498934
-gpt2_overlap_core,GPT-2 lexical-overlap CORE,no_prime_empty,0.9966346153846154,0.0033653846153846034,1.2670308582875902
-gpt2_overlap_core,GPT-2 lexical-overlap CORE,no_prime_eos,0.9855769230769232,0.01442307692307676,1.530622344921651
-gpt2_overlap_core,GPT-2 lexical-overlap CORE,passive,1,0,1.954839280842643

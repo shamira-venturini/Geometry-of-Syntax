@@ -1,5 +1,0 @@
-prompt_template,prime_condition,n_items,n_active_choice,n_passive_choice,active_choice_rate,passive_choice_rate,mean_passive_minus_active_logprob,sd_passive_minus_active_logprob
-demo__involving_event__did_to__mary_answered,active,2080,2011,69,0.9668269230769231,0.03317307692307692,-2.013553333282471,1.1366120112589801
-demo__involving_event__did_to__mary_answered,filler,2080,1512,568,0.7269230769230769,0.27307692307692305,-0.5216326493483323,1.0158229707037143
-demo__involving_event__did_to__mary_answered,no_prime,2080,1834,246,0.8817307692307692,0.11826923076923077,-1.3760326678936299,1.1017656393385828
-demo__involving_event__did_to__mary_answered,passive,2080,974,1106,0.46826923076923077,0.5317307692307692,0.1158694340632512,0.9361119998753858

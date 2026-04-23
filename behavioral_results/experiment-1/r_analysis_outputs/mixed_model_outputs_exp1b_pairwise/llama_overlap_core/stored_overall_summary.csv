@@ -1,6 +1,0 @@
-dataset_id,dataset_label,prime_condition,passive_choice_rate,active_choice_rate,mean_passive_minus_active_logprob
-llama_overlap_core,LLaMA lexical-overlap CORE,active,0.7336538461538461,0.2663461538461539,0.3139691512372177
-llama_overlap_core,LLaMA lexical-overlap CORE,filler,0.9725961538461538,0.027403846153846168,1.135012964195093
-llama_overlap_core,LLaMA lexical-overlap CORE,no_prime_empty,0.96875,0.03125,1.2676283780238855
-llama_overlap_core,LLaMA lexical-overlap CORE,no_prime_eos,0.9653846153846154,0.0346153846153846,1.3939788363762975
-llama_overlap_core,LLaMA lexical-overlap CORE,passive,1,0,1.6420909049717642

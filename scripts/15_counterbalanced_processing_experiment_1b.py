@@ -1,7 +1,7 @@
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Sequence, Tuple
 
 import pandas as pd
 import torch
@@ -11,7 +11,7 @@ from production_priming_common import (
     JABBERWOCKY_FILLER_SENTENCES,
     LEXICALLY_CONTROLLED_CORE_CSV,
     REPO_ROOT,
-    batched_choice_log_probs,
+    batched_choice_detailed_scores,
     get_device,
     lexical_overlap_audit,
     load_causal_lm_and_tokenizer,
@@ -108,11 +108,12 @@ def build_prompt_groups(
             else:
                 # Empty-context no-prime baseline; scorer handles prompt_len=0 safely.
                 prompt = ""
+            prompt_token_count = len(tokenizer(prompt, add_special_tokens=False)["input_ids"])
 
             prompt_groups.append(
                 (
                     prompt,
-                    len(tokenizer(prompt, add_special_tokens=False)["input_ids"]),
+                    prompt_token_count,
                     candidates,
                     candidate_lengths,
                 )
@@ -127,6 +128,8 @@ def build_prompt_groups(
                     "target_active": active_target,
                     "target_passive": passive_target,
                     "prompt": prompt,
+                    "prompt_text": prompt,
+                    "prompt_token_count": prompt_token_count,
                     "choice_target": "full_sentence_processing",
                 }
             )
@@ -139,6 +142,83 @@ def infer_filler_domain(input_csv: Path, prime_csv: Path, requested: str) -> str
         return requested
     probe = f"{input_csv.name} {prime_csv.name}".lower()
     return "jabberwocky" if "jabberwocky" in probe else "core"
+
+
+def _token_debug_json(values: Sequence[object]) -> str:
+    return json.dumps(list(values), ensure_ascii=True)
+
+
+def _safe_token_value(values: Sequence[float], index: int) -> float:
+    if not values:
+        return float("nan")
+    if index < 0:
+        index = len(values) + index
+    if index < 0 or index >= len(values):
+        return float("nan")
+    return float(values[index])
+
+
+def _shared_prefix_len(a: Sequence[int], b: Sequence[int]) -> int:
+    limit = min(len(a), len(b))
+    count = 0
+    while count < limit and int(a[count]) == int(b[count]):
+        count += 1
+    return count
+
+
+def _location_metrics(
+    *,
+    token_ids_a: Sequence[int],
+    token_ids_b: Sequence[int],
+    token_logprobs_a: Sequence[float],
+    token_logprobs_b: Sequence[float],
+) -> Dict[str, object]:
+    shared_prefix = _shared_prefix_len(token_ids_a, token_ids_b)
+    divergence_index = shared_prefix if shared_prefix < min(len(token_ids_a), len(token_ids_b)) else -1
+    aligned_length = min(len(token_logprobs_a), len(token_logprobs_b))
+    aligned_diffs = [
+        float(token_logprobs_a[idx] - token_logprobs_b[idx])
+        for idx in range(aligned_length)
+    ]
+
+    if aligned_diffs:
+        aligned_mean = float(sum(aligned_diffs) / len(aligned_diffs))
+        aligned_first = float(aligned_diffs[0])
+        aligned_last = float(aligned_diffs[-1])
+    else:
+        aligned_mean = float("nan")
+        aligned_first = float("nan")
+        aligned_last = float("nan")
+
+    if divergence_index >= 0:
+        divergence_a = _safe_token_value(token_logprobs_a, divergence_index)
+        divergence_b = _safe_token_value(token_logprobs_b, divergence_index)
+        divergence_diff = divergence_a - divergence_b
+    else:
+        divergence_a = float("nan")
+        divergence_b = float("nan")
+        divergence_diff = float("nan")
+
+    return {
+        "shared_prefix_token_count": int(shared_prefix),
+        "divergence_token_index": int(divergence_index),
+        "candidate_a_first_token_logprob": _safe_token_value(token_logprobs_a, 0),
+        "candidate_b_first_token_logprob": _safe_token_value(token_logprobs_b, 0),
+        "candidate_a_second_token_logprob": _safe_token_value(token_logprobs_a, 1),
+        "candidate_b_second_token_logprob": _safe_token_value(token_logprobs_b, 1),
+        "candidate_a_last_token_logprob": _safe_token_value(token_logprobs_a, -1),
+        "candidate_b_last_token_logprob": _safe_token_value(token_logprobs_b, -1),
+        "candidate_a_divergence_token_logprob": divergence_a,
+        "candidate_b_divergence_token_logprob": divergence_b,
+        "preference_first_token": _safe_token_value(token_logprobs_a, 0) - _safe_token_value(token_logprobs_b, 0),
+        "preference_second_token": _safe_token_value(token_logprobs_a, 1) - _safe_token_value(token_logprobs_b, 1),
+        "preference_last_token": _safe_token_value(token_logprobs_a, -1) - _safe_token_value(token_logprobs_b, -1),
+        "preference_divergence_token": divergence_diff,
+        "preference_aligned_mean": aligned_mean,
+        "preference_aligned_first": aligned_first,
+        "preference_aligned_last": aligned_last,
+        "preference_tokenwise_aligned_diffs": _token_debug_json(aligned_diffs),
+    }
 
 
 def main() -> None:
@@ -181,7 +261,7 @@ def main() -> None:
         seed=args.seed,
         filler_sentences=filler_sentences,
     )
-    batched_scores = batched_choice_log_probs(
+    batched_scores = batched_choice_detailed_scores(
         tokenizer=tokenizer,
         model=model,
         device=device,
@@ -190,28 +270,68 @@ def main() -> None:
     )
 
     rows: List[Dict[str, object]] = []
-    for metadata, candidate_log_probs in zip(row_metadata, batched_scores):
-        active_sum, passive_sum = candidate_log_probs
-        active_len = len(tokenizer(" " + metadata["target_active"], add_special_tokens=False)["input_ids"])
-        passive_len = len(tokenizer(" " + metadata["target_passive"], add_special_tokens=False)["input_ids"])
+    for metadata, candidate_scores in zip(row_metadata, batched_scores):
+        active_score, passive_score = candidate_scores
+        active_sum = float(active_score["total_logprob"])
+        passive_sum = float(passive_score["total_logprob"])
+        active_len = int(active_score["token_count"])
+        passive_len = int(passive_score["token_count"])
         active_mean = active_sum / max(1, active_len)
         passive_mean = passive_sum / max(1, passive_len)
         chosen_structure = "passive" if passive_mean > active_mean else "active"
-        rows.append(
-            {
-                **metadata,
-                "active_choice_logprob": active_mean,
-                "passive_choice_logprob": passive_mean,
-                "passive_minus_active_logprob": passive_mean - active_mean,
-                "active_choice_logprob_sum": active_sum,
-                "passive_choice_logprob_sum": passive_sum,
-                "passive_minus_active_logprob_sum": passive_sum - active_sum,
-                "active_target_token_count": active_len,
-                "passive_target_token_count": passive_len,
-                "chosen_structure": chosen_structure,
-                "passive_choice_indicator": 1.0 if chosen_structure == "passive" else 0.0,
-            }
+
+        row: Dict[str, object] = {
+            **metadata,
+            "model_name": args.model_name,
+            "model_condition": args.condition_label,
+            "task": "processing_experiment_1b",
+            "task_short": "processing_experiment_1b",
+            "task_family": "processing_like_disambiguation",
+            "prompt_format_used": "plain_text",
+            "question_template_used": "",
+            "target_voice": "active_vs_passive",
+            "target_sentence_used": "",
+            "lexicality_condition": "nonce" if filler_domain == "jabberwocky" else "real",
+            "candidate_a_label": "active_completion",
+            "candidate_a_text": str(active_score["candidate_text"]),
+            "candidate_a_total_logprob": active_sum,
+            "candidate_a_mean_logprob": float(active_score["mean_logprob"]),
+            "candidate_a_token_count": active_len,
+            "candidate_a_token_ids": _token_debug_json(active_score["candidate_token_ids"]),
+            "candidate_a_tokens": _token_debug_json(active_score["candidate_tokens"]),
+            "candidate_a_token_logprobs": _token_debug_json(active_score["candidate_token_logprobs"]),
+            "candidate_b_label": "passive_completion",
+            "candidate_b_text": str(passive_score["candidate_text"]),
+            "candidate_b_total_logprob": passive_sum,
+            "candidate_b_mean_logprob": float(passive_score["mean_logprob"]),
+            "candidate_b_token_count": passive_len,
+            "candidate_b_token_ids": _token_debug_json(passive_score["candidate_token_ids"]),
+            "candidate_b_tokens": _token_debug_json(passive_score["candidate_tokens"]),
+            "candidate_b_token_logprobs": _token_debug_json(passive_score["candidate_token_logprobs"]),
+            "preference_total": active_sum - passive_sum,
+            "preference_mean": active_mean - passive_mean,
+            "active_minus_passive_logprob_total": active_sum - passive_sum,
+            "active_minus_passive_logprob_mean": active_mean - passive_mean,
+            "active_choice_logprob": active_mean,
+            "passive_choice_logprob": passive_mean,
+            "passive_minus_active_logprob": passive_mean - active_mean,
+            "active_choice_logprob_sum": active_sum,
+            "passive_choice_logprob_sum": passive_sum,
+            "passive_minus_active_logprob_sum": passive_sum - active_sum,
+            "active_target_token_count": active_len,
+            "passive_target_token_count": passive_len,
+            "chosen_structure": chosen_structure,
+            "passive_choice_indicator": 1.0 if chosen_structure == "passive" else 0.0,
+        }
+        row.update(
+            _location_metrics(
+                token_ids_a=[int(value) for value in active_score["candidate_token_ids"]],
+                token_ids_b=[int(value) for value in passive_score["candidate_token_ids"]],
+                token_logprobs_a=[float(value) for value in active_score["candidate_token_logprobs"]],
+                token_logprobs_b=[float(value) for value in passive_score["candidate_token_logprobs"]],
+            )
         )
+        rows.append(row)
 
     results = pd.DataFrame(rows)
     metadata = {

@@ -2,8 +2,7 @@ experiment:
   dataset_mode: corpora
   seed: 13
   output_dir: behavioral_results/experiment-3/colab_run
-  run_experiment_3_production: true
-  run_experiment_3_comprehension: true
+  run_experiment_3_continuation: true
   force_bos: false
   append_eos_to_candidate: false
   no_prime_mode: empty
