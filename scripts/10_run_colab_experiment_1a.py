@@ -18,6 +18,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--model-name", default="gpt2-large")
     parser.add_argument("--device", default="cuda")
+    parser.add_argument(
+        "--torch-dtype",
+        default="auto",
+        help="Torch dtype for model loading in the priming step: auto, float32, float16, or bfloat16.",
+    )
     parser.add_argument("--batch-size", type=int, default=32)
     parser.add_argument("--max-items", type=int, default=15000)
     parser.add_argument(
@@ -40,6 +45,11 @@ def parse_args() -> argparse.Namespace:
         "--skip-stats",
         action="store_true",
         help="Skip scripts/5_analyze_transitive_statistics.py",
+    )
+    parser.add_argument(
+        "--local-files-only",
+        action="store_true",
+        help="Load tokenizer/model from local Hugging Face cache only.",
     )
     return parser.parse_args()
 
@@ -70,11 +80,15 @@ def main() -> None:
         str(args.batch_size),
         "--device",
         args.device,
+        "--torch-dtype",
+        args.torch_dtype,
         "--preset",
         args.preset,
         "--max-items",
         str(args.max_items),
     ]
+    if args.local_files_only:
+        priming_command.append("--local-files-only")
     commands["priming"] = priming_command
     run_command(priming_command, cwd=REPO_ROOT)
 
@@ -108,10 +122,12 @@ def main() -> None:
         "runner": str(Path(__file__).resolve()),
         "model_name": args.model_name,
         "device": args.device,
+        "torch_dtype": args.torch_dtype,
         "batch_size": args.batch_size,
         "max_items": args.max_items,
         "preset": args.preset,
         "seed": args.seed,
+        "local_files_only": bool(args.local_files_only),
         "skip_report": bool(args.skip_report),
         "skip_stats": bool(args.skip_stats),
         "output_root": str(output_root),

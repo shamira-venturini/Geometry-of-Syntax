@@ -52,6 +52,16 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch-size", type=int, default=16)
     parser.add_argument("--max-items", type=int, default=None)
     parser.add_argument("--device", default=None)
+    parser.add_argument(
+        "--torch-dtype",
+        default="auto",
+        help="Torch dtype for model loading: auto, float32, float16, or bfloat16.",
+    )
+    parser.add_argument(
+        "--local-files-only",
+        action="store_true",
+        help="Load tokenizer/model from local Hugging Face cache only.",
+    )
     parser.add_argument("--output-dir", type=Path, default=DEFAULT_OUTPUT_DIR)
     parser.add_argument(
         "--preset",
@@ -97,6 +107,27 @@ def get_device(user_device: Optional[str]) -> str:
     if hasattr(torch.backends, "mps") and torch.backends.mps.is_available():
         return "mps"
     return "cuda" if torch.cuda.is_available() else "cpu"
+
+
+def resolve_torch_dtype(dtype_name: Optional[str]) -> Optional[torch.dtype]:
+    normalized = (dtype_name or "auto").strip().lower()
+    if normalized in {"", "auto", "none", "default"}:
+        return None
+    lookup = {
+        "float32": torch.float32,
+        "fp32": torch.float32,
+        "float": torch.float32,
+        "float16": torch.float16,
+        "fp16": torch.float16,
+        "half": torch.float16,
+        "bfloat16": torch.bfloat16,
+        "bf16": torch.bfloat16,
+    }
+    if normalized not in lookup:
+        raise ValueError(
+            f"Unsupported torch dtype '{dtype_name}'. Use auto, float32, float16, or bfloat16."
+        )
+    return lookup[normalized]
 
 
 def parse_input_specs(raw_specs: Sequence[str]) -> Dict[str, Path]:
@@ -525,11 +556,21 @@ def main() -> None:
     input_map = resolve_inputs(args)
 
     device = get_device(args.device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.model_name,
+        local_files_only=args.local_files_only,
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    model = AutoModelForCausalLM.from_pretrained(args.model_name)
+    model_kwargs = {
+        "local_files_only": args.local_files_only,
+        "low_cpu_mem_usage": True,
+    }
+    resolved_dtype = resolve_torch_dtype(args.torch_dtype)
+    if resolved_dtype is not None:
+        model_kwargs["torch_dtype"] = resolved_dtype
+    model = AutoModelForCausalLM.from_pretrained(args.model_name, **model_kwargs)
     model.to(device)
     model.eval()
 
