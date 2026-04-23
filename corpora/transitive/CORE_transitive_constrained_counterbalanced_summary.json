@@ -1,7 +1,7 @@
 {
   "noun_source": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/PrimeLM/vocabulary_lists/nounlist_usf_freq.csv",
   "verb_source": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/PrimeLM/vocabulary_lists/verblist_T_usf_freq.csv",
-  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
+  "output_csv": "corpora/transitive/CORE_transitive_constrained_counterbalanced.csv",
   "row_count": 2080,
   "included_verbs": [
     {
@@ -345,10 +345,13 @@
   ],
   "audit": {
     "tracked_verb_noun_pairs": 4160,
-    "imbalanced_pairs": []
+    "imbalanced_pairs": [],
+    "same_aux_rows": 0,
+    "same_aux_rate": 0.0
   },
   "notes": [
     "Each included verb contributes one reduced block where every eligible noun appears equally often as AGENT and PATIENT.",
+    "Within each row, passive prime (`pp`) and passive target (`tp`) use opposite auxiliaries (`is` vs `was`).",
     "Excluded verbs have no noun set that can satisfy both N1 and N2 role constraints simultaneously."
   ]
 }

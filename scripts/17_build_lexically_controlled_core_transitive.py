@@ -26,7 +26,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Build a lexically controlled variant of the constrained counterbalanced CORE corpus "
-            "where each target row is paired with a prime row sharing neither verb nor nouns."
+            "where each target row is paired with a prime row sharing neither verb nor nouns, "
+            "and with opposite passive auxiliary (is/was)."
         )
     )
     parser.add_argument("--source-csv", type=Path, default=DEFAULT_SOURCE)
@@ -48,17 +49,25 @@ def parse_active(sentence: str) -> Tuple[str, str, str, str, str]:
     return tokens[0], tokens[1], tokens[2], tokens[3], tokens[4]
 
 
-def lexical_signature(sentence: str) -> Dict[str, object]:
-    _, noun_1, verb, _, noun_2 = parse_active(sentence)
+def parse_passive_aux(sentence: str) -> str:
+    tokens = sentence.strip().split()
+    if len(tokens) != 8:
+        raise ValueError(f"Unexpected passive sentence format: {sentence}")
+    return tokens[2].lower()
+
+
+def lexical_signature(active_sentence: str, passive_sentence: str) -> Dict[str, object]:
+    _, noun_1, verb, _, noun_2 = parse_active(active_sentence)
     return {
         "verb": verb.lower(),
         "nouns": frozenset({noun_1.lower(), noun_2.lower()}),
+        "passive_aux": parse_passive_aux(passive_sentence),
     }
 
 
 def build_signatures(frame: pd.DataFrame) -> Tuple[List[Dict[str, object]], List[Dict[str, object]]]:
-    target_signatures = [lexical_signature(str(row.ta)) for row in frame.itertuples(index=False)]
-    prime_signatures = [lexical_signature(str(row.pa)) for row in frame.itertuples(index=False)]
+    target_signatures = [lexical_signature(str(row.ta), str(row.tp)) for row in frame.itertuples(index=False)]
+    prime_signatures = [lexical_signature(str(row.pa), str(row.pp)) for row in frame.itertuples(index=False)]
     return target_signatures, prime_signatures
 
 
@@ -81,6 +90,8 @@ def build_assignment(
             if target_verb == str(prime_sig["verb"]):
                 continue
             if target_nouns & set(prime_sig["nouns"]):
+                continue
+            if str(target_sig["passive_aux"]) == str(prime_sig["passive_aux"]):
                 continue
             row_indices.append(target_index)
             col_indices.append(permuted_col)
@@ -119,6 +130,7 @@ def audit_assignment(
 ) -> Dict[str, object]:
     same_verb_rows = 0
     any_shared_noun_rows = 0
+    same_aux_rows = 0
     prime_source_rows: List[int] = []
 
     for target_index, prime_index in enumerate(assignment):
@@ -127,14 +139,17 @@ def audit_assignment(
         prime_sig = prime_signatures[int(prime_index)]
         same_verb_rows += int(str(target_sig["verb"]) == str(prime_sig["verb"]))
         any_shared_noun_rows += int(bool(set(target_sig["nouns"]) & set(prime_sig["nouns"])))
+        same_aux_rows += int(str(target_sig["passive_aux"]) == str(prime_sig["passive_aux"]))
 
     return {
         "row_count": int(len(source_frame)),
         "prime_source_row_indices_preview": prime_source_rows[:25],
         "same_verb_rows": int(same_verb_rows),
         "shared_noun_rows": int(any_shared_noun_rows),
+        "shared_aux_rows": int(same_aux_rows),
         "same_verb_rate": float(same_verb_rows / len(source_frame)),
         "shared_noun_rate": float(any_shared_noun_rows / len(source_frame)),
+        "shared_aux_rate": float(same_aux_rows / len(source_frame)),
     }
 
 
@@ -175,6 +190,7 @@ def main() -> None:
         "constraints": [
             "Prime and target must not share the active-form verb.",
             "Prime and target must not share either noun.",
+            "Prime and target passive auxiliaries must be opposite (is/was mismatch).",
         ],
         "audit": audit,
         "notes": [

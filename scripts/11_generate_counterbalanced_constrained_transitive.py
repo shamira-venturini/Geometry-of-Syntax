@@ -96,8 +96,15 @@ def sentence_active(det_agent: str, agent: str, active_verb: str, det_patient: s
     return f"{det_agent} {agent} {active_verb} {det_patient} {patient} ."
 
 
-def sentence_passive(det_agent: str, agent: str, passive_verb: str, det_patient: str, patient: str) -> str:
-    return f"{det_patient} {patient} is {passive_verb} by {det_agent} {agent} ."
+def sentence_passive(
+    det_agent: str,
+    agent: str,
+    passive_verb: str,
+    det_patient: str,
+    patient: str,
+    auxiliary: str,
+) -> str:
+    return f"{det_patient} {patient} {auxiliary} {passive_verb} by {det_agent} {agent} ."
 
 
 def generate_rows(
@@ -140,15 +147,22 @@ def generate_rows(
             t_agent = reversible[(i + target_agent_shift) % n]
             t_patient = reversible[(i + target_patient_shift) % n]
 
+            # Keep auxiliary overlap controlled within each row:
+            # prime/passive and target/passive always use opposite auxiliaries.
+            if i % 2 == 0:
+                p_aux, t_aux = "is", "was"
+            else:
+                p_aux, t_aux = "was", "is"
+
             d_pa = determiners[p_agent]
             d_pp = determiners[p_patient]
             d_ta = determiners[t_agent]
             d_tp = determiners[t_patient]
 
             pa = sentence_active(d_pa, p_agent, verb["pres_3s"], d_pp, p_patient)
-            pp = sentence_passive(d_pa, p_agent, verb["past_P"], d_pp, p_patient)
+            pp = sentence_passive(d_pa, p_agent, verb["past_P"], d_pp, p_patient, p_aux)
             ta = sentence_active(d_ta, t_agent, verb["pres_3s"], d_tp, t_patient)
-            tp = sentence_passive(d_ta, t_agent, verb["past_P"], d_tp, t_patient)
+            tp = sentence_passive(d_ta, t_agent, verb["past_P"], d_tp, t_patient, t_aux)
             rows.append([pa, pp, ta, tp])
 
         included.append(
@@ -180,9 +194,15 @@ def parse_passive(sentence: str) -> Tuple[str, str, str]:
 
 def audit_balance(rows: Sequence[Sequence[str]]) -> Dict[str, object]:
     counts: Dict[Tuple[str, str], Counter] = defaultdict(Counter)
+    same_aux_rows = 0
 
     for row in rows:
         pa, pp, ta, tp = row
+        pp_tokens = pp.strip().split()
+        tp_tokens = tp.strip().split()
+        if len(pp_tokens) != 8 or len(tp_tokens) != 8:
+            raise ValueError(f"Unexpected passive template in row: {row}")
+        same_aux_rows += int(pp_tokens[2].lower() == tp_tokens[2].lower())
 
         for sentence, parser in ((pa, parse_active), (pp, parse_passive), (ta, parse_active), (tp, parse_passive)):
             agent, verb, patient = parser(sentence)
@@ -207,6 +227,8 @@ def audit_balance(rows: Sequence[Sequence[str]]) -> Dict[str, object]:
     return {
         "tracked_verb_noun_pairs": len(counts),
         "imbalanced_pairs": imbalanced,
+        "same_aux_rows": int(same_aux_rows),
+        "same_aux_rate": float(same_aux_rows / len(rows)) if rows else 0.0,
     }
 
 
@@ -241,6 +263,7 @@ def main() -> None:
         "audit": audit,
         "notes": [
             "Each included verb contributes one reduced block where every eligible noun appears equally often as AGENT and PATIENT.",
+            "Within each row, passive prime (`pp`) and passive target (`tp`) use opposite auxiliaries (`is` vs `was`).",
             "Excluded verbs have no noun set that can satisfy both N1 and N2 role constraints simultaneously.",
         ],
     }
@@ -250,6 +273,8 @@ def main() -> None:
 
     if audit["imbalanced_pairs"]:
         raise RuntimeError("Balance audit failed: found verb-noun role imbalances.")
+    if int(audit["same_aux_rows"]) != 0:
+        raise RuntimeError("Auxiliary audit failed: found pp/tp rows with overlapping auxiliaries.")
 
     print(f"Saved {len(rows)} rows to {args.output}")
     print(f"Included verbs: {len(included)} | Excluded verbs: {len(excluded)}")
