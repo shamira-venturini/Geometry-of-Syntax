@@ -1,7 +1,7 @@
 import argparse
 import json
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
@@ -60,7 +60,7 @@ def one_sample_stats(values: np.ndarray, rng: np.random.Generator) -> Dict[str, 
     }
 
 
-def discover_run_dirs(root: Path, requested: List[str] | None) -> List[Path]:
+def discover_run_dirs(root: Path, requested: Optional[List[str]]) -> List[Path]:
     if requested:
         return [root / run_dir for run_dir in requested]
     return sorted(
@@ -78,6 +78,10 @@ def summarize_run(run_dir: Path, rng: np.random.Generator) -> List[Dict[str, obj
         .agg(
             passive_choice_indicator=("passive_choice_indicator", "mean"),
             passive_minus_active_logprob=("passive_minus_active_logprob", "mean"),
+            active_choice_logprob=("active_choice_logprob", "mean"),
+            passive_choice_logprob=("passive_choice_logprob", "mean"),
+            active_choice_logprob_sum=("active_choice_logprob_sum", "mean"),
+            passive_choice_logprob_sum=("passive_choice_logprob_sum", "mean"),
         )
     )
 
@@ -102,9 +106,97 @@ def summarize_run(run_dir: Path, rng: np.random.Generator) -> List[Dict[str, obj
         columns="prime_condition",
         values="passive_minus_active_logprob",
     )
+    pivot_active_logprob = item_scores.pivot(
+        index="item_index",
+        columns="prime_condition",
+        values="active_choice_logprob",
+    )
+    pivot_passive_logprob = item_scores.pivot(
+        index="item_index",
+        columns="prime_condition",
+        values="passive_choice_logprob",
+    )
+    pivot_active_logprob_sum = item_scores.pivot(
+        index="item_index",
+        columns="prime_condition",
+        values="active_choice_logprob_sum",
+    )
+    pivot_passive_logprob_sum = item_scores.pivot(
+        index="item_index",
+        columns="prime_condition",
+        values="passive_choice_logprob_sum",
+    )
 
     available_conditions = set(pivot_choice.columns.tolist())
     baselines = [name for name in BASELINE_ORDER if name in available_conditions]
+
+    pe_active = np.array([])
+    pe_passive = np.array([])
+    pe_active_sum = np.array([])
+    pe_passive_sum = np.array([])
+    pe_active_stats: Dict[str, float] = {
+        "mean": float("nan"),
+        "p_two_sided": float("nan"),
+        "ci95_low": float("nan"),
+        "ci95_high": float("nan"),
+    }
+    pe_passive_stats: Dict[str, float] = {
+        "mean": float("nan"),
+        "p_two_sided": float("nan"),
+        "ci95_low": float("nan"),
+        "ci95_high": float("nan"),
+    }
+    pe_active_sum_stats: Dict[str, float] = {
+        "mean": float("nan"),
+        "p_two_sided": float("nan"),
+        "ci95_low": float("nan"),
+        "ci95_high": float("nan"),
+    }
+    pe_passive_sum_stats: Dict[str, float] = {
+        "mean": float("nan"),
+        "p_two_sided": float("nan"),
+        "ci95_low": float("nan"),
+        "ci95_high": float("nan"),
+    }
+    pe_imbalance_stats: Dict[str, float] = {
+        "mean": float("nan"),
+        "p_two_sided": float("nan"),
+        "ci95_low": float("nan"),
+        "ci95_high": float("nan"),
+    }
+    pe_imbalance_sum_stats: Dict[str, float] = {
+        "mean": float("nan"),
+        "p_two_sided": float("nan"),
+        "ci95_low": float("nan"),
+        "ci95_high": float("nan"),
+    }
+
+    if {"active", "passive"}.issubset(available_conditions):
+        # Sinclair-style per-target PE:
+        # active target: logP(active|active prime) - logP(active|passive prime)
+        # passive target: logP(passive|passive prime) - logP(passive|active prime)
+        pe_active = (
+            pivot_active_logprob["active"].astype(float).to_numpy()
+            - pivot_active_logprob["passive"].astype(float).to_numpy()
+        )
+        pe_passive = (
+            pivot_passive_logprob["passive"].astype(float).to_numpy()
+            - pivot_passive_logprob["active"].astype(float).to_numpy()
+        )
+        pe_active_sum = (
+            pivot_active_logprob_sum["active"].astype(float).to_numpy()
+            - pivot_active_logprob_sum["passive"].astype(float).to_numpy()
+        )
+        pe_passive_sum = (
+            pivot_passive_logprob_sum["passive"].astype(float).to_numpy()
+            - pivot_passive_logprob_sum["active"].astype(float).to_numpy()
+        )
+        pe_active_stats = one_sample_stats(pe_active, rng)
+        pe_passive_stats = one_sample_stats(pe_passive, rng)
+        pe_active_sum_stats = one_sample_stats(pe_active_sum, rng)
+        pe_passive_sum_stats = one_sample_stats(pe_passive_sum, rng)
+        pe_imbalance_stats = one_sample_stats(pe_passive - pe_active, rng)
+        pe_imbalance_sum_stats = one_sample_stats(pe_passive_sum - pe_active_sum, rng)
 
     rows: List[Dict[str, object]] = []
     for baseline in baselines:
@@ -159,6 +251,30 @@ def summarize_run(run_dir: Path, rng: np.random.Generator) -> List[Dict[str, obj
                 "imbalance_logprob_ci95_low": imbalance_logprob_stats["ci95_low"],
                 "imbalance_logprob_ci95_high": imbalance_logprob_stats["ci95_high"],
                 "imbalance_logprob_p": imbalance_logprob_stats["p_two_sided"],
+                "pe_active_target_logprob_same_minus_other": pe_active_stats["mean"],
+                "pe_active_target_logprob_ci95_low": pe_active_stats["ci95_low"],
+                "pe_active_target_logprob_ci95_high": pe_active_stats["ci95_high"],
+                "pe_active_target_logprob_p": pe_active_stats["p_two_sided"],
+                "pe_passive_target_logprob_same_minus_other": pe_passive_stats["mean"],
+                "pe_passive_target_logprob_ci95_low": pe_passive_stats["ci95_low"],
+                "pe_passive_target_logprob_ci95_high": pe_passive_stats["ci95_high"],
+                "pe_passive_target_logprob_p": pe_passive_stats["p_two_sided"],
+                "pe_logprob_imbalance_passive_minus_active": pe_imbalance_stats["mean"],
+                "pe_logprob_imbalance_ci95_low": pe_imbalance_stats["ci95_low"],
+                "pe_logprob_imbalance_ci95_high": pe_imbalance_stats["ci95_high"],
+                "pe_logprob_imbalance_p": pe_imbalance_stats["p_two_sided"],
+                "pe_active_target_logprob_sum_same_minus_other": pe_active_sum_stats["mean"],
+                "pe_active_target_logprob_sum_ci95_low": pe_active_sum_stats["ci95_low"],
+                "pe_active_target_logprob_sum_ci95_high": pe_active_sum_stats["ci95_high"],
+                "pe_active_target_logprob_sum_p": pe_active_sum_stats["p_two_sided"],
+                "pe_passive_target_logprob_sum_same_minus_other": pe_passive_sum_stats["mean"],
+                "pe_passive_target_logprob_sum_ci95_low": pe_passive_sum_stats["ci95_low"],
+                "pe_passive_target_logprob_sum_ci95_high": pe_passive_sum_stats["ci95_high"],
+                "pe_passive_target_logprob_sum_p": pe_passive_sum_stats["p_two_sided"],
+                "pe_logprob_sum_imbalance_passive_minus_active": pe_imbalance_sum_stats["mean"],
+                "pe_logprob_sum_imbalance_ci95_low": pe_imbalance_sum_stats["ci95_low"],
+                "pe_logprob_sum_imbalance_ci95_high": pe_imbalance_sum_stats["ci95_high"],
+                "pe_logprob_sum_imbalance_p": pe_imbalance_sum_stats["p_two_sided"],
             }
         )
 
