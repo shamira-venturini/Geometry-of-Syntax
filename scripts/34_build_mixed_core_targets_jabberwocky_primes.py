@@ -9,8 +9,8 @@ import pandas as pd
 from production_priming_common import REPO_ROOT, lexical_overlap_audit, normalize_transitive_frame
 
 
-STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
-JABBERWOCKY_POOL = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
+STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
+JABBERWOCKY_POOL = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_matched_strict_4cell.csv"
 DEFAULT_OUTPUT = (
     REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
 )

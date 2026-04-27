@@ -7,7 +7,7 @@ from typing import Dict, List
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
+STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 MIXED_CORE_TARGETS_JABBER_PRIMES = (
     REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
 )
