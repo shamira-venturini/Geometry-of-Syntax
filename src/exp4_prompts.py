@@ -96,7 +96,10 @@ def build_nominalized_question(
 
     try:
         verb_form = _extract_active_verb_form(item.target_sentence_active)
-        verb_lemma = _lemmatize_third_person(verb_form)
+        if verb_form in {"s", "ed"}:
+            verb_lemma = "event"
+        else:
+            verb_lemma = _lemmatize_third_person(verb_form)
     except Exception as exc:  # pragma: no cover - defensive path
         logger.warning(
             "Exp4 nominalization fallback for item_id=%s (reason=%s): using default lemma 'do'.",
@@ -112,7 +115,9 @@ def build_nominalized_question(
         if str(key).strip() and str(value).strip()
     }
 
-    if verb_lemma in normalized_overrides:
+    if verb_lemma == "event":
+        nominalized = "event"
+    elif verb_lemma in normalized_overrides:
         nominalized = normalized_overrides[verb_lemma]
     elif verb_lemma in DEFAULT_NOMINALIZATION_OVERRIDES:
         nominalized = DEFAULT_NOMINALIZATION_OVERRIDES[verb_lemma]

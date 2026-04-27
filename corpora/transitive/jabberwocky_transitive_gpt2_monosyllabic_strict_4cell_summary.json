@@ -1,0 +1,376 @@
+{
+  "source_core_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv",
+  "noun_candidates_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/vocabulary_lists/jabberwocky_gpt2_old_style_monosyllabic_noun_candidates.csv",
+  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv",
+  "lexicon_json": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/vocabulary_lists/jabberwocky_gpt2_monosyllabic_strict_4cell_lexicon.json",
+  "summary_json": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell_summary.json",
+  "tokenizer_model": "gpt2-large",
+  "row_count": 2048,
+  "manipulation": "GPT-2 one-token old-style nonce nouns plus standalone inflectional verb fragments s/ed",
+  "nouns": [
+    "bri",
+    "dil",
+    "dru",
+    "gri",
+    "mur",
+    "dir",
+    "dur",
+    "fab",
+    "fav",
+    "fel",
+    "fil",
+    "fol",
+    "ful",
+    "gir",
+    "lav",
+    "lil",
+    "mol",
+    "mul",
+    "nav",
+    "nin",
+    "nom",
+    "nud",
+    "pav",
+    "pel",
+    "pil",
+    "por",
+    "rav",
+    "rom",
+    "sav",
+    "som",
+    "sor",
+    "sul",
+    "tel",
+    "tir",
+    "tul",
+    "vel",
+    "vil",
+    "vir",
+    "vom",
+    "vul"
+  ],
+  "target_cell_counts": {
+    "def_past": 512,
+    "def_present": 512,
+    "indef_past": 512,
+    "indef_present": 512
+  },
+  "prime_cell_counts": {
+    "def_past": 512,
+    "def_present": 512,
+    "indef_past": 512,
+    "indef_present": 512
+  },
+  "row_constraint_audit": {
+    "unknown_determiner_rows": 0,
+    "same_active_fragment_rows": 0,
+    "same_aux_rows": 0,
+    "same_det_family_rows": 0,
+    "shared_noun_rows": 0
+  },
+  "noun_tokenization": {
+    "model": "gpt2-large",
+    "status": "ok",
+    "noun_count": 40,
+    "all_one_token": true,
+    "bad_preview": [],
+    "preview": [
+      {
+        "noun": "bri",
+        "token_count": 1,
+        "token_ids": [
+          31013
+        ],
+        "tokens": [
+          "\u0120bri"
+        ]
+      },
+      {
+        "noun": "dil",
+        "token_count": 1,
+        "token_ids": [
+          11844
+        ],
+        "tokens": [
+          "\u0120dil"
+        ]
+      },
+      {
+        "noun": "dru",
+        "token_count": 1,
+        "token_ids": [
+          37215
+        ],
+        "tokens": [
+          "\u0120dru"
+        ]
+      },
+      {
+        "noun": "gri",
+        "token_count": 1,
+        "token_ids": [
+          11120
+        ],
+        "tokens": [
+          "\u0120gri"
+        ]
+      },
+      {
+        "noun": "mur",
+        "token_count": 1,
+        "token_ids": [
+          4636
+        ],
+        "tokens": [
+          "\u0120mur"
+        ]
+      },
+      {
+        "noun": "dir",
+        "token_count": 1,
+        "token_ids": [
+          26672
+        ],
+        "tokens": [
+          "\u0120dir"
+        ]
+      },
+      {
+        "noun": "dur",
+        "token_count": 1,
+        "token_ids": [
+          22365
+        ],
+        "tokens": [
+          "\u0120dur"
+        ]
+      },
+      {
+        "noun": "fab",
+        "token_count": 1,
+        "token_ids": [
+          7843
+        ],
+        "tokens": [
+          "\u0120fab"
+        ]
+      },
+      {
+        "noun": "fav",
+        "token_count": 1,
+        "token_ids": [
+          2090
+        ],
+        "tokens": [
+          "\u0120fav"
+        ]
+      },
+      {
+        "noun": "fel",
+        "token_count": 1,
+        "token_ids": [
+          10756
+        ],
+        "tokens": [
+          "\u0120fel"
+        ]
+      },
+      {
+        "noun": "fil",
+        "token_count": 1,
+        "token_ids": [
+          1226
+        ],
+        "tokens": [
+          "\u0120fil"
+        ]
+      },
+      {
+        "noun": "fol",
+        "token_count": 1,
+        "token_ids": [
+          5955
+        ],
+        "tokens": [
+          "\u0120fol"
+        ]
+      },
+      {
+        "noun": "ful",
+        "token_count": 1,
+        "token_ids": [
+          46246
+        ],
+        "tokens": [
+          "\u0120ful"
+        ]
+      },
+      {
+        "noun": "gir",
+        "token_count": 1,
+        "token_ids": [
+          37370
+        ],
+        "tokens": [
+          "\u0120gir"
+        ]
+      },
+      {
+        "noun": "lav",
+        "token_count": 1,
+        "token_ids": [
+          21606
+        ],
+        "tokens": [
+          "\u0120lav"
+        ]
+      },
+      {
+        "noun": "lil",
+        "token_count": 1,
+        "token_ids": [
+          42280
+        ],
+        "tokens": [
+          "\u0120lil"
+        ]
+      },
+      {
+        "noun": "mol",
+        "token_count": 1,
+        "token_ids": [
+          18605
+        ],
+        "tokens": [
+          "\u0120mol"
+        ]
+      },
+      {
+        "noun": "mul",
+        "token_count": 1,
+        "token_ids": [
+          35971
+        ],
+        "tokens": [
+          "\u0120mul"
+        ]
+      },
+      {
+        "noun": "nav",
+        "token_count": 1,
+        "token_ids": [
+          6812
+        ],
+        "tokens": [
+          "\u0120nav"
+        ]
+      },
+      {
+        "noun": "nin",
+        "token_count": 1,
+        "token_ids": [
+          13462
+        ],
+        "tokens": [
+          "\u0120nin"
+        ]
+      }
+    ]
+  },
+  "sentence_tokenization": {
+    "status": "ok",
+    "columns": {
+      "pa": {
+        "core": {
+          "min": 6,
+          "max": 7,
+          "mean": 6.140625
+        },
+        "jabber": {
+          "min": 6,
+          "max": 6,
+          "mean": 6.0
+        },
+        "jabber_minus_core": {
+          "min": -1,
+          "max": 0,
+          "mean": -0.140625
+        },
+        "exact_match_rows": 1760,
+        "nonzero_diff_rows": 288,
+        "negative_diff_rows": 288,
+        "positive_diff_rows": 0
+      },
+      "pp": {
+        "core": {
+          "min": 8,
+          "max": 9,
+          "mean": 8.03125
+        },
+        "jabber": {
+          "min": 8,
+          "max": 8,
+          "mean": 8.0
+        },
+        "jabber_minus_core": {
+          "min": -1,
+          "max": 0,
+          "mean": -0.03125
+        },
+        "exact_match_rows": 1984,
+        "nonzero_diff_rows": 64,
+        "negative_diff_rows": 64,
+        "positive_diff_rows": 0
+      },
+      "ta": {
+        "core": {
+          "min": 6,
+          "max": 7,
+          "mean": 6.140625
+        },
+        "jabber": {
+          "min": 6,
+          "max": 6,
+          "mean": 6.0
+        },
+        "jabber_minus_core": {
+          "min": -1,
+          "max": 0,
+          "mean": -0.140625
+        },
+        "exact_match_rows": 1760,
+        "nonzero_diff_rows": 288,
+        "negative_diff_rows": 288,
+        "positive_diff_rows": 0
+      },
+      "tp": {
+        "core": {
+          "min": 8,
+          "max": 9,
+          "mean": 8.03125
+        },
+        "jabber": {
+          "min": 8,
+          "max": 8,
+          "mean": 8.0
+        },
+        "jabber_minus_core": {
+          "min": -1,
+          "max": 0,
+          "mean": -0.03125
+        },
+        "exact_match_rows": 1984,
+        "nonzero_diff_rows": 64,
+        "negative_diff_rows": 64,
+        "positive_diff_rows": 0
+      }
+    }
+  },
+  "notes": [
+    "Corpus mirrors the strict CORE 4-cell row structure.",
+    "Nonce determiners preserve the exact CORE determiner token (the/a/an) to remove article-token mismatches.",
+    "Prime and target have opposite determiner family and opposite tense/auxiliary in every row.",
+    "Prime and target share no noun within row.",
+    "Active present verbs are standalone 's'; active past and passive participles are standalone 'ed'."
+  ]
+}
