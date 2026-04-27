@@ -16,8 +16,8 @@ from production_priming_common import (
 )
 
 
-STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
-JABBERWOCKY_PRIME_POOL = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv"
+STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
+JABBERWOCKY_PRIME_POOL = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_matched_strict_4cell.csv"
 MIXED_CORE_TARGETS_JABBER_PRIMES = (
     REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
 )

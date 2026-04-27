@@ -1,0 +1,443 @@
+{
+  "noun_source": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/PrimeLM/vocabulary_lists/nounlist_usf_freq.csv",
+  "verb_source": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/PrimeLM/vocabulary_lists/verblist_T_usf_freq.csv",
+  "association_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/usf_association_edges_core_vocab.csv",
+  "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv",
+  "summary_json": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_strict_4cell_counterbalanced_summary.json",
+  "seed": 13,
+  "max_rank": 5000,
+  "noun_rows_kept": 118,
+  "noun_rows_dropped": 1,
+  "verb_rows_kept": 48,
+  "verb_rows_dropped": 0,
+  "included_verbs": [
+    {
+      "verb": "ask",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "bother",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "chase",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "follow",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "forgive",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "hurt",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "join",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "judge",
+      "N1": "Person",
+      "N2": "Human",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "carry",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "catch",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "describe",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "destroy",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "discover",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "drag",
+      "N1": "Person",
+      "N2": "PO",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "forget",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "grab",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "raise",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "select",
+      "N1": "Person",
+      "N2": "POED",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "wash",
+      "N1": "Person",
+      "N2": "PO",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "beat",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "comfort",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "embrace",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "help",
+      "N1": "Human",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "hurry",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "kill",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "kiss",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "protect",
+      "N1": "Human",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "punch",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "strike",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "surprise",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "teach",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    },
+    {
+      "verb": "understand",
+      "N1": "Person",
+      "N2": "Person",
+      "eligible_reversible_nouns": 64,
+      "rows_added": 64,
+      "rows_per_target_cell": 16
+    }
+  ],
+  "excluded_verbs": [
+    {
+      "verb": "drink",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Drinkable",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "eat",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Edible",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "taste",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Edible",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "lead",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Group",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "accept",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "break",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "leave",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "use",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Human",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "wrap",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "collect",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "keep",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Human",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "prepare",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "purchase",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Human",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "remove",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "Object",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "smell",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Person",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    },
+    {
+      "verb": "want",
+      "reason": "Too few reversible nouns to cover all target determiner-by-tense cells.",
+      "N1": "Human",
+      "N2": "OED",
+      "eligible_reversible_nouns": 0
+    }
+  ],
+  "target_cells": [
+    "def_past",
+    "def_present",
+    "indef_past",
+    "indef_present"
+  ],
+  "constraints": [
+    "Only verbs whose N1 and N2 role constraints share a reversible noun pool are included.",
+    "Each included verb contributes a target block with exact def/indef by past/present balance.",
+    "For each included verb, every target noun appears once as agent and once as patient.",
+    "Prime rows are assigned one-to-one from the same event pool.",
+    "Prime and target share no verb lemma and no nouns.",
+    "Prime and target passive auxiliaries are opposite.",
+    "Prime and target determiner families are opposite.",
+    "Prime and target content words are not connected in USF free association norms."
+  ],
+  "audit": {
+    "row_count": 2048,
+    "target_cell_counts": {
+      "def_past": 512,
+      "def_present": 512,
+      "indef_past": 512,
+      "indef_present": 512
+    },
+    "prime_cell_counts": {
+      "def_past": 512,
+      "def_present": 512,
+      "indef_past": 512,
+      "indef_present": 512
+    },
+    "target_verb_count_range": [
+      64,
+      64
+    ],
+    "prime_verb_count_range": [
+      64,
+      64
+    ],
+    "same_verb_rows": 0,
+    "shared_noun_rows": 0,
+    "shared_aux_rows": 0,
+    "same_det_family_rows": 0,
+    "semantic_association_rows": 0,
+    "role_balance": {
+      "target_active_only": {
+        "tracked_verb_noun_pairs": 2048,
+        "imbalanced_pairs": []
+      },
+      "target_active_passive": {
+        "tracked_verb_noun_pairs": 2048,
+        "imbalanced_pairs": []
+      },
+      "full_pa_pp_ta_tp": {
+        "tracked_verb_noun_pairs": 2048,
+        "imbalanced_pairs": []
+      }
+    }
+  }
+}

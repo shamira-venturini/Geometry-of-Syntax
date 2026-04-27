@@ -16,7 +16,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VERB_LIST_PATH = REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
 LEXICALLY_CONTROLLED_CORE_CSV = (
-    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 )
 N_RESAMPLES = 10000
 CORE_FILLER_SENTENCES = [

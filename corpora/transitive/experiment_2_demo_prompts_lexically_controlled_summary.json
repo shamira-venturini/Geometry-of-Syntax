@@ -8,7 +8,7 @@
   "core_prompt_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/experiment_2_core_demo_prompts_lexically_controlled.csv",
   "jabberwocky_prompt_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/experiment_2_jabberwocky_demo_prompts_lexically_controlled.csv",
   "mixed_core_targets_jabberwocky_primes_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_core_targets_jabberwocky_primes_2048.csv",
-  "jabberwocky_prime_pool_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_bpe_filtered.csv",
+  "jabberwocky_prime_pool_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_matched_strict_4cell.csv",
   "core_alignment_mode": "paired_indices",
   "jabberwocky_alignment_mode": "prebuilt_mixed_lookup",
   "core_lexical_overlap_audit": {

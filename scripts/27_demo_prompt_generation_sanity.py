@@ -23,7 +23,7 @@ from production_priming_common import (
 )
 
 
-DEFAULT_JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2048.csv"
+DEFAULT_JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_matched_strict_4cell.csv"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "experiment-2" / "demo_prompt_generation_sanity"
 DEMO_SCRIPT_PATH = REPO_ROOT / "scripts" / "24_demo_prompt_completion_experiment.py"
 

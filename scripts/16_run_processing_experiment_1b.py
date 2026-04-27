@@ -10,9 +10,9 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_SCRIPT = REPO_ROOT / "scripts" / "15_counterbalanced_processing_experiment_1b.py"
 CORE_COUNTERBALANCED = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
 CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED = (
-    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced_lexically_controlled.csv"
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 )
-JABBERWOCKY_2048 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered_2048.csv"
+JABBERWOCKY_2048 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_matched_strict_4cell.csv"
 
 
 def parse_args() -> argparse.Namespace:

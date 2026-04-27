@@ -4,9 +4,9 @@ This repository includes **Experiment 3**, a deterministic, teacher-forced conti
 
 The pipeline is configured to run on the **same corpora family used elsewhere in this project**, specifically:
 
-- `corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv`
 - `corpora/transitive/CORE_transitive_constrained_counterbalanced.csv`
-- `corpora/transitive/jabberwocky_transitive_bpe_filtered_2080.csv`
+- `corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv`
+- `corpora/transitive/jabberwocky_transitive_matched_strict_4cell.csv`
 
 No toy dataset is used.
 

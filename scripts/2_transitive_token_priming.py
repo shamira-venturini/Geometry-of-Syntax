@@ -15,7 +15,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "experiment-1" / "experiment-1a" / "transitive_token_profiles"
 LOCAL_PAPER_INPUTS = {
     "CORE": REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_15000sampled_10-1.csv",
-    "jabberwocky": REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_bpe_filtered.csv",
+    "jabberwocky": REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_matched_strict_4cell.csv",
 }
 PRIMELM_ROOT = REPO_ROOT / "PrimeLM" / "corpora"
 PRESETS = {
