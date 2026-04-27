@@ -17,10 +17,7 @@ from production_priming_common import (
 
 
 STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
-JABBERWOCKY_PRIME_POOL = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_matched_strict_4cell.csv"
-MIXED_CORE_TARGETS_JABBER_PRIMES = (
-    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
-)
+JABBERWOCKY_PRIME_POOL = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
 DEMO_MODULE_PATH = REPO_ROOT / "scripts" / "24_demo_prompt_completion_experiment.py"
 
 
@@ -211,12 +208,7 @@ def main() -> None:
     core_csv = STRICT_CORE
     target_frame = normalize_transitive_frame(pd.read_csv(core_csv))
     core_prime_frame = normalize_transitive_frame(pd.read_csv(core_csv))
-    if not MIXED_CORE_TARGETS_JABBER_PRIMES.exists():
-        raise FileNotFoundError(
-            f"Missing mixed corpus: {MIXED_CORE_TARGETS_JABBER_PRIMES}. "
-            "Run scripts/34_build_mixed_core_targets_jabberwocky_primes.py first."
-        )
-    mixed_frame = normalize_transitive_frame(pd.read_csv(MIXED_CORE_TARGETS_JABBER_PRIMES))
+    jabber_frame = normalize_transitive_frame(pd.read_csv(JABBERWOCKY_PRIME_POOL))
 
     target_core_sample, core_prime_sample, core_alignment_mode = sample_condition_frames(
         target_frame=target_frame,
@@ -225,27 +217,12 @@ def main() -> None:
         seed=args.seed,
     )
 
-    mixed_lookup: Dict[Tuple[str, str], Tuple[str, str]] = {}
-    for row in mixed_frame.itertuples(index=False):
-        key = (str(row.ta), str(row.tp))
-        value = (str(row.pa), str(row.pp))
-        if key in mixed_lookup:
-            raise ValueError(f"Duplicate target key in mixed corpus for ta/tp: {key}")
-        mixed_lookup[key] = value
-
-    target_jabber_sample = target_core_sample.copy().reset_index(drop=True)
-    jabber_prime_rows: List[Dict[str, str]] = []
-    for _, target_row in target_jabber_sample.iterrows():
-        key = (str(target_row["ta"]), str(target_row["tp"]))
-        if key not in mixed_lookup:
-            raise ValueError(
-                "Mixed corpus is missing a target row from sampled strict CORE set. "
-                f"Missing key: {key}"
-            )
-        pa, pp = mixed_lookup[key]
-        jabber_prime_rows.append({"pa": pa, "pp": pp, "ta": key[0], "tp": key[1]})
-    jabber_prime_sample = pd.DataFrame(jabber_prime_rows, columns=["pa", "pp", "ta", "tp"])
-    jabber_alignment_mode = "prebuilt_mixed_lookup"
+    target_jabber_sample, jabber_prime_sample, jabber_alignment_mode = sample_condition_frames(
+        target_frame=jabber_frame,
+        prime_frame=jabber_frame,
+        max_items=args.max_items,
+        seed=args.seed,
+    )
 
     assert_auxiliary_mismatch(
         target_frame=target_core_sample,
@@ -295,7 +272,6 @@ def main() -> None:
         "seed": int(args.seed),
         "core_prompt_csv": str(core_path),
         "jabberwocky_prompt_csv": str(jabber_path),
-        "mixed_core_targets_jabberwocky_primes_csv": str(MIXED_CORE_TARGETS_JABBER_PRIMES),
         "jabberwocky_prime_pool_csv": str(JABBERWOCKY_PRIME_POOL),
         "core_alignment_mode": core_alignment_mode,
         "jabberwocky_alignment_mode": jabber_alignment_mode,

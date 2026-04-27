@@ -4,7 +4,7 @@ else
 PYTHON ?= .venv/bin/python
 endif
 
-.PHONY: python-version transitive-priming transitive-report transitive-stats colab-experiment-1a processing-experiment-1b processing-experiment-1b-suite processing-experiment-1b-report core-completion-choice-pilot counterbalanced-completion-choice counterbalanced-generation-choice counterbalanced-production-suite emnlp-story-figures jabberwocky-lexicon-audit jabberwocky-semantic-audit jabberwocky-tokenizer-filter regenerate-jabberwocky-transitive regenerate-jabberwocky-transitive-bpe
+.PHONY: python-version transitive-priming transitive-report transitive-stats colab-experiment-1a processing-experiment-1b processing-experiment-1b-suite processing-experiment-1b-report core-completion-choice-pilot counterbalanced-completion-choice counterbalanced-generation-choice counterbalanced-production-suite emnlp-story-figures jabberwocky-lexicon-audit jabberwocky-semantic-audit jabberwocky-tokenizer-filter regenerate-jabberwocky-transitive regenerate-jabberwocky-transitive-bpe export-experiment-2-prompts
 
 python-version:
 	$(PYTHON) --version
@@ -53,12 +53,13 @@ jabberwocky-semantic-audit:
 	$(PYTHON) scripts/2_audit_jabberwocky_semantics.py
 
 jabberwocky-tokenizer-filter:
-	$(PYTHON) scripts/4_filter_jabberwocky_tokenizer_lengths.py
+	@echo "Retired: old BPE-filtered Jabberwocky vocabulary path. Use 'make regenerate-jabberwocky-transitive'."
 
 regenerate-jabberwocky-transitive:
-	$(PYTHON) scripts/0_generate_jabberwocky_transitive.py
+	$(PYTHON) scripts/42_build_gpt2_monosyllabic_jabberwocky_strict_4cell.py
 
 regenerate-jabberwocky-transitive-bpe:
-	$(PYTHON) scripts/0_generate_jabberwocky_transitive.py \
-		--vocab-path corpora/transitive/jabberwocky_transitive_strict_bpe_filtered_vocabulary.json \
-		--output-path corpora/transitive/jabberwocky_transitive_bpe_filtered.csv
+	@echo "Retired: old BPE-filtered Jabberwocky corpus path. Use 'make regenerate-jabberwocky-transitive'."
+
+export-experiment-2-prompts:
+	$(PYTHON) scripts/28_export_demo_prompt_csvs.py

@@ -89,30 +89,30 @@ CORE_FILLER_SENTENCES: Sequence[str] = (
 )
 
 NONCE_FILLER_SENTENCES: Sequence[str] = (
-    "The noster glimmed near varset .",
-    "The trassel fented beside murven .",
-    "The krelbin staved on dralfin .",
-    "The prindle rasped during forven .",
-    "The slinter maved after bralken .",
-    "The vornet drissed near malden .",
-    "The krimble flened before narven .",
-    "The tharner plested after zolven .",
-    "The drasken yelped on fralden .",
-    "The glarnet shummed above torven .",
-    "The prasket whaved during morden .",
-    "The flinder trassed across jorven .",
-    "The claven morged through selven .",
-    "The drabble quisted in varlen .",
-    "The snorbel gredded after folven .",
-    "The prantel staved behind nulven .",
-    "The glimmer farned in jasken .",
-    "The nasker plodded near hulven .",
-    "The drimlet vorked before talven .",
-    "The plinter drossed in marven .",
-    "The clorven wepted beside prasken .",
-    "The vornel stonned during nalven .",
-    "The frindle glemmed in yorsen .",
-    "The trasket draved on molven .",
+    "The bri ed near dil .",
+    "The dru ed beside the gri .",
+    "The mur ed on the dir .",
+    "The dur ed during the fab .",
+    "The fav ed after fel .",
+    "The fil ed near the fol .",
+    "The ful ed before gir .",
+    "The lav ed after lil .",
+    "The mol ed on the mul .",
+    "The nav ed above the nin .",
+    "The nom ed during nud .",
+    "The pav ed across the pel .",
+    "The pil ed through the por .",
+    "The rav ed in the rom .",
+    "The sav ed after som .",
+    "The sor ed behind the sul .",
+    "The tel ed in the tir .",
+    "The tul ed near the vel .",
+    "The vil ed before vir .",
+    "The vom ed in the vul .",
+    "The bri ed beside the dru .",
+    "The gri ed during mur .",
+    "The dir ed in the dur .",
+    "The fab ed on the fav .",
 )
 
 
@@ -324,9 +324,18 @@ def _active_components(sentence: str) -> Tuple[str, str, str, str, str]:
 
 
 def _target_event_prompt(agent_phrase: str, patient_phrase: str, verb: str) -> str:
+    if verb.lower().strip() in {"s", "ed"}:
+        return (
+            f"There was an event involving {agent_phrase} and {patient_phrase}.\n"
+            f"The one who did it was {agent_phrase}.\n"
+            f"The one it happened to was {patient_phrase}.\n\n"
+            'Bridget asked, "What happened?"\n'
+            'Mary answered, "'
+        )
     event_name = _to_ing(verb)
+    article = "an" if event_name[:1].lower() in "aeiou" else "a"
     return (
-        f"There was a {event_name} event involving {agent_phrase} and {patient_phrase}.\n"
+        f"There was {article} {event_name} event involving {agent_phrase} and {patient_phrase}.\n"
         f"The one who did it was {agent_phrase}.\n"
         f"The one it happened to was {patient_phrase}.\n\n"
         'Bridget asked, "What happened?"\n'

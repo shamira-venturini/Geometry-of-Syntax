@@ -1,0 +1,30 @@
+{
+  "model": "gpt2-large",
+  "source_vocab": "corpora/transitive/vocabulary_lists/jabberwocky_transitive_strict_vocabulary.json",
+  "output_csv": "corpora/transitive/vocabulary_lists/jabberwocky_old_gpt2_single_token_noun_candidates.csv",
+  "n_candidates_total": 114,
+  "recommendation_counts": {
+    "reject": 72,
+    "review_dictionary_only": 30,
+    "strict_candidate": 12
+  },
+  "strict_candidates": [
+    "dru",
+    "gri",
+    "mur",
+    "neg",
+    "nin",
+    "ord",
+    "org",
+    "rav",
+    "var",
+    "vel",
+    "ven",
+    "ver"
+  ],
+  "notes": [
+    "Candidates are surface strings whose leading-space GPT-2-large encoding is exactly one token.",
+    "They are extracted only from token pieces observed in the old Jabberwocky vocabulary/forms.",
+    "The strict filter rejects exact dictionary/PrimeLM words, function-like pieces, suffix-like pieces, and pieces shorter than 3 characters."
+  ]
+}

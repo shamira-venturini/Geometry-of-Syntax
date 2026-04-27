@@ -25,7 +25,7 @@ from production_priming_common import (
 )
 
 
-DEFAULT_JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_matched_strict_4cell.csv"
+DEFAULT_JABBERWOCKY_PRIMES = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "experiment-2" / "demo_prompt_completion"
 REAL_VERB_ING = {
     "ask": "asking",
@@ -99,13 +99,13 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--event-style",
         choices=("there_was_event", "involving_event", "all"),
-        default="there_was_event",
+        default="involving_event",
         help="How the event itself is described in the scaffold.",
     )
     parser.add_argument(
         "--role-style",
         choices=("responsible_affected", "did_to", "all"),
-        default="responsible_affected",
+        default="did_to",
         help="How participant roles are described in the scaffold.",
     )
     parser.add_argument(
@@ -129,6 +129,8 @@ def pretty_sentence(text: str) -> str:
 
 def to_event_label(lemma: str) -> str:
     lower = lemma.lower()
+    if lower in {"s", "ed"}:
+        return ""
     if lower in REAL_VERB_ING:
         return REAL_VERB_ING[lower]
     if lower.endswith("ie") and len(lower) > 2:
@@ -138,6 +140,10 @@ def to_event_label(lemma: str) -> str:
     if lower.endswith("y") and len(lower) > 1:
         return lower + "ing"
     return lower + "ing"
+
+
+def event_article(event_label: str) -> str:
+    return "an" if event_label[:1].lower() in "aeiou" else "a"
 
 
 def noun_phrase(det: str, noun: str, capitalize: bool = False) -> str:
@@ -170,14 +176,23 @@ def event_lines(bundle: TargetBundle, event_style: str, role_style: str) -> List
     patient = noun_phrase(bundle.patient_det, bundle.patient_noun)
     event_label = to_event_label(bundle.verb_lemma)
 
-    if event_style == "there_was_event":
+    if event_style == "there_was_event" and event_label:
         lines = [
             f"{noun_phrase(bundle.agent_det, bundle.agent_noun, capitalize=True)} and {patient} were involved in the same event.",
-            f"There was a {event_label} event.",
+            f"There was {event_article(event_label)} {event_label} event.",
+        ]
+    elif event_style == "there_was_event":
+        lines = [
+            f"{noun_phrase(bundle.agent_det, bundle.agent_noun, capitalize=True)} and {patient} were involved in the same event.",
+            "There was an event.",
+        ]
+    elif event_style == "involving_event" and event_label:
+        lines = [
+            f"There was {event_article(event_label)} {event_label} event involving {agent} and {patient}.",
         ]
     elif event_style == "involving_event":
         lines = [
-            f"There was a {event_label} event involving {agent} and {patient}.",
+            f"There was an event involving {agent} and {patient}.",
         ]
     else:
         raise ValueError(f"Unsupported event style: {event_style}")

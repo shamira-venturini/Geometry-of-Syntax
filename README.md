@@ -2,13 +2,12 @@
 
 This repository includes **Experiment 3**, a deterministic, teacher-forced continuation-scoring pipeline that uses an Experiment 2-style demo prompt and scores **active vs passive full-sentence continuations**.
 
-The pipeline is configured to run on the **same corpora family used elsewhere in this project**, specifically:
+The current Experiment 1b, Experiment 2, and Experiment 3 runners are configured to use the same strict prime/target templates:
 
-- `corpora/transitive/CORE_transitive_constrained_counterbalanced.csv`
 - `corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv`
-- `corpora/transitive/jabberwocky_transitive_matched_strict_4cell.csv`
+- `corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv`
 
-No toy dataset is used.
+Experiment 2 prompt CSVs are rebuilt from those same corpora with the same item order. No toy dataset is used.
 
 ## Project Structure
 
@@ -40,7 +39,7 @@ Prime conditions supported:
 
 Lexicality conditions supported:
 
-- `real` (lexically controlled + lexical overlap corpora)
+- `real` (strict Sinclair-style core corpus)
 - `nonce` (Jabberwocky corpus)
 
 Filler behavior:

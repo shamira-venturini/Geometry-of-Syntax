@@ -1,0 +1,202 @@
+{
+  "model": "gpt2-large",
+  "core_csv": "corpora/transitive/CORE_transitive_constrained_counterbalanced_lexically_controlled.csv",
+  "jabber_csv": "corpora/transitive/jabberwocky_transitive_bpe_filtered_2048.csv",
+  "vocab_json": "corpora/transitive/vocabulary_lists/jabberwocky_transitive_strict_vocabulary.json",
+  "row_count": 2048,
+  "sentence_summary": {
+    "pa": {
+      "core": {
+        "min": 6,
+        "max": 7,
+        "mean": 6.140625,
+        "distribution": {
+          "6": 1760,
+          "7": 288
+        }
+      },
+      "jabber": {
+        "min": 15,
+        "max": 18,
+        "mean": 16.58984375,
+        "distribution": {
+          "15": 183,
+          "16": 768,
+          "17": 803,
+          "18": 294
+        }
+      },
+      "jabber_minus_core": {
+        "min": 8,
+        "max": 12,
+        "mean": 10.44921875,
+        "distribution": {
+          "8": 21,
+          "9": 274,
+          "10": 775,
+          "11": 720,
+          "12": 258
+        }
+      },
+      "exact": 0,
+      "positive": 2048,
+      "negative": 0
+    },
+    "pp": {
+      "core": {
+        "min": 8,
+        "max": 9,
+        "mean": 8.03125,
+        "distribution": {
+          "8": 1984,
+          "9": 64
+        }
+      },
+      "jabber": {
+        "min": 17,
+        "max": 20,
+        "mean": 18.54052734375,
+        "distribution": {
+          "17": 215,
+          "18": 785,
+          "19": 774,
+          "20": 274
+        }
+      },
+      "jabber_minus_core": {
+        "min": 8,
+        "max": 12,
+        "mean": 10.50927734375,
+        "distribution": {
+          "8": 6,
+          "9": 234,
+          "10": 789,
+          "11": 749,
+          "12": 270
+        }
+      },
+      "exact": 0,
+      "positive": 2048,
+      "negative": 0
+    },
+    "ta": {
+      "core": {
+        "min": 6,
+        "max": 7,
+        "mean": 6.140625,
+        "distribution": {
+          "6": 1760,
+          "7": 288
+        }
+      },
+      "jabber": {
+        "min": 15,
+        "max": 18,
+        "mean": 16.62451171875,
+        "distribution": {
+          "15": 171,
+          "16": 712,
+          "17": 880,
+          "18": 285
+        }
+      },
+      "jabber_minus_core": {
+        "min": 8,
+        "max": 12,
+        "mean": 10.48388671875,
+        "distribution": {
+          "8": 22,
+          "9": 248,
+          "10": 741,
+          "11": 791,
+          "12": 246
+        }
+      },
+      "exact": 0,
+      "positive": 2048,
+      "negative": 0
+    },
+    "tp": {
+      "core": {
+        "min": 8,
+        "max": 9,
+        "mean": 8.03125,
+        "distribution": {
+          "8": 1984,
+          "9": 64
+        }
+      },
+      "jabber": {
+        "min": 17,
+        "max": 20,
+        "mean": 18.57568359375,
+        "distribution": {
+          "17": 207,
+          "18": 723,
+          "19": 850,
+          "20": 268
+        }
+      },
+      "jabber_minus_core": {
+        "min": 8,
+        "max": 12,
+        "mean": 10.54443359375,
+        "distribution": {
+          "8": 5,
+          "9": 224,
+          "10": 728,
+          "11": 833,
+          "12": 258
+        }
+      },
+      "exact": 0,
+      "positive": 2048,
+      "negative": 0
+    }
+  },
+  "lexical_summary": {
+    "noun:noun": {
+      "min": 3,
+      "max": 6,
+      "mean": 4.475,
+      "distribution": {
+        "3": 7,
+        "4": 36,
+        "5": 29,
+        "6": 8
+      }
+    },
+    "verb:past_participle": {
+      "min": 3,
+      "max": 6,
+      "mean": 4.775,
+      "distribution": {
+        "3": 1,
+        "4": 11,
+        "5": 24,
+        "6": 4
+      }
+    },
+    "verb:stem": {
+      "min": 3,
+      "max": 6,
+      "mean": 4.5,
+      "distribution": {
+        "3": 2,
+        "4": 18,
+        "5": 18,
+        "6": 2
+      }
+    },
+    "verb:third_person_singular": {
+      "min": 4,
+      "max": 6,
+      "mean": 4.9,
+      "distribution": {
+        "4": 9,
+        "5": 26,
+        "6": 5
+      }
+    }
+  }
+}

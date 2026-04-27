@@ -31,7 +31,7 @@ experiment:
       path: corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv
       lexicality_condition: real
     - name: jabberwocky
-      path: corpora/transitive/jabberwocky_transitive_matched_strict_4cell.csv
+      path: corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv
       lexicality_condition: nonce
 
 models:

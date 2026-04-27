@@ -46,30 +46,30 @@ CORE_FILLER_SENTENCES = [
     "The pillow rested on the sofa .",
 ]
 JABBERWOCKY_FILLER_SENTENCES = [
-    "The noster glimmed near varset .",
-    "The trassel fented beside murven .",
-    "The krelbin staved on dralfin .",
-    "The prindle rasped during forven .",
-    "The slinter maved after bralken .",
-    "The vornet drissed near malden .",
-    "The krimble flened before narven .",
-    "The tharner plested after zolven .",
-    "The drasken yelped on fralden .",
-    "The glarnet shummed above torven .",
-    "The prasket whaved during morden .",
-    "The flinder trassed across jorven .",
-    "The claven morged through selven .",
-    "The drabble quisted in varlen .",
-    "The snorbel gredded after folven .",
-    "The prantel staved behind nulven .",
-    "The glimmer farned in jasken .",
-    "The nasker plodded near hulven .",
-    "The drimlet vorked before talven .",
-    "The plinter drossed in marven .",
-    "The clorven wepted beside prasken .",
-    "The vornel stonned during nalven .",
-    "The frindle glemmed in yorsen .",
-    "The trasket draved on molven .",
+    "The bri ed near dil .",
+    "The dru ed beside the gri .",
+    "The mur ed on the dir .",
+    "The dur ed during the fab .",
+    "The fav ed after fel .",
+    "The fil ed near the fol .",
+    "The ful ed before gir .",
+    "The lav ed after lil .",
+    "The mol ed on the mul .",
+    "The nav ed above the nin .",
+    "The nom ed during nud .",
+    "The pav ed across the pel .",
+    "The pil ed through the por .",
+    "The rav ed in the rom .",
+    "The sav ed after som .",
+    "The sor ed behind the sul .",
+    "The tel ed in the tir .",
+    "The tul ed near the vel .",
+    "The vil ed before vir .",
+    "The vom ed in the vul .",
+    "The bri ed beside the dru .",
+    "The gri ed during mur .",
+    "The dir ed in the dur .",
+    "The fab ed on the fav .",
 ]
 # Backward-compatible alias used by older scripts.
 DEFAULT_FILLER_SENTENCES = CORE_FILLER_SENTENCES
@@ -216,7 +216,13 @@ def load_verb_lookup(path: Path = VERB_LIST_PATH) -> Dict[Tuple[str, str], str]:
     frame = pd.read_csv(path, sep=";")
     lookup: Dict[Tuple[str, str], str] = {}
     for row in frame.itertuples(index=False):
-        lookup[(str(row.pres_3s).strip().lower(), str(row.past_P).strip().lower())] = str(row.V).strip().lower()
+        lemma = str(row.V).strip().lower()
+        pres_3s = str(row.pres_3s).strip().lower()
+        past_p = str(row.past_P).strip().lower()
+        lookup[(pres_3s, past_p)] = lemma
+        if hasattr(row, "past_A"):
+            past_a = str(row.past_A).strip().lower()
+            lookup[(past_a, past_p)] = lemma
     return lookup
 
 
@@ -278,7 +284,10 @@ def sample_condition_frames(
 ) -> Tuple[pd.DataFrame, pd.DataFrame, str]:
     rng = np.random.default_rng(seed)
     target_n = len(target_frame) if max_items is None else min(max_items, len(target_frame))
-    target_indices = rng.choice(len(target_frame), size=target_n, replace=False)
+    if target_n == len(target_frame):
+        target_indices = np.arange(len(target_frame))
+    else:
+        target_indices = rng.choice(len(target_frame), size=target_n, replace=False)
     target_sample = target_frame.iloc[target_indices].reset_index(drop=True)
 
     if len(prime_frame) == len(target_frame):

@@ -8,8 +8,8 @@ from typing import Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
-MIXED_CORE_TARGETS_JABBER_PRIMES = (
-    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
+STRICT_JABBERWOCKY = (
+    REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
 )
 SCRIPT = REPO_ROOT / "scripts" / "24_demo_prompt_completion_experiment.py"
 
@@ -40,12 +40,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--event-style",
         choices=("there_was_event", "involving_event"),
-        default="there_was_event",
+        default="involving_event",
     )
     parser.add_argument(
         "--role-style",
         choices=("responsible_affected", "did_to"),
-        default="responsible_affected",
+        default="did_to",
     )
     parser.add_argument(
         "--which",
@@ -99,9 +99,9 @@ def experiment_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str
         },
         {
             "key": "jabberwocky",
-            "name": "jabberwocky_demo_primes_counterbalanced_core_production",
-            "input_csv": MIXED_CORE_TARGETS_JABBER_PRIMES,
-            "prime_csv": MIXED_CORE_TARGETS_JABBER_PRIMES,
+            "name": "jabberwocky_demo_primes_counterbalanced_jabberwocky_production",
+            "input_csv": STRICT_JABBERWOCKY,
+            "prime_csv": STRICT_JABBERWOCKY,
             "filler_domain": "jabberwocky",
             "output_dir": output_root / "jabberwocky_demo_primes",
         },

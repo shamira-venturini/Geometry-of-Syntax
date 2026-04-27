@@ -77,6 +77,14 @@ def _to_ing(verb: str) -> str:
     return token + "ing"
 
 
+def _uses_fragment_verb(verb: str) -> bool:
+    return verb.lower().strip() in {"s", "ed"}
+
+
+def _event_article(event_name: str) -> str:
+    return "an" if event_name[:1].lower() in "aeiou" else "a"
+
+
 def _parse_prime_event_fields(prime_sentence: str) -> tuple[str, str, str]:
     tokens = [token.lower() for token in _strip_period_tokens(prime_sentence)]
     if len(tokens) < 5:
@@ -143,11 +151,25 @@ def render_experiment_2_demo_prime_block(item: ExperimentItem) -> str:
             )
         )
 
+    if _uses_fragment_verb(verb):
+        return _normalize_spacing(
+            "\n".join(
+                [
+                    f"There was an event involving {agent_phrase} and {patient_phrase}.",
+                    f"The one who did it was {agent_phrase}.",
+                    f"The one it happened to was {patient_phrase}.",
+                    "",
+                    'Bridget asked, "What happened?"',
+                    f'Mary answered, "{prime_sentence}"',
+                ]
+            )
+        )
+
     event_name = _to_ing(verb)
     return _normalize_spacing(
         "\n".join(
             [
-                f"There was a {event_name} event involving {agent_phrase} and {patient_phrase}.",
+                f"There was {_event_article(event_name)} {event_name} event involving {agent_phrase} and {patient_phrase}.",
                 f"The one who did it was {agent_phrase}.",
                 f"The one it happened to was {patient_phrase}.",
                 "",

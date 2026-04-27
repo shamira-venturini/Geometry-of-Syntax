@@ -1,6 +1,6 @@
 {
   "core_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv",
-  "jabberwocky_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_matched_strict_4cell.csv",
+  "jabberwocky_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv",
   "output_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_core_targets_jabberwocky_primes_2048.csv",
   "summary_json": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_core_targets_jabberwocky_primes_2048_summary.json",
   "n_items": 2048,

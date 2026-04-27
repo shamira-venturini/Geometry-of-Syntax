@@ -8,11 +8,10 @@ from typing import Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 RUNNER_SCRIPT = REPO_ROOT / "scripts" / "15_counterbalanced_processing_experiment_1b.py"
-CORE_COUNTERBALANCED = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_constrained_counterbalanced.csv"
 CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED = (
     REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 )
-JABBERWOCKY_2048 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_matched_strict_4cell.csv"
+JABBERWOCKY_2048 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
 
 
 def parse_args() -> argparse.Namespace:
@@ -43,7 +42,7 @@ def parse_args() -> argparse.Namespace:
         "--core-prime-mode",
         choices=("lexically_controlled",),
         default="lexically_controlled",
-        help="Strict Sinclair-controlled core mode.",
+        help="Lexically controlled core mode.",
     )
     parser.add_argument(
         "--local-files-only",
