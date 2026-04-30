@@ -263,7 +263,10 @@ def score_batch(
         padding=True,
         truncation=True,
         max_length=1024,
+        add_special_tokens=False,
+        return_offsets_mapping=True,
     ).to(device)
+    offset_mappings = inputs.pop("offset_mapping").cpu().tolist()
 
     with torch.no_grad():
         logits = model(**inputs).logits
@@ -275,18 +278,25 @@ def score_batch(
 
     results: List[TargetScores] = []
     for row_idx, (prime, target) in enumerate(zip(batch_primes, batch_targets)):
-        prime_ids = tokenizer.encode(prime, add_special_tokens=False)
-        target_ids = tokenizer.encode(" " + target, add_special_tokens=False)
+        target_start = len(prime) + 1
+        valid_token_count = int(inputs.attention_mask[row_idx].sum().item())
+        target_token_positions = [
+            position
+            for position, (start, end) in enumerate(offset_mappings[row_idx][:valid_token_count])
+            # Fast tokenizers may attach the separating space to the first target
+            # token, so the token can start just before the target string itself.
+            if end > target_start
+        ]
+        if not target_token_positions:
+            raise ValueError(f"Could not locate target span in tokenized prompt: {target}")
+        if target_token_positions[0] == 0:
+            raise ValueError(f"Target begins at token position 0; cannot score first token for: {target}")
 
-        start_idx = len(prime_ids) - 1
-        end_idx = start_idx + len(target_ids)
+        score_positions = [position - 1 for position in target_token_positions]
 
-        valid_len = int(inputs.attention_mask[row_idx].sum().item()) - 1
-        end_idx = min(end_idx, valid_len)
-
-        row_target_ids = shift_labels[row_idx, start_idx:end_idx].tolist()
+        row_target_ids = inputs.input_ids[row_idx, target_token_positions].tolist()
         row_token_strings = tokenizer.convert_ids_to_tokens(row_target_ids)
-        row_log_probs = observed_log_probs[row_idx, start_idx:end_idx].tolist()
+        row_log_probs = observed_log_probs[row_idx, score_positions].tolist()
 
         results.append(
             TargetScores(
