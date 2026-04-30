@@ -104,6 +104,20 @@ def _parse_prime_event_fields(prime_sentence: str) -> tuple[str, str, str]:
     return agent_phrase, patient_phrase, verb
 
 
+def _role_lines(agent_phrase: str, patient_phrase: str, role_order: str) -> List[str]:
+    if role_order == "agent_first":
+        return [
+            f"The one who did it was {agent_phrase}.",
+            f"The one it happened to was {patient_phrase}.",
+        ]
+    if role_order == "patient_first":
+        return [
+            f"The one it happened to was {patient_phrase}.",
+            f"The one who did it was {agent_phrase}.",
+        ]
+    raise ValueError(f"Unsupported role_order: {role_order}")
+
+
 def render_prime_block(
     item: ExperimentItem,
     eos_token_text: str = "",
@@ -151,13 +165,18 @@ def render_experiment_2_demo_prime_block(item: ExperimentItem) -> str:
             )
         )
 
+    role_lines = _role_lines(
+        agent_phrase=agent_phrase,
+        patient_phrase=patient_phrase,
+        role_order=item.role_order,
+    )
     if _uses_fragment_verb(verb):
         return _normalize_spacing(
             "\n".join(
                 [
                     f"There was an event involving {agent_phrase} and {patient_phrase}.",
-                    f"The one who did it was {agent_phrase}.",
-                    f"The one it happened to was {patient_phrase}.",
+                    role_lines[0],
+                    role_lines[1],
                     "",
                     'Bridget asked, "What happened?"',
                     f'Mary answered, "{prime_sentence}"',
@@ -170,8 +189,8 @@ def render_experiment_2_demo_prime_block(item: ExperimentItem) -> str:
         "\n".join(
             [
                 f"There was {_event_article(event_name)} {event_name} event involving {agent_phrase} and {patient_phrase}.",
-                f"The one who did it was {agent_phrase}.",
-                f"The one it happened to was {patient_phrase}.",
+                role_lines[0],
+                role_lines[1],
                 "",
                 'Bridget asked, "What happened?"',
                 f'Mary answered, "{prime_sentence}"',

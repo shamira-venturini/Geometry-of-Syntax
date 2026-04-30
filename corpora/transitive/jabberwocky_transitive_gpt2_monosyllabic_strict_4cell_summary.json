@@ -63,6 +63,7 @@
   },
   "row_constraint_audit": {
     "unknown_determiner_rows": 0,
+    "bad_indefinite_article_uses": 0,
     "same_active_fragment_rows": 0,
     "same_aux_rows": 0,
     "same_det_family_rows": 0,
@@ -368,7 +369,7 @@
   },
   "notes": [
     "Corpus mirrors the strict CORE 4-cell row structure.",
-    "Nonce determiners preserve the exact CORE determiner token (the/a/an) to remove article-token mismatches.",
+    "Nonce determiners preserve CORE determiner family while using phonologically appropriate a/an allomorphy.",
     "Prime and target have opposite determiner family and opposite tense/auxiliary in every row.",
     "Prime and target share no noun within row.",
     "Active present verbs are standalone 's'; active past and passive participles are standalone 'ed'."

@@ -494,6 +494,19 @@ def run_analysis(
         group_cols=["model_name", "prompt_format_used", "task"],
         value_columns=value_columns,
     )
+    if "role_order" in item_level.columns:
+        result["summary_by_role_order"] = summarize(
+            frame=item_level,
+            group_cols=[
+                "model_name",
+                "model_condition",
+                "prompt_format_used",
+                "task",
+                "prime_condition",
+                "role_order",
+            ],
+            value_columns=value_columns,
+        )
 
     result["bootstrap_by_prime_condition"] = bootstrap_summary(
         frame=item_level,

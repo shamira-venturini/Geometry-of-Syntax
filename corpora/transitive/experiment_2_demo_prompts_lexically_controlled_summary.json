@@ -3,13 +3,17 @@
   "event_style": "involving_event",
   "role_style": "did_to",
   "quote_style": "mary_answered",
+  "role_order": "counterbalanced",
   "max_items": 2048,
   "seed": 13,
   "core_prompt_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/experiment_2_core_demo_prompts_lexically_controlled.csv",
   "jabberwocky_prompt_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/experiment_2_jabberwocky_demo_prompts_lexically_controlled.csv",
+  "core_targets_jabberwocky_primes_prompt_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/experiment_2_core_targets_jabberwocky_primes_demo_prompts_lexically_controlled.csv",
   "jabberwocky_prime_pool_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv",
+  "core_targets_jabberwocky_primes_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/CORE_transitive_core_targets_jabberwocky_primes_2048.csv",
   "core_alignment_mode": "paired_indices",
   "jabberwocky_alignment_mode": "paired_indices",
+  "core_targets_jabberwocky_primes_alignment_mode": "paired_indices",
   "core_lexical_overlap_audit": {
     "rows_evaluated": 2048,
     "same_active_verb_rows": 0,
@@ -28,6 +32,28 @@
     "shared_both_nouns_rows": 0,
     "shared_both_nouns_rate": 0.0
   },
+  "core_targets_jabberwocky_primes_lexical_overlap_audit": {
+    "rows_evaluated": 2048,
+    "same_active_verb_rows": 0,
+    "same_active_verb_rate": 0.0,
+    "shared_noun_rows": 0,
+    "shared_noun_rate": 0.0,
+    "shared_both_nouns_rows": 0,
+    "shared_both_nouns_rate": 0.0
+  },
   "n_core_rows": 2048,
-  "n_jabberwocky_rows": 2048
+  "n_jabberwocky_rows": 2048,
+  "n_core_targets_jabberwocky_primes_rows": 2048,
+  "core_role_order_counts": {
+    "agent_first": 1024,
+    "patient_first": 1024
+  },
+  "jabberwocky_role_order_counts": {
+    "agent_first": 1024,
+    "patient_first": 1024
+  },
+  "core_targets_jabberwocky_primes_role_order_counts": {
+    "agent_first": 1024,
+    "patient_first": 1024
+  }
 }

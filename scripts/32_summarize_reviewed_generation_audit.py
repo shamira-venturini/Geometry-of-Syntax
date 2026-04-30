@@ -6,7 +6,7 @@ import pandas as pd
 
 
 BASE_DIR = Path("behavioral_results/experiment-2/llama323binstruct/experiment-2_generation_audit_lexically_controlled")
-DATASET_NAMES = ("core", "jabberwocky")
+DATASET_NAMES = ("core", "jabberwocky", "core_targets_jabberwocky_primes")
 MERGE_KEYS = [
     "item_index",
     "prompt_column",
@@ -80,6 +80,11 @@ def build_dataset_paths(base_dir: Path) -> Dict[str, Dict[str, Path]]:
             "review": base_dir / "jabberwocky_unclassified_for_manual_review.csv",
             "output_dir": base_dir / "jabberwocky",
         },
+        "core_targets_jabberwocky_primes": {
+            "items": base_dir / "core_targets_jabberwocky_primes" / "item_generations.csv",
+            "review": base_dir / "core_targets_jabberwocky_primes_unclassified_for_manual_review.csv",
+            "output_dir": base_dir / "core_targets_jabberwocky_primes",
+        },
     }
 
 
@@ -130,6 +135,35 @@ def summarize_binary_rates(frame: pd.DataFrame, label_column: str) -> pd.DataFra
     summary["_prime_order"] = summary["prime_condition"].map(PRIME_ORDER_MAP).fillna(len(PRIME_ORDER_MAP))
     summary = summary.sort_values(["_prompt_order", "_prime_order"]).drop(columns=["_prompt_order", "_prime_order"])
     return summary
+
+
+def summarize_binary_rates_by_role_order(frame: pd.DataFrame, label_column: str) -> pd.DataFrame:
+    if "role_order" not in frame.columns:
+        return pd.DataFrame()
+
+    annotated = frame.copy()
+    annotated["is_active"] = annotated[label_column].eq("active")
+    annotated["is_passive"] = annotated[label_column].eq("passive")
+    annotated["is_other"] = annotated[label_column].eq("other")
+    annotated["is_congruent"] = (
+        ((annotated["prime_condition"] == "active") & annotated["is_active"])
+        | ((annotated["prime_condition"] == "passive") & annotated["is_passive"])
+    )
+    summary = (
+        annotated.groupby(["prompt_column", "prime_condition", "role_order"], as_index=False)
+        .agg(
+            n_items=("item_index", "count"),
+            active_rate=("is_active", "mean"),
+            passive_rate=("is_passive", "mean"),
+            other_rate=("is_other", "mean"),
+            congruent_rate=("is_congruent", "mean"),
+            manually_reviewed_rate=("manually_reviewed", "mean"),
+        )
+    )
+    summary["_prompt_order"] = summary["prompt_column"].map(PROMPT_ORDER_MAP).fillna(len(PROMPT_ORDER_MAP))
+    summary["_prime_order"] = summary["prime_condition"].map(PRIME_ORDER_MAP).fillna(len(PRIME_ORDER_MAP))
+    summary = summary.sort_values(["_prompt_order", "_prime_order", "role_order"])
+    return summary.drop(columns=["_prompt_order", "_prime_order"])
 
 
 def summarize_roles(frame: pd.DataFrame, label_column: str) -> pd.DataFrame:
@@ -214,6 +248,16 @@ def write_dataset_outputs(dataset_name: str, frame: pd.DataFrame, output_dir: Pa
             frame, label_column="role_frame_inferred_final"
         ),
     }
+    role_order_strict = summarize_binary_rates_by_role_order(
+        frame, label_column="generation_class_strict_final"
+    )
+    role_order_lax = summarize_binary_rates_by_role_order(
+        frame, label_column="generation_class_lax_final"
+    )
+    if not role_order_strict.empty:
+        outputs["generation_quality_by_role_order_reviewed_strict.csv"] = role_order_strict
+    if not role_order_lax.empty:
+        outputs["generation_quality_by_role_order_reviewed_lax.csv"] = role_order_lax
 
     print(f"\n=== {dataset_name}")
     print(outputs["generation_quality_summary_reviewed_strict.csv"].to_string(index=False))

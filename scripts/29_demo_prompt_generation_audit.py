@@ -139,6 +139,10 @@ def build_generation_rows(frame: pd.DataFrame, prompt_columns: Sequence[str]) ->
                     "prime_condition": PROMPT_COLUMN_TO_CONDITION[column],
                     "target_active": str(record["target_active"]),
                     "target_passive": str(record["target_passive"]),
+                    "event_style": str(record.get("event_style", "")),
+                    "role_style": str(record.get("role_style", "")),
+                    "quote_style": str(record.get("quote_style", "")),
+                    "role_order": str(record.get("role_order", "agent_first")),
                     "prompt": str(prompt_text),
                 }
             )

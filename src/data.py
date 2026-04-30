@@ -60,6 +60,11 @@ VALID_LEXICALITY_CONDITIONS = {
     "nonce",
 }
 
+VALID_ROLE_ORDERS = {
+    "agent_first",
+    "patient_first",
+}
+
 
 CORE_FILLER_SENTENCES: Sequence[str] = (
     "The lantern glowed near sunset .",
@@ -134,6 +139,9 @@ class ExperimentItem:
     incorrect_answer_for_passive: str
     lexicality_condition: str
     notes: str
+    role_order: str = "agent_first"
+    item_index: str = ""
+    item_order: str = ""
 
 
 @dataclass(frozen=True)
@@ -214,6 +222,16 @@ def _validate_values(frame: pd.DataFrame) -> None:
     if frame["item_id"].str.strip().eq("").any():
         raise DatasetValidationError("item_id must be non-empty for all rows.")
 
+    if "role_order" in frame.columns:
+        unknown_role_orders = sorted(
+            set(frame["role_order"]).difference(VALID_ROLE_ORDERS)
+        )
+        if unknown_role_orders:
+            raise DatasetValidationError(
+                "Unknown role_order values: "
+                f"{unknown_role_orders}. Expected one of {sorted(VALID_ROLE_ORDERS)}"
+            )
+
 
 def _canonical_prime_condition(value: object) -> str:
     normalized = str(value).strip().lower()
@@ -230,6 +248,9 @@ def _to_items(frame: pd.DataFrame) -> List[ExperimentItem]:
     items: List[ExperimentItem] = []
     for record in frame.to_dict(orient="records"):
         payload = {column: str(record.get(column, "")) for column in REQUIRED_COLUMNS}
+        payload["role_order"] = str(record.get("role_order", "agent_first") or "agent_first")
+        payload["item_index"] = str(record.get("item_index", ""))
+        payload["item_order"] = str(record.get("item_order", payload["item_index"]))
         items.append(ExperimentItem(**payload))
     return items
 
@@ -242,6 +263,8 @@ def load_dataset(path: str | Path) -> DatasetBundle:
     frame = _load_frame(dataset_path)
     _require_columns(frame, REQUIRED_COLUMNS)
     frame = _coerce_string_columns(frame, REQUIRED_COLUMNS)
+    if "role_order" in frame.columns:
+        frame["role_order"] = frame["role_order"].fillna("agent_first").astype(str)
     frame = _normalize_prime_conditions(frame)
     _validate_values(frame)
 
@@ -323,12 +346,29 @@ def _active_components(sentence: str) -> Tuple[str, str, str, str, str]:
     return agent_phrase, agent_head, verb, patient_phrase, patient_head
 
 
-def _target_event_prompt(agent_phrase: str, patient_phrase: str, verb: str) -> str:
+def _role_lines(agent_phrase: str, patient_phrase: str, role_order: str) -> List[str]:
+    if role_order == "agent_first":
+        return [
+            f"The one who did it was {agent_phrase}.",
+            f"The one it happened to was {patient_phrase}.",
+        ]
+    if role_order == "patient_first":
+        return [
+            f"The one it happened to was {patient_phrase}.",
+            f"The one who did it was {agent_phrase}.",
+        ]
+    raise DatasetValidationError(
+        f"Unknown role_order '{role_order}'. Expected one of {sorted(VALID_ROLE_ORDERS)}."
+    )
+
+
+def _target_event_prompt(agent_phrase: str, patient_phrase: str, verb: str, role_order: str) -> str:
+    role_lines = _role_lines(agent_phrase=agent_phrase, patient_phrase=patient_phrase, role_order=role_order)
     if verb.lower().strip() in {"s", "ed"}:
         return (
             f"There was an event involving {agent_phrase} and {patient_phrase}.\n"
-            f"The one who did it was {agent_phrase}.\n"
-            f"The one it happened to was {patient_phrase}.\n\n"
+            f"{role_lines[0]}\n"
+            f"{role_lines[1]}\n\n"
             'Bridget asked, "What happened?"\n'
             'Mary answered, "'
         )
@@ -336,8 +376,8 @@ def _target_event_prompt(agent_phrase: str, patient_phrase: str, verb: str) -> s
     article = "an" if event_name[:1].lower() in "aeiou" else "a"
     return (
         f"There was {article} {event_name} event involving {agent_phrase} and {patient_phrase}.\n"
-        f"The one who did it was {agent_phrase}.\n"
-        f"The one it happened to was {patient_phrase}.\n\n"
+        f"{role_lines[0]}\n"
+        f"{role_lines[1]}\n\n"
         'Bridget asked, "What happened?"\n'
         'Mary answered, "'
     )
@@ -409,6 +449,28 @@ def _det_family(det: str) -> str:
     if token in {"a", "an"}:
         return "indef"
     return "unknown"
+
+
+def _target_cell_for_role_order(row: pd.Series) -> str:
+    ta_det, _, _, ta_patient_det, _ = _parse_active_sentence(str(row["ta"]))
+    tp_aux = _passive_aux(str(row["tp"]))
+    det = _det_family(ta_det)
+    if _det_family(ta_patient_det) != det:
+        det = "mixed"
+    tense = "present" if tp_aux == "is" else "past" if tp_aux == "was" else "unknown"
+    return f"{det}_{tense}"
+
+
+def _role_order_assignments(frame: pd.DataFrame) -> List[str]:
+    """Alternate role-description order within each target determiner/tense cell."""
+    cell_counts: Dict[str, int] = {}
+    assignments: List[str] = []
+    for _, row in frame.iterrows():
+        cell = _target_cell_for_role_order(row)
+        count = cell_counts.get(cell, 0)
+        assignments.append("agent_first" if count % 2 == 0 else "patient_first")
+        cell_counts[cell] = count + 1
+    return assignments
 
 
 def _load_verb_maps(path: Path) -> Tuple[Dict[str, str], Dict[str, str]]:
@@ -666,8 +728,11 @@ def _build_rows_from_corpus(
             f"Invalid lexicality_condition '{lexicality_condition}' for corpus '{corpus_name}'."
         )
 
+    role_orders = _role_order_assignments(frame)
+
     for item_index, row in frame.iterrows():
         base_item_id = f"{corpus_name}_{item_index:05d}"
+        role_order = role_orders[int(item_index)]
 
         active_prime_sentence = _pretty_sentence(str(row["pa"]))
         passive_prime_sentence = _pretty_sentence(str(row["pp"]))
@@ -675,7 +740,12 @@ def _build_rows_from_corpus(
         target_passive = _pretty_sentence(str(row["tp"]))
 
         agent_phrase, agent_head, verb, patient_phrase, patient_head = _active_components(str(row["ta"]))
-        event_prompt = _target_event_prompt(agent_phrase=agent_phrase, patient_phrase=patient_phrase, verb=verb)
+        event_prompt = _target_event_prompt(
+            agent_phrase=agent_phrase,
+            patient_phrase=patient_phrase,
+            verb=verb,
+            role_order=role_order,
+        )
         if filler_mode == "offset_target":
             filler_index = (item_index + max(1, int(filler_offset))) % n_items
             filler_prime_sentence = _pretty_sentence(str(frame.loc[filler_index, "ta"]))
@@ -708,6 +778,8 @@ def _build_rows_from_corpus(
             rows.append(
                 {
                     "item_id": base_item_id,
+                    "item_index": int(item_index),
+                    "item_order": int(item_index),
                     "model_condition": corpus_name,
                     "prime_condition": prime_condition,
                     "prime_text": prime_text,
@@ -722,9 +794,10 @@ def _build_rows_from_corpus(
                     "correct_answer_for_passive": f"The {agent_head}.",
                     "incorrect_answer_for_passive": f"The {patient_head}.",
                     "lexicality_condition": lexicality_condition,
+                    "role_order": role_order,
                     "notes": (
                         f"generated_from_corpus={corpus_name};verb={verb};"
-                        f"filler_source={filler_source}"
+                        f"filler_source={filler_source};role_order={role_order}"
                     ),
                 }
             )
