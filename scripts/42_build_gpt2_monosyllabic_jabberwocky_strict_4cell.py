@@ -96,9 +96,11 @@ def det_family(det: str) -> str:
 def nonce_det(source_det: str, noun: str) -> str:
     if source_det not in {"the", "a", "an"}:
         raise ValueError(f"Unexpected source determiner: {source_det}")
+    if source_det == "the":
+        return "the"
     if noun[:1].lower() not in CONSONANTS:
-        raise ValueError(f"Expected consonant-initial nonce noun, got {noun}")
-    return source_det
+        return "an"
+    return "a"
 
 
 def active_fragment_from_template(active_sentence: str, passive_sentence: str, agent: str, patient: str) -> str:
@@ -173,6 +175,7 @@ def cell_from_active_passive(active: str, passive: str) -> str:
 def row_constraint_audit(frame: pd.DataFrame) -> dict[str, int]:
     audit = {
         "unknown_determiner_rows": 0,
+        "bad_indefinite_article_uses": 0,
         "same_active_fragment_rows": 0,
         "same_aux_rows": 0,
         "same_det_family_rows": 0,
@@ -188,8 +191,17 @@ def row_constraint_audit(frame: pd.DataFrame) -> dict[str, int]:
         audit["same_aux_rows"] += int(pp_aux == tp_aux)
         audit["same_det_family_rows"] += int(det_family(pa_det_a) == det_family(ta_det_a))
         audit["shared_noun_rows"] += int(bool({pa_agent, pa_patient} & {ta_agent, ta_patient}))
-        for det in (pa_det_a, pa_det_p, ta_det_a, ta_det_p):
+        for det, noun in (
+            (pa_det_a, pa_agent),
+            (pa_det_p, pa_patient),
+            (ta_det_a, ta_agent),
+            (ta_det_p, ta_patient),
+        ):
             audit["unknown_determiner_rows"] += int(det_family(det) == "unknown")
+            audit["bad_indefinite_article_uses"] += int(
+                (det == "a" and noun[:1] not in CONSONANTS)
+                or (det == "an" and noun[:1] in CONSONANTS)
+            )
     return audit
 
 
@@ -280,7 +292,7 @@ def main() -> None:
         "sentence_tokenization": tokenization_audit(core, jabber, tokenizer),
         "notes": [
             "Corpus mirrors the strict CORE 4-cell row structure.",
-            "Nonce determiners preserve the exact CORE determiner token (the/a/an) to remove article-token mismatches.",
+            "Nonce determiners preserve CORE determiner family while using phonologically appropriate a/an allomorphy.",
             "Prime and target have opposite determiner family and opposite tense/auxiliary in every row.",
             "Prime and target share no noun within row.",
             "Active present verbs are standalone 's'; active past and passive participles are standalone 'ed'.",

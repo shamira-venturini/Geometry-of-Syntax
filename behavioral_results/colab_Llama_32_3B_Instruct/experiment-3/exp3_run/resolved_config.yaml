@@ -1,0 +1,44 @@
+experiment:
+  dataset_mode: corpora
+  seed: 13
+  output_dir: behavioral_results/colab_Llama_32_3B_Instruct/experiment-3/exp3_run
+  run_experiment_3_continuation: true
+  force_bos: false
+  append_eos_to_candidate: false
+  no_prime_mode: empty
+  no_prime_overrides: {}
+  bootstrap_resamples: 1000
+  bootstrap_ci: 95.0
+  create_plots: true
+  question_template: Who was the agent?
+  prime_conditions:
+  - active
+  - passive
+  - filler
+  - no_prime
+  max_items_per_corpus: 2048
+  enforce_aux_mismatch: true
+  filler_mode: pool
+  filler_seed: 13
+  filler_offset: 137
+  verb_list_path: corpora/transitive/vocabulary_lists/verblist_T_usf_freq.csv
+  association_csv_path: corpora/transitive/usf_association_edges_core_vocab.csv
+  corpora:
+  - name: lexically_controlled
+    path: corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv
+    lexicality_condition: real
+  - name: jabberwocky
+    path: corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv
+    lexicality_condition: nonce
+prompting:
+  additional_question_templates: []
+models:
+- name: meta-llama/Llama-3.2-3B-Instruct
+  model_condition: Llama_32_3B_Instruct_exp3
+  device: cuda
+  torch_dtype: float16
+  batch_size: 1
+  max_length: 1024
+  local_files_only: false
+  use_chat_template: false
+  prompt_style: plain

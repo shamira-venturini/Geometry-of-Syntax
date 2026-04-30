@@ -1,0 +1,5 @@
+prompt_column,prime_condition,n_items,active_like_rate,passive_like_rate,exact_rate,prefix_rate,structural_rate,congruent_rate
+prompt_active,active,2048,0.830078125,0.0,0.16796875,0.0,0.662109375,0.830078125
+prompt_filler,filler,2048,0.19921875,0.0302734375,0.0498046875,0.0,0.1796875,0.0
+prompt_no_prime,no_prime,2048,0.35595703125,0.02490234375,0.06298828125,0.0,0.31787109375,0.0
+prompt_passive,passive,2048,0.1630859375,0.6923828125,0.15087890625,0.0,0.70458984375,0.6923828125

@@ -114,6 +114,12 @@ def parse_args() -> argparse.Namespace:
         default="mary_answered",
         help="How the demonstrated and target answers are framed.",
     )
+    parser.add_argument(
+        "--role-order",
+        choices=("counterbalanced", "agent_first", "patient_first"),
+        default="counterbalanced",
+        help="Order of role-description lines in demo and target scaffolds.",
+    )
     parser.add_argument("--seed", type=int, default=13)
     return parser.parse_args()
 
@@ -171,7 +177,42 @@ def quote_style_values(mode: str) -> List[str]:
     return [mode]
 
 
-def event_lines(bundle: TargetBundle, event_style: str, role_style: str) -> List[str]:
+def target_cell_for_role_order(row: pd.Series) -> str:
+    det = _det_family_from_active(str(row["ta"]))
+    aux = _passive_aux(str(row["tp"]))
+    tense = "present" if aux == "is" else "past" if aux == "was" else "unknown"
+    return f"{det}_{tense}"
+
+
+def counterbalanced_role_orders(target_frame: pd.DataFrame) -> Dict[object, str]:
+    cell_counts: Dict[str, int] = {}
+    assignments: Dict[object, str] = {}
+    for item_index, row in target_frame.iterrows():
+        cell = target_cell_for_role_order(row)
+        count = cell_counts.get(cell, 0)
+        assignments[item_index] = "agent_first" if count % 2 == 0 else "patient_first"
+        cell_counts[cell] = count + 1
+    return assignments
+
+
+def role_lines(agent: str, patient: str, role_style: str, role_order: str) -> List[str]:
+    if role_style == "responsible_affected":
+        agent_line = f"The responsible person was {agent}."
+        patient_line = f"The affected person was {patient}."
+    elif role_style == "did_to":
+        agent_line = f"The one who did it was {agent}."
+        patient_line = f"The one it happened to was {patient}."
+    else:
+        raise ValueError(f"Unsupported role style: {role_style}")
+
+    if role_order == "agent_first":
+        return [agent_line, patient_line]
+    if role_order == "patient_first":
+        return [patient_line, agent_line]
+    raise ValueError(f"Unsupported role order: {role_order}")
+
+
+def event_lines(bundle: TargetBundle, event_style: str, role_style: str, role_order: str) -> List[str]:
     agent = noun_phrase(bundle.agent_det, bundle.agent_noun)
     patient = noun_phrase(bundle.patient_det, bundle.patient_noun)
     event_label = to_event_label(bundle.verb_lemma)
@@ -197,22 +238,7 @@ def event_lines(bundle: TargetBundle, event_style: str, role_style: str) -> List
     else:
         raise ValueError(f"Unsupported event style: {event_style}")
 
-    if role_style == "responsible_affected":
-        lines.extend(
-            [
-                f"The responsible person was {agent}.",
-                f"The affected person was {patient}.",
-            ]
-        )
-    elif role_style == "did_to":
-        lines.extend(
-            [
-                f"The one who did it was {agent}.",
-                f"The one it happened to was {patient}.",
-            ]
-        )
-    else:
-        raise ValueError(f"Unsupported role style: {role_style}")
+    lines.extend(role_lines(agent=agent, patient=patient, role_style=role_style, role_order=role_order))
 
     return lines
 
@@ -245,16 +271,23 @@ def filler_demo_lines(filler_sentence: str, quote_style: str) -> List[str]:
     ]
 
 
-def demo_block(bundle: TargetBundle, answer_sentence: str, event_style: str, role_style: str, quote_style: str) -> List[str]:
-    return event_lines(bundle, event_style=event_style, role_style=role_style) + [
+def demo_block(
+    bundle: TargetBundle,
+    answer_sentence: str,
+    event_style: str,
+    role_style: str,
+    quote_style: str,
+    role_order: str,
+) -> List[str]:
+    return event_lines(bundle, event_style=event_style, role_style=role_style, role_order=role_order) + [
         "",
         'Bridget asked, "What happened?"',
         render_answer_line(pretty_sentence(answer_sentence), quote_style),
     ]
 
 
-def target_block(bundle: TargetBundle, event_style: str, role_style: str, quote_style: str) -> List[str]:
-    return event_lines(bundle, event_style=event_style, role_style=role_style) + [
+def target_block(bundle: TargetBundle, event_style: str, role_style: str, quote_style: str, role_order: str) -> List[str]:
+    return event_lines(bundle, event_style=event_style, role_style=role_style, role_order=role_order) + [
         "",
         'Bridget asked, "What happened?"',
         f'{quote_prefix(quote_style)}The',
@@ -418,6 +451,7 @@ def build_prompt(
     event_style: str,
     role_style: str,
     quote_style: str,
+    role_order: str,
 ) -> str:
     lines: List[str] = []
     if prime_condition == "active":
@@ -430,6 +464,7 @@ def build_prompt(
                 event_style=event_style,
                 role_style=role_style,
                 quote_style=quote_style,
+                role_order=role_order,
             )
         )
         lines.append("")
@@ -443,6 +478,7 @@ def build_prompt(
                 event_style=event_style,
                 role_style=role_style,
                 quote_style=quote_style,
+                role_order=role_order,
             )
         )
         lines.append("")
@@ -462,6 +498,7 @@ def build_prompt(
             event_style=event_style,
             role_style=role_style,
             quote_style=quote_style,
+            role_order=role_order,
         )
     )
     return "\n".join(lines)
@@ -477,10 +514,12 @@ def build_prompt_groups(
     event_style_mode: str,
     role_style_mode: str,
     quote_style: str,
+    role_order_mode: str,
 ) -> Tuple[List[Tuple[str, int, List[str], List[int]]], List[Dict[str, object]]]:
     verb_lookup = load_verb_lookup()
     prompt_groups: List[Tuple[str, int, List[str], List[int]]] = []
     row_metadata: List[Dict[str, object]] = []
+    item_role_orders = counterbalanced_role_orders(target_frame)
 
     for item_index, target_row in target_frame.iterrows():
         prime_row = prime_frame.loc[item_index]
@@ -494,7 +533,12 @@ def build_prompt_groups(
         for event_style in event_style_values(event_style_mode):
             for role_style in role_style_values(role_style_mode):
                 for quote_style_value in quote_style_values(quote_style):
-                    prompt_template_name = f"demo__{event_style}__{role_style}__{quote_style_value}"
+                    role_order = (
+                        item_role_orders[item_index]
+                        if role_order_mode == "counterbalanced"
+                        else role_order_mode
+                    )
+                    prompt_template_name = f"demo__{event_style}__{role_style}__{quote_style_value}__{role_order}"
                     for prime_condition in prime_conditions:
                         prime_sentence: Optional[str]
                         if prime_condition == "active":
@@ -513,6 +557,7 @@ def build_prompt_groups(
                             event_style=event_style,
                             role_style=role_style,
                             quote_style=quote_style_value,
+                            role_order=role_order,
                         )
                         prompt_groups.append(
                             (
@@ -542,6 +587,7 @@ def build_prompt_groups(
                                     [
                                         f"event_style={event_style}",
                                         f"role_style={role_style}",
+                                        f"role_order={role_order}",
                                         f"quote_style={quote_style_value}",
                                         f"event={to_event_label(target_bundle.verb_lemma)}",
                                     ]
@@ -552,6 +598,7 @@ def build_prompt_groups(
                                 "quote_style": quote_style_value,
                                 "event_style": event_style,
                                 "role_style": role_style,
+                                "role_order": role_order,
                             }
                         )
 
@@ -619,6 +666,7 @@ def main() -> None:
         event_style_mode=args.event_style,
         role_style_mode=args.role_style,
         quote_style=args.quote_style,
+        role_order_mode=args.role_order,
     )
     batched_scores = batched_choice_log_probs(
         tokenizer=tokenizer,
@@ -660,6 +708,7 @@ def main() -> None:
         "quote_style": args.quote_style,
         "event_style": args.event_style,
         "role_style": args.role_style,
+        "role_order": args.role_order,
         "paradigm": "demonstration_prompt_completion",
     }
     write_common_outputs(

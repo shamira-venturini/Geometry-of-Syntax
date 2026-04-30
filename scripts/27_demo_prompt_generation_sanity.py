@@ -78,6 +78,11 @@ def parse_args() -> argparse.Namespace:
         choices=("mary_answered", "said_mary", "all"),
         default="all",
     )
+    parser.add_argument(
+        "--role-order",
+        choices=("counterbalanced", "agent_first", "patient_first"),
+        default="counterbalanced",
+    )
     parser.add_argument("--max-new-tokens", type=int, default=18)
     parser.add_argument("--seed", type=int, default=13)
     return parser.parse_args()
@@ -210,6 +215,7 @@ def main() -> None:
     rows: List[Dict[str, object]] = []
     prompts: List[str] = []
     prompt_metadata: List[Dict[str, object]] = []
+    item_role_orders = demo_module.counterbalanced_role_orders(target_frame)
 
     for item_index, target_row in target_frame.iterrows():
         prime_row = prime_frame.loc[item_index]
@@ -220,7 +226,12 @@ def main() -> None:
         for event_style in demo_module.event_style_values(args.event_style):
             for role_style in demo_module.role_style_values(args.role_style):
                 for quote_style in demo_module.quote_style_values(args.quote_style):
-                    prompt_template_name = f"demo__{event_style}__{role_style}__{quote_style}"
+                    role_order = (
+                        item_role_orders[item_index]
+                        if args.role_order == "counterbalanced"
+                        else args.role_order
+                    )
+                    prompt_template_name = f"demo__{event_style}__{role_style}__{quote_style}__{role_order}"
                     for prime_condition in prime_conditions:
                         if prime_condition == "active":
                             prime_sentence = str(prime_row["pa"])
@@ -238,6 +249,7 @@ def main() -> None:
                             event_style=event_style,
                             role_style=role_style,
                             quote_style=quote_style,
+                            role_order=role_order,
                         )
                         prompts.append(prompt)
                         prompt_metadata.append(
@@ -255,6 +267,7 @@ def main() -> None:
                                 "quote_style": quote_style,
                                 "event_style": event_style,
                                 "role_style": role_style,
+                                "role_order": role_order,
                             }
                         )
 
@@ -339,6 +352,7 @@ def main() -> None:
         "event_style": args.event_style,
         "role_style": args.role_style,
         "quote_style": args.quote_style,
+        "role_order": args.role_order,
         "max_new_tokens": int(args.max_new_tokens),
         "seed": int(args.seed),
         "paradigm": "demo_prompt_generation_sanity",

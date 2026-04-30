@@ -16,7 +16,9 @@ _archive/*
 
 # folders
 
-docs/
+docs/*
+!docs/
+!docs/corpus_control_counterbalancing.md
 out/
 PrimeLM/
 

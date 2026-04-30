@@ -1,0 +1,5 @@
+model_name,model_condition,prompt_format_used,task,prime_condition,preference_total_mean,preference_total_ci_low,preference_total_ci_high,n_rows
+meta-llama/Llama-3.2-3B-Instruct,Llama_32_3B_Instruct_exp3,plain_text,experiment_3_demo_prompt_continuation,active,5.654098987579346,5.578611993789673,5.736291480064392,4096
+meta-llama/Llama-3.2-3B-Instruct,Llama_32_3B_Instruct_exp3,plain_text,experiment_3_demo_prompt_continuation,filler,4.374995708465576,4.299351823329926,4.45223548412323,4096
+meta-llama/Llama-3.2-3B-Instruct,Llama_32_3B_Instruct_exp3,plain_text,experiment_3_demo_prompt_continuation,no_prime,3.013082504272461,2.943068599700928,3.083240103721619,4096
+meta-llama/Llama-3.2-3B-Instruct,Llama_32_3B_Instruct_exp3,plain_text,experiment_3_demo_prompt_continuation,passive,-0.047402381896972656,-0.11337424516677856,0.01821334362030029,4096

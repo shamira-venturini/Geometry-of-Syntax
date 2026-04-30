@@ -7,7 +7,9 @@ The current Experiment 1b, Experiment 2, and Experiment 3 runners are configured
 - `corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv`
 - `corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv`
 
-Experiment 2 prompt CSVs are rebuilt from those same corpora with the same item order. No toy dataset is used.
+Experiment 2 prompt CSVs are rebuilt from those same corpora with the same item order, including the mixed Jabberwocky-prime/CORE-target condition. No toy dataset is used.
+
+Experiments 2 and 3 now also counterbalance the order of role-description lines (`agent_first` vs `patient_first`) within each target determiner/tense cell, so the no-prime scaffold is not systematically patient-recency biased.
 
 ## Project Structure
 
@@ -52,6 +54,7 @@ For each corpus row (`pa`, `pp`, `ta`, `tp`), Experiment 3 builds a demo prompt 
 - prime as solved example (`active`, `passive`, `filler`, or omitted for `no_prime`)
 - target event scaffold ending at `Mary answered, "`
 - continuation candidates: active target sentence vs passive target sentence
+- role-description order stored as `role_order` and balanced 50/50 within each target `def/indef x past/present` cell
 
 All scores are teacher-forced and deterministic.
 
@@ -125,6 +128,7 @@ Each run writes:
 - `summary_by_prime_condition.csv`
 - `summary_by_lexicality.csv`
 - `summary_by_task.csv`
+- `summary_by_role_order.csv`
 - `priming_effects_relative_to_baseline.csv`
 - `paired_condition_tests.csv`
 - `bootstrap_by_prime_condition.csv`
@@ -150,16 +154,17 @@ Each run writes:
 3. Legacy labels (`active_prime`, `passive_prime`, `filler_prime`, `no_prime_eos`, `no_prime_empty`, `no_demo`) are normalized to canonical labels at load/analysis time.
 4. Tokenization boundary artifacts are logged in item-level debug fields.
 
-## Experiment 4 (Additional)
+## Experiment 4 (Developmental)
 
-Experiment 4 is a Ferreira-inspired free-answer comprehension probe aligned to Experiment 1B materials.  
-Use:
+Experiment 4 is a Ferreira-inspired free-answer comprehension probe aligned to Experiment 1B materials. It is not part of the current core 1b/2/3 submission backbone unless explicitly promoted after redesign and ceiling-effect checks.
+
+Current developmental run:
 
 ```bash
 python run_experiment.py --experiment exp4 --config configs/exp4.yaml
 ```
 
-Toy run:
+Toy smoke-test config:
 
 ```bash
 python run_experiment.py --experiment exp4 --config configs/exp4_toy.yaml

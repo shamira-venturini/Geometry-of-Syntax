@@ -18,6 +18,9 @@ from production_priming_common import (
 
 STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 JABBERWOCKY_PRIME_POOL = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
+CORE_TARGETS_JABBERWOCKY_PRIMES = (
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
+)
 DEMO_MODULE_PATH = REPO_ROOT / "scripts" / "24_demo_prompt_completion_experiment.py"
 
 
@@ -32,7 +35,10 @@ def load_demo_module():
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Export wide CSVs of Experiment 2 prompts for core and Jabberwocky demo-prime conditions."
+        description=(
+            "Export wide CSVs of Experiment 2 prompts for core, Jabberwocky, "
+            "and Jabberwocky-prime/CORE-target demo-prime conditions."
+        )
     )
     parser.add_argument(
         "--core-prime-mode",
@@ -58,6 +64,12 @@ def parse_args() -> argparse.Namespace:
         default="mary_answered",
     )
     parser.add_argument(
+        "--role-order",
+        choices=("counterbalanced", "agent_first", "patient_first"),
+        default="counterbalanced",
+        help="Order of role-description lines in demo and target scaffolds.",
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=REPO_ROOT / "corpora" / "transitive",
@@ -72,17 +84,20 @@ def build_prompt_export_frame(
     event_style: str,
     role_style: str,
     quote_style: str,
+    role_order_mode: str,
     seed: int,
     demo_module,
 ) -> pd.DataFrame:
     verb_lookup = load_verb_lookup()
     rows: List[Dict[str, object]] = []
+    item_role_orders = demo_module.counterbalanced_role_orders(target_frame)
 
     for item_index, target_row in target_frame.iterrows():
         prime_row = prime_frame.loc[item_index]
         target_bundle = demo_module.extract_bundle(str(target_row["ta"]), str(target_row["tp"]), verb_lookup=verb_lookup)
         prime_bundle = demo_module.extract_bundle(str(prime_row["pa"]), str(prime_row["pp"]), verb_lookup=verb_lookup)
         filler_sentence = filler_sentences[item_index % len(filler_sentences)]
+        role_order = item_role_orders[item_index] if role_order_mode == "counterbalanced" else role_order_mode
 
         prompts = {}
         for prime_condition in ["active", "passive", "no_prime", "filler"]:
@@ -102,6 +117,7 @@ def build_prompt_export_frame(
                 event_style=event_style,
                 role_style=role_style,
                 quote_style=quote_style,
+                role_order=role_order,
             )
 
         rows.append(
@@ -115,6 +131,7 @@ def build_prompt_export_frame(
                 "event_style": event_style,
                 "role_style": role_style,
                 "quote_style": quote_style,
+                "role_order": role_order,
                 "prompt_active": prompts["active"],
                 "prompt_passive": prompts["passive"],
                 "prompt_no_prime": prompts["no_prime"],
@@ -209,6 +226,7 @@ def main() -> None:
     target_frame = normalize_transitive_frame(pd.read_csv(core_csv))
     core_prime_frame = normalize_transitive_frame(pd.read_csv(core_csv))
     jabber_frame = normalize_transitive_frame(pd.read_csv(JABBERWOCKY_PRIME_POOL))
+    mixed_frame = normalize_transitive_frame(pd.read_csv(CORE_TARGETS_JABBERWOCKY_PRIMES))
 
     target_core_sample, core_prime_sample, core_alignment_mode = sample_condition_frames(
         target_frame=target_frame,
@@ -223,6 +241,12 @@ def main() -> None:
         max_items=args.max_items,
         seed=args.seed,
     )
+    mixed_target_sample, mixed_prime_sample, mixed_alignment_mode = sample_condition_frames(
+        target_frame=mixed_frame,
+        prime_frame=mixed_frame,
+        max_items=args.max_items,
+        seed=args.seed,
+    )
 
     assert_auxiliary_mismatch(
         target_frame=target_core_sample,
@@ -234,6 +258,11 @@ def main() -> None:
         prime_frame=jabber_prime_sample,
         label=f"jabberwocky/{args.core_prime_mode}",
     )
+    assert_auxiliary_mismatch(
+        target_frame=mixed_target_sample,
+        prime_frame=mixed_prime_sample,
+        label=f"core_targets_jabberwocky_primes/{args.core_prime_mode}",
+    )
 
     core_export = build_prompt_export_frame(
         target_frame=target_core_sample,
@@ -242,6 +271,7 @@ def main() -> None:
         event_style=args.event_style,
         role_style=args.role_style,
         quote_style=args.quote_style,
+        role_order_mode=args.role_order,
         seed=args.seed,
         demo_module=demo_module,
     )
@@ -252,41 +282,70 @@ def main() -> None:
         event_style=args.event_style,
         role_style=args.role_style,
         quote_style=args.quote_style,
+        role_order_mode=args.role_order,
+        seed=args.seed,
+        demo_module=demo_module,
+    )
+    mixed_export = build_prompt_export_frame(
+        target_frame=mixed_target_sample,
+        prime_frame=mixed_prime_sample,
+        filler_sentences=JABBERWOCKY_FILLER_SENTENCES,
+        event_style=args.event_style,
+        role_style=args.role_style,
+        quote_style=args.quote_style,
+        role_order_mode=args.role_order,
         seed=args.seed,
         demo_module=demo_module,
     )
 
     core_path = output_dir / f"experiment_2_core_demo_prompts_{args.core_prime_mode}.csv"
     jabber_path = output_dir / f"experiment_2_jabberwocky_demo_prompts_{args.core_prime_mode}.csv"
+    mixed_path = output_dir / f"experiment_2_core_targets_jabberwocky_primes_demo_prompts_{args.core_prime_mode}.csv"
     summary_path = output_dir / f"experiment_2_demo_prompts_{args.core_prime_mode}_summary.json"
 
     core_export.to_csv(core_path, index=False)
     jabber_export.to_csv(jabber_path, index=False)
+    mixed_export.to_csv(mixed_path, index=False)
 
     summary = {
         "core_prime_mode": args.core_prime_mode,
         "event_style": args.event_style,
         "role_style": args.role_style,
         "quote_style": args.quote_style,
+        "role_order": args.role_order,
         "max_items": int(args.max_items),
         "seed": int(args.seed),
         "core_prompt_csv": str(core_path),
         "jabberwocky_prompt_csv": str(jabber_path),
+        "core_targets_jabberwocky_primes_prompt_csv": str(mixed_path),
         "jabberwocky_prime_pool_csv": str(JABBERWOCKY_PRIME_POOL),
+        "core_targets_jabberwocky_primes_csv": str(CORE_TARGETS_JABBERWOCKY_PRIMES),
         "core_alignment_mode": core_alignment_mode,
         "jabberwocky_alignment_mode": jabber_alignment_mode,
+        "core_targets_jabberwocky_primes_alignment_mode": mixed_alignment_mode,
         "core_lexical_overlap_audit": lexical_overlap_audit(target_frame=target_core_sample, prime_frame=core_prime_sample),
         "jabberwocky_lexical_overlap_audit": lexical_overlap_audit(
             target_frame=target_jabber_sample,
             prime_frame=jabber_prime_sample,
         ),
+        "core_targets_jabberwocky_primes_lexical_overlap_audit": lexical_overlap_audit(
+            target_frame=mixed_target_sample,
+            prime_frame=mixed_prime_sample,
+        ),
         "n_core_rows": int(len(core_export)),
         "n_jabberwocky_rows": int(len(jabber_export)),
+        "n_core_targets_jabberwocky_primes_rows": int(len(mixed_export)),
+        "core_role_order_counts": core_export["role_order"].value_counts().sort_index().to_dict(),
+        "jabberwocky_role_order_counts": jabber_export["role_order"].value_counts().sort_index().to_dict(),
+        "core_targets_jabberwocky_primes_role_order_counts": (
+            mixed_export["role_order"].value_counts().sort_index().to_dict()
+        ),
     }
     summary_path.write_text(json.dumps(summary, indent=2) + "\n", encoding="utf-8")
 
     print(f"Saved {core_path}")
     print(f"Saved {jabber_path}")
+    print(f"Saved {mixed_path}")
     print(f"Saved {summary_path}")
 
 

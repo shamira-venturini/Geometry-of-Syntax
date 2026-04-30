@@ -253,12 +253,15 @@ def _base_metadata_for_item(item: ExperimentItem, model_cfg: ModelConfig) -> Dic
     return {
         "experiment_id": "experiment_3",
         "item_id": item.item_id,
+        "item_index": item.item_index,
+        "item_order": item.item_order,
         "item_model_condition": item.model_condition,
         "model_name": model_cfg.name,
         "model_condition": model_cfg.model_condition,
         "prime_condition": item.prime_condition,
         "prime_text": item.prime_text,
         "lexicality_condition": item.lexicality_condition,
+        "role_order": item.role_order,
         "notes": item.notes,
     }
 

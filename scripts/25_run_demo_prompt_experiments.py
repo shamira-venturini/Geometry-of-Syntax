@@ -11,6 +11,9 @@ STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4ce
 STRICT_JABBERWOCKY = (
     REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
 )
+CORE_TARGETS_JABBERWOCKY_PRIMES = (
+    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_core_targets_jabberwocky_primes_2048.csv"
+)
 SCRIPT = REPO_ROOT / "scripts" / "24_demo_prompt_completion_experiment.py"
 
 
@@ -48,8 +51,13 @@ def parse_args() -> argparse.Namespace:
         default="did_to",
     )
     parser.add_argument(
+        "--role-order",
+        choices=("counterbalanced", "agent_first", "patient_first"),
+        default="counterbalanced",
+    )
+    parser.add_argument(
         "--which",
-        choices=("core", "jabberwocky", "both"),
+        choices=("core", "jabberwocky", "core_targets_jabberwocky_primes", "both", "all"),
         default="both",
     )
     parser.add_argument(
@@ -105,6 +113,14 @@ def experiment_configs(output_root: Path, core_prime_mode: str) -> List[Dict[str
             "filler_domain": "jabberwocky",
             "output_dir": output_root / "jabberwocky_demo_primes",
         },
+        {
+            "key": "core_targets_jabberwocky_primes",
+            "name": "jabberwocky_demo_primes_counterbalanced_core_production",
+            "input_csv": core_csv,
+            "prime_csv": CORE_TARGETS_JABBERWOCKY_PRIMES,
+            "filler_domain": "jabberwocky",
+            "output_dir": output_root / "core_targets_jabberwocky_primes",
+        },
     ]
 
 
@@ -123,6 +139,7 @@ def main() -> None:
         "quote_style": args.quote_style,
         "event_style": args.event_style,
         "role_style": args.role_style,
+        "role_order": args.role_order,
         "core_prime_mode": args.core_prime_mode,
         "which": args.which,
         "seed": int(args.seed),
@@ -130,7 +147,12 @@ def main() -> None:
         "experiments": [],
     }
 
-    allowed = {"core", "jabberwocky"} if args.which == "both" else {args.which}
+    if args.which == "both":
+        allowed = {"core", "jabberwocky"}
+    elif args.which == "all":
+        allowed = {"core", "jabberwocky", "core_targets_jabberwocky_primes"}
+    else:
+        allowed = {args.which}
     for config in experiment_configs(output_root, core_prime_mode=args.core_prime_mode):
         if config["key"] not in allowed:
             continue
@@ -161,6 +183,8 @@ def main() -> None:
             args.event_style,
             "--role-style",
             args.role_style,
+            "--role-order",
+            args.role_order,
             "--seed",
             str(args.seed),
             "--prime-conditions",

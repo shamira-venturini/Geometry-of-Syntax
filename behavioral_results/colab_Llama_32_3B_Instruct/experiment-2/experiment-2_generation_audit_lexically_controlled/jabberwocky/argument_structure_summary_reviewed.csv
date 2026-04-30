@@ -1,0 +1,13 @@
+prompt_column,prime_condition,argument_structure_inferred_final,n_items,total_items,share
+prompt_active,active,active_monotransitive_patient,228,2048,0.111328125
+prompt_active,active,unknown,1820,2048,0.888671875
+prompt_filler,filler,copular_like,51,2048,0.02490234375
+prompt_filler,filler,passive_like,190,2048,0.0927734375
+prompt_filler,filler,unknown,1807,2048,0.88232421875
+prompt_no_prime,no_prime,copular_like,155,2048,0.07568359375
+prompt_no_prime,no_prime,passive_like,153,2048,0.07470703125
+prompt_no_prime,no_prime,unknown,1740,2048,0.849609375
+prompt_passive,passive,active_monotransitive_patient,8,2048,0.00390625
+prompt_passive,passive,copular_like,177,2048,0.08642578125
+prompt_passive,passive,passive_like,284,2048,0.138671875
+prompt_passive,passive,unknown,1579,2048,0.77099609375
