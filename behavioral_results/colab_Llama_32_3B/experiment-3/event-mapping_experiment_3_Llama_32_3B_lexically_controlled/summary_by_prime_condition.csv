@@ -1,0 +1,5 @@
+model_name,model_condition,prompt_format_used,task,prime_condition,n_rows,preference_total_mean,preference_total_std,preference_total_se,preference_mean_mean,preference_mean_std,preference_mean_se
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,active,4096.0,3.4744815826416016,2.70312435047197,0.04223631797612453,-0.06210465847499785,0.37365384711298755,0.00583834136114043
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,filler,4096.0,4.080853462219238,2.5261997133019185,0.03947187052034248,-0.04207165468306768,0.3552746573662669,0.00555116652134792
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,no_prime,4096.0,4.4678449630737305,2.4009245575738003,0.03751444621209063,-0.09753895032973517,0.40117713935697835,0.006268392802452787
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,passive,4096.0,-0.05120086669921875,1.6342002933354434,0.025534379583366303,-0.4549585531628322,0.2941458757108423,0.0045960293079819105

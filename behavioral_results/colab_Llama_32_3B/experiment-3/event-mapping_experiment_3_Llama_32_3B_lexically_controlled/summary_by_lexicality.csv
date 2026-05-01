@@ -1,0 +1,3 @@
+model_name,model_condition,prompt_format_used,task,lexicality_condition,n_rows,preference_total_mean,preference_total_std,preference_total_se,preference_mean_mean,preference_mean_std,preference_mean_se
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,nonce,8192.0,3.278012752532959,3.3053405557259374,0.03651919876694878,-0.20034833749135333,0.412472232961568,0.004557217390285658
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,real,8192.0,2.707976818084717,2.530269507866794,0.027955792613158725,-0.12798857083396303,0.37554841353324164,0.004149262966768827

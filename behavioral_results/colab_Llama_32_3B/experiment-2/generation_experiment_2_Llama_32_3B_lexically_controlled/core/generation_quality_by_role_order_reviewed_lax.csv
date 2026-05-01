@@ -1,0 +1,9 @@
+prompt_column,prime_condition,role_order,n_items,active_rate,passive_rate,other_rate,congruent_rate,manually_reviewed_rate
+prompt_active,active,agent_first,1024,0.96484375,0.001953125,0.033203125,0.96484375,0.033203125
+prompt_active,active,patient_first,1024,0.84765625,0.103515625,0.048828125,0.84765625,0.048828125
+prompt_filler,filler,agent_first,1024,0.150390625,0.0390625,0.810546875,0.0,0.8232421875
+prompt_filler,filler,patient_first,1024,0.2216796875,0.0732421875,0.705078125,0.0,0.712890625
+prompt_no_prime,no_prime,agent_first,1024,0.4072265625,0.0048828125,0.587890625,0.0,0.599609375
+prompt_no_prime,no_prime,patient_first,1024,0.5517578125,0.0234375,0.4248046875,0.0,0.4580078125
+prompt_passive,passive,agent_first,1024,0.3681640625,0.603515625,0.0283203125,0.603515625,0.0283203125
+prompt_passive,passive,patient_first,1024,0.1025390625,0.87890625,0.0185546875,0.87890625,0.0185546875

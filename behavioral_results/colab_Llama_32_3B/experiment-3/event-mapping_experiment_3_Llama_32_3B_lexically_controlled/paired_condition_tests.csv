@@ -1,0 +1,11 @@
+model_name,model_condition,prompt_format_used,task,lexicality_condition,condition_a,condition_b,n_pairs,mean_diff_a_minus_b,t_stat,p_value
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,nonce,active,filler,2048,-0.4478874206542969,-4.835724769296026,1.4254643370531747e-06
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,nonce,active,no_prime,2048,0.0739898681640625,0.8458509499894838,0.39773476050021495
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,nonce,active,passive,2048,4.870138168334961,89.72507164004257,0.0
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,nonce,passive,filler,2048,-5.318025588989258,-77.43679864038333,0.0
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,nonce,passive,no_prime,2048,-4.796148300170898,-73.91793911237711,0.0
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,real,active,filler,2048,-0.7648563385009766,-16.251067425450778,5.982762382557919e-56
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,real,active,no_prime,2048,-2.0607166290283203,-40.70103562471184,7.348975466874349e-266
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,real,active,passive,2048,2.1812267303466797,65.16660515461962,0.0
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,real,passive,filler,2048,-2.9460830688476562,-69.72051920877719,0.0
+meta-llama/Llama-3.2-3B,Llama_32_3B_exp3,plain_text,experiment_3_demo_prompt_continuation,real,passive,no_prime,2048,-4.241943359375,-87.50073325428542,0.0

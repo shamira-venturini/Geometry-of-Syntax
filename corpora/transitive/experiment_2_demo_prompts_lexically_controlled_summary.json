@@ -4,6 +4,7 @@
   "role_style": "did_to",
   "quote_style": "mary_answered",
   "role_order": "counterbalanced",
+  "target_verb_cue": "auto_real_targets",
   "max_items": 2048,
   "seed": 13,
   "core_prompt_csv": "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax/corpora/transitive/experiment_2_core_demo_prompts_lexically_controlled.csv",

@@ -155,7 +155,10 @@ The default prompt settings are:
 - event style: `involving_event`,
 - role style: `did_to`,
 - quote style: `mary_answered`,
-- role order: `counterbalanced`.
+- role order: `counterbalanced`,
+- target verb cue: `auto_real_targets`.
+
+The target verb cue adds an explicit line such as `Use the verb "ask" in the answer.` for real CORE targets. This applies to CORE-to-CORE prompts and the Jabberwocky-prime/CORE-target mixed prompts. It is intentionally omitted for Jabberwocky-only targets, whose verb material is the meaning-free `s`/`ed` fragment system.
 
 The three Experiment 2 prompt corpora each contain 2048 rows:
 
@@ -201,6 +204,7 @@ Controls verified in the mixed corpus:
 
 - 2048 rows,
 - same CORE target distribution as the CORE condition,
+- target prompts contain real CORE target verb cues,
 - balanced Jabberwocky prime cells,
 - `0` same auxiliary rows,
 - `0` same determiner-family rows,

@@ -1,5 +1,0 @@
-prompt_column,prime_condition,n_items,active_like_rate,passive_like_rate,exact_rate,prefix_rate,structural_rate,congruent_rate
-prompt_active,active,2048,0.294921875,0.0,0.0,0.0,0.294921875,0.294921875
-prompt_filler,filler,2048,0.01953125,0.0,0.0,0.0,0.01953125,0.0
-prompt_no_prime,no_prime,2048,0.0,0.0,0.0,0.0,0.0,0.0
-prompt_passive,passive,2048,0.0537109375,0.369140625,0.021484375,0.0,0.4013671875,0.369140625

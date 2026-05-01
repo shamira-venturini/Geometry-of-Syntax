@@ -1,0 +1,9 @@
+2026-05-01 10:01:00,047 [INFO] __main__: Starting Experiment 3 demo-prompt continuation run
+2026-05-01 10:01:00,047 [INFO] __main__: Config path: /content/Geometry-of-Syntax/configs/_exp3_colab_runtime.yaml
+2026-05-01 10:01:00,047 [INFO] __main__: Output dir: /content/Geometry-of-Syntax/behavioral_results/colab_Llama_32_3B/experiment-3/event-mapping_experiment_3_Llama_32_3B_lexically_controlled
+2026-05-01 10:01:00,047 [INFO] __main__: Dataset rows: 16384
+2026-05-01 10:01:00,047 [INFO] __main__: Models: 1
+2026-05-01 10:01:00,047 [INFO] __main__: Running model: meta-llama/Llama-3.2-3B (Llama_32_3B_exp3)
+2026-05-01 10:01:09,503 [INFO] src.models: Loaded model=meta-llama/Llama-3.2-3B model_condition=Llama_32_3B_exp3 device=cuda torch_dtype=float16 use_chat_template=False
+2026-05-01 10:01:09,679 [INFO] __main__: Scoring Experiment 3 demo-prompt continuation requests for meta-llama/Llama-3.2-3B: 16384
+2026-05-01 10:07:46,584 [INFO] __main__: Run complete. Results written to /content/Geometry-of-Syntax/behavioral_results/colab_Llama_32_3B/experiment-3/event-mapping_experiment_3_Llama_32_3B_lexically_controlled

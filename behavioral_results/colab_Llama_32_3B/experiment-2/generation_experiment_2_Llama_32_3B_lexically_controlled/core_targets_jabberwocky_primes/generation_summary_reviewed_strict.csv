@@ -1,0 +1,13 @@
+prompt_column,prime_condition,generation_class_strict_final,n_items,total_items,share
+prompt_active,active,active,1146,2048,0.5595703125
+prompt_active,active,other,735,2048,0.35888671875
+prompt_active,active,passive,167,2048,0.08154296875
+prompt_filler,filler,active,380,2048,0.185546875
+prompt_filler,filler,other,1553,2048,0.75830078125
+prompt_filler,filler,passive,115,2048,0.05615234375
+prompt_no_prime,no_prime,active,945,2048,0.46142578125
+prompt_no_prime,no_prime,other,1085,2048,0.52978515625
+prompt_no_prime,no_prime,passive,18,2048,0.0087890625
+prompt_passive,passive,active,255,2048,0.12451171875
+prompt_passive,passive,other,1238,2048,0.6044921875
+prompt_passive,passive,passive,555,2048,0.27099609375

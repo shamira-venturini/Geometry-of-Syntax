@@ -56,6 +56,11 @@ def parse_args() -> argparse.Namespace:
         default="counterbalanced",
     )
     parser.add_argument(
+        "--target-verb-cue",
+        choices=("none", "auto_real_targets", "all"),
+        default="auto_real_targets",
+    )
+    parser.add_argument(
         "--which",
         choices=("core", "jabberwocky", "core_targets_jabberwocky_primes", "both", "all"),
         default="both",
@@ -185,6 +190,8 @@ def main() -> None:
             args.role_style,
             "--role-order",
             args.role_order,
+            "--target-verb-cue",
+            args.target_verb_cue,
             "--seed",
             str(args.seed),
             "--prime-conditions",

@@ -1,2 +1,0 @@
-model_name,model_condition,prompt_format_used,task,n_rows,preference_total_mean,preference_total_std,preference_total_se,preference_mean_mean,preference_mean_std,preference_mean_se
-meta-llama/Llama-3.2-3B-Instruct,Llama_32_3B_Instruct_exp3,plain_text,experiment_3_demo_prompt_continuation,16384.0,3.2486937046051025,3.2221662177382697,0.025173173576080232,-0.12477985672534458,0.46487837584188657,0.003631862311264739
