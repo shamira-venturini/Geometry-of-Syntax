@@ -120,6 +120,15 @@ def parse_args() -> argparse.Namespace:
         default="counterbalanced",
         help="Order of role-description lines in demo and target scaffolds.",
     )
+    parser.add_argument(
+        "--target-verb-cue",
+        choices=("none", "auto_real_targets", "all"),
+        default="auto_real_targets",
+        help=(
+            "Whether target prompts explicitly cue the verb lemma. "
+            "'auto_real_targets' cues real CORE targets but leaves fragment-verb Jabberwocky targets uncued."
+        ),
+    )
     parser.add_argument("--seed", type=int, default=13)
     return parser.parse_args()
 
@@ -263,6 +272,22 @@ def render_answer_line(answer_text: str, style: str) -> str:
     return f"{quote_prefix(style)}{answer_text}{quote_suffix(style)}"
 
 
+def should_include_target_verb_cue(bundle: TargetBundle, mode: str) -> bool:
+    if mode == "none":
+        return False
+    if mode == "all":
+        return True
+    if mode == "auto_real_targets":
+        return bundle.verb_lemma not in {"s", "ed"}
+    raise ValueError(f"Unsupported target verb cue mode: {mode}")
+
+
+def target_verb_cue_line(bundle: TargetBundle, mode: str) -> List[str]:
+    if not should_include_target_verb_cue(bundle, mode):
+        return []
+    return [f'Use the verb "{bundle.verb_lemma}" in the answer.']
+
+
 def filler_demo_lines(filler_sentence: str, quote_style: str) -> List[str]:
     return [
         "In another scene, something unrelated happened.",
@@ -286,12 +311,23 @@ def demo_block(
     ]
 
 
-def target_block(bundle: TargetBundle, event_style: str, role_style: str, quote_style: str, role_order: str) -> List[str]:
-    return event_lines(bundle, event_style=event_style, role_style=role_style, role_order=role_order) + [
-        "",
-        'Bridget asked, "What happened?"',
-        f'{quote_prefix(quote_style)}The',
-    ]
+def target_block(
+    bundle: TargetBundle,
+    event_style: str,
+    role_style: str,
+    quote_style: str,
+    role_order: str,
+    target_verb_cue: str,
+) -> List[str]:
+    return (
+        event_lines(bundle, event_style=event_style, role_style=role_style, role_order=role_order)
+        + target_verb_cue_line(bundle, target_verb_cue)
+        + [
+            "",
+            'Bridget asked, "What happened?"',
+            f'{quote_prefix(quote_style)}The',
+        ]
+    )
 
 
 def demo_prime_condition_order(raw_conditions: List[str]) -> List[str]:
@@ -452,6 +488,7 @@ def build_prompt(
     role_style: str,
     quote_style: str,
     role_order: str,
+    target_verb_cue: str = "auto_real_targets",
 ) -> str:
     lines: List[str] = []
     if prime_condition == "active":
@@ -499,6 +536,7 @@ def build_prompt(
             role_style=role_style,
             quote_style=quote_style,
             role_order=role_order,
+            target_verb_cue=target_verb_cue,
         )
     )
     return "\n".join(lines)
@@ -515,6 +553,7 @@ def build_prompt_groups(
     role_style_mode: str,
     quote_style: str,
     role_order_mode: str,
+    target_verb_cue: str,
 ) -> Tuple[List[Tuple[str, int, List[str], List[int]]], List[Dict[str, object]]]:
     verb_lookup = load_verb_lookup()
     prompt_groups: List[Tuple[str, int, List[str], List[int]]] = []
@@ -538,7 +577,10 @@ def build_prompt_groups(
                         if role_order_mode == "counterbalanced"
                         else role_order_mode
                     )
-                    prompt_template_name = f"demo__{event_style}__{role_style}__{quote_style_value}__{role_order}"
+                    prompt_template_name = (
+                        f"demo__{event_style}__{role_style}__{quote_style_value}"
+                        f"__{role_order}__verbcue_{target_verb_cue}"
+                    )
                     for prime_condition in prime_conditions:
                         prime_sentence: Optional[str]
                         if prime_condition == "active":
@@ -558,6 +600,7 @@ def build_prompt_groups(
                             role_style=role_style,
                             quote_style=quote_style_value,
                             role_order=role_order,
+                            target_verb_cue=target_verb_cue,
                         )
                         prompt_groups.append(
                             (
@@ -589,6 +632,7 @@ def build_prompt_groups(
                                         f"role_style={role_style}",
                                         f"role_order={role_order}",
                                         f"quote_style={quote_style_value}",
+                                        f"target_verb_cue={target_verb_cue}",
                                         f"event={to_event_label(target_bundle.verb_lemma)}",
                                     ]
                                 ),
@@ -599,6 +643,7 @@ def build_prompt_groups(
                                 "event_style": event_style,
                                 "role_style": role_style,
                                 "role_order": role_order,
+                                "target_verb_cue": target_verb_cue,
                             }
                         )
 
@@ -667,6 +712,7 @@ def main() -> None:
         role_style_mode=args.role_style,
         quote_style=args.quote_style,
         role_order_mode=args.role_order,
+        target_verb_cue=args.target_verb_cue,
     )
     batched_scores = batched_choice_log_probs(
         tokenizer=tokenizer,

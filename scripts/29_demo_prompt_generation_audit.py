@@ -143,6 +143,7 @@ def build_generation_rows(frame: pd.DataFrame, prompt_columns: Sequence[str]) ->
                     "role_style": str(record.get("role_style", "")),
                     "quote_style": str(record.get("quote_style", "")),
                     "role_order": str(record.get("role_order", "agent_first")),
+                    "target_verb_cue": str(record.get("target_verb_cue", "none")),
                     "prompt": str(prompt_text),
                 }
             )

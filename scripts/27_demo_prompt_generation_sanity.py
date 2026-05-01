@@ -83,6 +83,11 @@ def parse_args() -> argparse.Namespace:
         choices=("counterbalanced", "agent_first", "patient_first"),
         default="counterbalanced",
     )
+    parser.add_argument(
+        "--target-verb-cue",
+        choices=("none", "auto_real_targets", "all"),
+        default="auto_real_targets",
+    )
     parser.add_argument("--max-new-tokens", type=int, default=18)
     parser.add_argument("--seed", type=int, default=13)
     return parser.parse_args()
@@ -250,6 +255,7 @@ def main() -> None:
                             role_style=role_style,
                             quote_style=quote_style,
                             role_order=role_order,
+                            target_verb_cue=args.target_verb_cue,
                         )
                         prompts.append(prompt)
                         prompt_metadata.append(
@@ -268,6 +274,7 @@ def main() -> None:
                                 "event_style": event_style,
                                 "role_style": role_style,
                                 "role_order": role_order,
+                                "target_verb_cue": args.target_verb_cue,
                             }
                         )
 

@@ -70,6 +70,15 @@ def parse_args() -> argparse.Namespace:
         help="Order of role-description lines in demo and target scaffolds.",
     )
     parser.add_argument(
+        "--target-verb-cue",
+        choices=("none", "auto_real_targets", "all"),
+        default="auto_real_targets",
+        help=(
+            "Whether target prompts explicitly cue the verb lemma. "
+            "'auto_real_targets' cues real CORE targets but leaves fragment-verb Jabberwocky targets uncued."
+        ),
+    )
+    parser.add_argument(
         "--output-dir",
         type=Path,
         default=REPO_ROOT / "corpora" / "transitive",
@@ -85,6 +94,7 @@ def build_prompt_export_frame(
     role_style: str,
     quote_style: str,
     role_order_mode: str,
+    target_verb_cue: str,
     seed: int,
     demo_module,
 ) -> pd.DataFrame:
@@ -118,6 +128,7 @@ def build_prompt_export_frame(
                 role_style=role_style,
                 quote_style=quote_style,
                 role_order=role_order,
+                target_verb_cue=target_verb_cue,
             )
 
         rows.append(
@@ -132,6 +143,7 @@ def build_prompt_export_frame(
                 "role_style": role_style,
                 "quote_style": quote_style,
                 "role_order": role_order,
+                "target_verb_cue": target_verb_cue,
                 "prompt_active": prompts["active"],
                 "prompt_passive": prompts["passive"],
                 "prompt_no_prime": prompts["no_prime"],
@@ -272,6 +284,7 @@ def main() -> None:
         role_style=args.role_style,
         quote_style=args.quote_style,
         role_order_mode=args.role_order,
+        target_verb_cue=args.target_verb_cue,
         seed=args.seed,
         demo_module=demo_module,
     )
@@ -283,6 +296,7 @@ def main() -> None:
         role_style=args.role_style,
         quote_style=args.quote_style,
         role_order_mode=args.role_order,
+        target_verb_cue=args.target_verb_cue,
         seed=args.seed,
         demo_module=demo_module,
     )
@@ -294,6 +308,7 @@ def main() -> None:
         role_style=args.role_style,
         quote_style=args.quote_style,
         role_order_mode=args.role_order,
+        target_verb_cue=args.target_verb_cue,
         seed=args.seed,
         demo_module=demo_module,
     )
@@ -313,6 +328,7 @@ def main() -> None:
         "role_style": args.role_style,
         "quote_style": args.quote_style,
         "role_order": args.role_order,
+        "target_verb_cue": args.target_verb_cue,
         "max_items": int(args.max_items),
         "seed": int(args.seed),
         "core_prompt_csv": str(core_path),
