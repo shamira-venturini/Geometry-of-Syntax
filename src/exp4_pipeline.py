@@ -272,7 +272,7 @@ def run_experiment_4(
     seed = int(experiment_cfg.get("seed", 13))
     _set_seed(seed)
 
-    question_template = str(experiment_cfg.get("question_template", "Who did the {nominalized_verb}?"))
+    question_template = str(experiment_cfg.get("question_template", "In the {event_reference}, who was the doer?"))
     answer_prefix = str(experiment_cfg.get("answer_prefix", "The"))
     max_new_tokens = int(experiment_cfg.get("max_new_tokens", 10))
     ceiling_threshold = float(experiment_cfg.get("ceiling_threshold", 0.95))

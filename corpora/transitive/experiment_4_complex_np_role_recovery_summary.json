@@ -1,0 +1,72 @@
+{
+  "description": "Experiment 4 complex-NP role-recovery draft. Primes reuse the strict 1b simple-sentence backbone; targets add PP-complex NPs under agent_complex, patient_complex, and both_complex conditions. CORE is built first and Jabberwocky mirrors the same row/complexity/preposition plan.",
+  "core_source": "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv",
+  "jabberwocky_source": "corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv",
+  "constraints": [
+    "Prime sentences are the existing strict 1b simple pa/pp sentences.",
+    "Targets are complex variants of the existing strict ta/tp target sentences.",
+    "Complexity is counterbalanced across agent_complex, patient_complex, and both_complex.",
+    "CORE PP modifier nouns are person nouns from the same PrimeLM noun vocabulary.",
+    "Prime and target keep opposite determiner family and opposite passive auxiliary/tense.",
+    "Prime and target keep no content noun or active verb/fragment overlap.",
+    "Target PP prepositions never use the passive by-marker.",
+    "Both-complex targets use two different PP prepositions from different semantic groups.",
+    "Passive prime and passive target unavoidably share the English by-marker; this is audited separately."
+  ],
+  "outputs": {
+    "core": "corpora/transitive/experiment_4_complex_np_core_role_recovery.csv",
+    "jabberwocky": "corpora/transitive/experiment_4_complex_np_jabberwocky_role_recovery.csv"
+  },
+  "core_audit": {
+    "row_count": 6144,
+    "counts_by_complexity": {
+      "agent_complex": 2048,
+      "both_complex": 2048,
+      "patient_complex": 2048
+    },
+    "counts_by_target_cell": {
+      "agent_complex::def_past": 512,
+      "agent_complex::def_present": 512,
+      "agent_complex::indef_past": 512,
+      "agent_complex::indef_present": 512,
+      "both_complex::def_past": 512,
+      "both_complex::def_present": 512,
+      "both_complex::indef_past": 512,
+      "both_complex::indef_present": 512,
+      "patient_complex::def_past": 512,
+      "patient_complex::def_present": 512,
+      "patient_complex::indef_past": 512,
+      "patient_complex::indef_present": 512
+    },
+    "violations": {},
+    "unavoidable_passive_by_overlap_rows": 6144,
+    "avoidable_function_overlap_rows": 0,
+    "semantic_prep_overlap_rows": 0
+  },
+  "jabberwocky_audit": {
+    "row_count": 6144,
+    "counts_by_complexity": {
+      "agent_complex": 2048,
+      "both_complex": 2048,
+      "patient_complex": 2048
+    },
+    "counts_by_target_cell": {
+      "agent_complex::def_past": 512,
+      "agent_complex::def_present": 512,
+      "agent_complex::indef_past": 512,
+      "agent_complex::indef_present": 512,
+      "both_complex::def_past": 512,
+      "both_complex::def_present": 512,
+      "both_complex::indef_past": 512,
+      "both_complex::indef_present": 512,
+      "patient_complex::def_past": 512,
+      "patient_complex::def_present": 512,
+      "patient_complex::indef_past": 512,
+      "patient_complex::indef_present": 512
+    },
+    "violations": {},
+    "unavoidable_passive_by_overlap_rows": 6144,
+    "avoidable_function_overlap_rows": 0,
+    "semantic_prep_overlap_rows": 0
+  }
+}

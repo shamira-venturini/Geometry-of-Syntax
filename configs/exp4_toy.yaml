@@ -11,8 +11,8 @@ experiment:
   filler_seed: 13
   verb_list_path: corpora/transitive/vocabulary_lists/verblist_T_usf_freq.csv
   association_csv_path: corpora/transitive/usf_association_edges_core_vocab.csv
-  question_template: "Who did the {nominalized_verb}?"
-  answer_prefix: "The"
+  question_template: "In the {event_reference}, who was the doer?"
+  answer_prefix: "Answer: The doer was the"
   max_new_tokens: 8
   ceiling_threshold: 0.95
   corpora:

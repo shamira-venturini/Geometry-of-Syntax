@@ -133,8 +133,13 @@ def build_nominalized_question(
         nominalized = "doing"
         fallback_used = True
 
+    event_reference = "event just described" if verb_lemma == "event" else f"{nominalized} event"
+
     try:
-        question_text = question_template.format(nominalized_verb=nominalized)
+        question_text = question_template.format(
+            nominalized_verb=nominalized,
+            event_reference=event_reference,
+        )
     except Exception as exc:  # pragma: no cover - defensive path
         logger.warning(
             "Exp4 question template fallback for item_id=%s (template=%r, reason=%s).",
@@ -142,7 +147,7 @@ def build_nominalized_question(
             question_template,
             exc,
         )
-        question_text = f"Who did the {nominalized}?"
+        question_text = "In the event just described, who was the doer?"
         fallback_used = True
 
     return question_text, verb_lemma, nominalized, fallback_used
@@ -180,8 +185,7 @@ def build_exp4_prompt(
     if prime_block:
         sections.append(prime_block)
     sections.append(target_sentence.strip())
-    sections.append(f"Question: {question_text}")
-    sections.append(f"Answer: {normalized_answer_prefix}")
+    sections.append(f"{question_text}\n{normalized_answer_prefix}")
 
     prompt_text = "\n\n".join(section for section in sections if section).rstrip()
 

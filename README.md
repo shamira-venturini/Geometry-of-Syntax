@@ -21,6 +21,7 @@ Experiments 2 and 3 now also counterbalance the order of role-description lines 
 - `src/plots.py` - PNG plots by prime/task/lexicality
 - `run_experiment.py` - CLI entry point
 - `configs/` - ready-to-run YAML configs
+- `docs/analysis_plan_structural_priming.md` - planned baseline-centered, ROI, PE-percentage, and IFE-style diagnostics
 
 ## Installation
 
@@ -31,6 +32,15 @@ pip install -r requirements.txt
 ## Core Design
 
 The pipeline keeps **baseline preference** and **priming effect** separate.
+
+The analysis plan now requires four explicit diagnostics before strong theoretical interpretation:
+
+- baseline-centered log-odds shifts, `logP(passive target) - logP(active target)`, under active, passive, filler, and no-prime contexts;
+- ROI decomposition of passive PE into Initial NP, auxiliary/frame onset, participle, `by`, Agent DP, and residual material;
+- percentage-of-PE by ROI, to distinguish diffuse structural effects from local passive-cue predictability;
+- IFE-style prime-surprisal regressions testing whether less expected active/passive primes induce larger target shifts.
+
+See `docs/analysis_plan_structural_priming.md` for the canonical checklist.
 
 Prime conditions supported:
 
@@ -146,6 +156,15 @@ Each run writes:
   - `run.log`
   - `run_metadata.json`
   - `resolved_config.yaml`
+
+Planned analysis outputs to add:
+
+- `baseline_centered_logodds_shifts.csv`
+- `roi_pe_item_level.csv`
+- `roi_pe_summary.csv`
+- `roi_pe_percentage_summary.csv`
+- `ife_prime_surprisal_item_level.csv`
+- `ife_prime_surprisal_models.csv`
 
 ## Caveats
 
