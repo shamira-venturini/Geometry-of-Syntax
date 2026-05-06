@@ -15,7 +15,7 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CORE = REPO_ROOT / "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv"
 DEFAULT_JABBER = REPO_ROOT / "corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
-DEFAULT_NOUNS = REPO_ROOT / "PrimeLM/vocabulary_lists/nounlist_usf_freq.csv"
+DEFAULT_NOUNS = REPO_ROOT / "corpora/transitive/vocabulary_lists/nounlist_usf_freq.csv"
 DEFAULT_JABBER_LEXICON = (
     REPO_ROOT / "corpora/transitive/vocabulary_lists/jabberwocky_gpt2_monosyllabic_strict_4cell_lexicon.json"
 )
@@ -471,7 +471,7 @@ def main() -> None:
             "Prime sentences are the existing strict 1b simple pa/pp sentences.",
             "Targets are complex variants of the existing strict ta/tp target sentences.",
             "Complexity is counterbalanced across agent_complex, patient_complex, and both_complex.",
-            "CORE PP modifier nouns are person nouns from the same PrimeLM noun vocabulary.",
+            "CORE PP modifier nouns are person nouns from the tracked USF noun vocabulary.",
             "Prime and target keep opposite determiner family and opposite passive auxiliary/tense.",
             "Prime and target keep no content noun or active verb/fragment overlap.",
             "Target PP prepositions never use the passive by-marker.",

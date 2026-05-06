@@ -6,7 +6,7 @@
     "Prime sentences are the existing strict 1b simple pa/pp sentences.",
     "Targets are complex variants of the existing strict ta/tp target sentences.",
     "Complexity is counterbalanced across agent_complex, patient_complex, and both_complex.",
-    "CORE PP modifier nouns are person nouns from the same PrimeLM noun vocabulary.",
+    "CORE PP modifier nouns are person nouns from the tracked USF noun vocabulary.",
     "Prime and target keep opposite determiner family and opposite passive auxiliary/tense.",
     "Prime and target keep no content noun or active verb/fragment overlap.",
     "Target PP prepositions never use the passive by-marker.",
