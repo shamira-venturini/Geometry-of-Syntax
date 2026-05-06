@@ -1,0 +1,836 @@
+---
+title: "Structural Priming Suite: Mixed-Effects Analysis Plan"
+author: "Geometry of Syntax"
+output:
+  html_document:
+    toc: true
+    toc_depth: 3
+    number_sections: true
+params:
+  repo_root: "."
+  input_dir: "behavioral_results/analysis_ready"
+  output_dir: "behavioral_results/r_mixed_models"
+  item_level_path: "item_level_master.csv"
+  baseline_shifts_path: "baseline_centered_logodds_shifts.csv"
+  roi_long_path: "roi_pe_item_level.csv"
+  roi_percentage_path: "roi_pe_percentage_summary.csv"
+  ife_path: "ife_prime_surprisal_item_level.csv"
+  exp2_generation_path: "exp2_generation_item_level.csv"
+  exp4_comprehension_path: "exp4_comprehension_item_level.csv"
+  model_size_reference: "small"
+  lexicality_reference: "core"
+  baseline_reference: "no_prime"
+  run_sensitivity_models: true
+  save_model_objects: false
+---
+
+# Purpose
+
+This notebook is the analysis scaffold for the active/passive structural priming
+suite. It is organized by **research question**, not by experiment. The same
+logic is then applied to whichever experiments and models are present in the
+analysis-ready CSVs.
+
+The notebook assumes that Python-side scripts have already exported tidy,
+analysis-ready files. If a file is missing, the relevant section is skipped with
+a clear message rather than failing the whole notebook.
+
+Primary analysis principle:
+
+- report baseline active/passive preference separately from prime-induced shift;
+- use `model_size` as the primary model comparison variable;
+- treat `model_family` as descriptive or robustness-only;
+- include item/order/token controls wherever available;
+- use item-level random intercepts where repeated target items are observed.
+
+# Setup
+
+```{r setup}
+knitr::opts_chunk$set(
+  echo = TRUE,
+  warning = FALSE,
+  message = FALSE
+)
+
+required_pkgs <- c(
+  "readr", "dplyr", "tidyr", "purrr", "stringr", "forcats",
+  "ggplot2", "tibble", "glue", "knitr",
+  "lme4", "emmeans", "broom.mixed", "performance"
+)
+
+missing_pkgs <- required_pkgs[
+  !vapply(required_pkgs, requireNamespace, logical(1), quietly = TRUE)
+]
+if (length(missing_pkgs) > 0) {
+  stop("Install these packages before knitting: ", paste(missing_pkgs, collapse = ", "))
+}
+
+invisible(lapply(required_pkgs, library, character.only = TRUE))
+
+repo_root <- normalizePath(params$repo_root, mustWork = FALSE)
+input_dir <- file.path(repo_root, params$input_dir)
+output_dir <- file.path(repo_root, params$output_dir)
+dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
+
+set.seed(13)
+
+theme_set(ggplot2::theme_minimal(base_size = 12))
+```
+
+# Helpers
+
+```{r helpers}
+path_from_param <- function(param_value) {
+  path <- as.character(param_value)
+  if (grepl("^(/|[A-Za-z]:[/\\\\])", path)) {
+    return(path)
+  }
+  file.path(input_dir, path)
+}
+```
+
+```{r helper-functions}
+read_optional_csv <- function(path, label) {
+  if (!file.exists(path)) {
+    message(glue::glue("Skipping {label}; missing file: {path}"))
+    return(NULL)
+  }
+  readr::read_csv(path, show_col_types = FALSE)
+}
+
+has_cols <- function(df, cols) {
+  !is.null(df) && all(cols %in% names(df))
+}
+
+require_cols <- function(df, cols, label) {
+  missing <- setdiff(cols, names(df))
+  if (length(missing) > 0) {
+    stop(glue::glue("{label} is missing required columns: {paste(missing, collapse = ', ')}"))
+  }
+  invisible(df)
+}
+
+first_present <- function(df, candidates) {
+  found <- candidates[candidates %in% names(df)]
+  if (length(found) == 0) {
+    return(NULL)
+  }
+  found[[1]]
+}
+
+z_if_present <- function(df, col) {
+  if (!col %in% names(df)) {
+    return(df)
+  }
+  out <- df
+  new_col <- paste0(col, "_z")
+  out[[new_col]] <- as.numeric(scale(out[[col]]))
+  out
+}
+
+coalesce_missing_col <- function(df, col, value) {
+  if (!col %in% names(df)) {
+    df[[col]] <- value
+  }
+  df
+}
+
+canonicalize_common <- function(df) {
+  if (is.null(df)) {
+    return(NULL)
+  }
+
+  out <- df %>%
+    mutate(
+      prime_condition = if ("prime_condition" %in% names(.)) {
+        stringr::str_replace_all(as.character(prime_condition), c(
+          "active_prime" = "active",
+          "passive_prime" = "passive",
+          "filler_prime" = "filler",
+          "no_prime_eos" = "no_prime",
+          "no_prime_empty" = "no_prime",
+          "no_demo" = "no_prime"
+        ))
+      } else {
+        NA_character_
+      }
+    )
+
+  out <- coalesce_missing_col(out, "role_order", "not_applicable")
+  out <- coalesce_missing_col(out, "task_type", "unspecified")
+  out <- coalesce_missing_col(out, "model_size", "unspecified")
+  out <- coalesce_missing_col(out, "model_family", "unspecified")
+  out <- coalesce_missing_col(out, "lexicality_condition", "unspecified")
+  out <- coalesce_missing_col(out, "item_id", NA_character_)
+  out <- coalesce_missing_col(out, "item_index", NA_integer_)
+
+  out %>%
+    mutate(
+      prime_condition = factor(
+        prime_condition,
+        levels = c("no_prime", "filler", "active", "passive")
+      ),
+      lexicality_condition = forcats::fct_relevel(
+        factor(lexicality_condition),
+        params$lexicality_reference
+      ),
+      model_size = forcats::fct_relevel(
+        factor(model_size),
+        params$model_size_reference
+      ),
+      model_family = factor(model_family),
+      task_type = factor(task_type),
+      role_order = factor(role_order),
+      item_factor = factor(ifelse(is.na(item_id), item_index, item_id))
+    ) %>%
+    z_if_present("item_order") %>%
+    z_if_present("item_index") %>%
+    z_if_present("token_count_diff") %>%
+    z_if_present("passive_minus_active_token_count") %>%
+    z_if_present("prime_token_count_diff") %>%
+    z_if_present("target_token_count_diff")
+}
+
+available_controls <- function(df, candidates) {
+  candidates[candidates %in% names(df)]
+}
+
+random_item_term <- function(df) {
+  if ("item_factor" %in% names(df) && dplyr::n_distinct(df$item_factor, na.rm = TRUE) > 1) {
+    "(1 | item_factor)"
+  } else {
+    NULL
+  }
+}
+
+build_formula <- function(response, fixed_terms, random_terms = NULL) {
+  fixed_terms <- fixed_terms[!is.na(fixed_terms) & nzchar(fixed_terms)]
+  random_terms <- random_terms[!is.na(random_terms) & nzchar(random_terms)]
+  rhs <- c(fixed_terms, random_terms)
+  stats::as.formula(paste(response, "~", paste(rhs, collapse = " + ")))
+}
+
+fit_lmer_safe <- function(formula, data, label) {
+  message(glue::glue("Fitting LMM: {label}"))
+  message(format(formula))
+  tryCatch(
+    lme4::lmer(
+      formula,
+      data = data,
+      REML = FALSE,
+      control = lme4::lmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))
+    ),
+    error = function(e) {
+      warning(glue::glue("Model failed [{label}]: {conditionMessage(e)}"))
+      NULL
+    }
+  )
+}
+
+fit_glmer_safe <- function(formula, data, label) {
+  message(glue::glue("Fitting GLMM: {label}"))
+  message(format(formula))
+  tryCatch(
+    lme4::glmer(
+      formula,
+      data = data,
+      family = binomial,
+      control = lme4::glmerControl(optimizer = "bobyqa", optCtrl = list(maxfun = 2e5))
+    ),
+    error = function(e) {
+      warning(glue::glue("Model failed [{label}]: {conditionMessage(e)}"))
+      NULL
+    }
+  )
+}
+
+tidy_model <- function(model, model_id) {
+  if (is.null(model)) {
+    return(tibble::tibble())
+  }
+  broom.mixed::tidy(model, effects = "fixed", conf.int = TRUE) %>%
+    mutate(model_id = model_id, .before = 1)
+}
+
+save_model_summary <- function(model, model_id) {
+  if (is.null(model)) {
+    return(invisible(NULL))
+  }
+  txt_path <- file.path(output_dir, paste0(model_id, "_summary.txt"))
+  capture.output(summary(model), file = txt_path)
+
+  if (isTRUE(params$save_model_objects)) {
+    saveRDS(model, file.path(output_dir, paste0(model_id, ".rds")))
+  }
+  invisible(NULL)
+}
+
+write_model_table <- function(rows, filename) {
+  table <- dplyr::bind_rows(rows)
+  if (nrow(table) > 0) {
+    readr::write_csv(table, file.path(output_dir, filename))
+  }
+  table
+}
+```
+
+# Load Data
+
+Expected analysis-ready files:
+
+- `item_level_master.csv`: item-level log-probability and/or choice measures.
+- `baseline_centered_logodds_shifts.csv`: one row per item/model/baseline-centered shift.
+- `roi_pe_item_level.csv`: long ROI-level PE table.
+- `roi_pe_percentage_summary.csv`: region percentage summaries.
+- `ife_prime_surprisal_item_level.csv`: IFE-style surprisal and target shifts.
+- `exp2_generation_item_level.csv`: generation labels for Experiment 2, if not included in master.
+- `exp4_comprehension_item_level.csv`: comprehension/role-recovery accuracy for Experiment 4, if not included in master.
+
+```{r load-data}
+item_level <- read_optional_csv(path_from_param(params$item_level_path), "item-level master") %>%
+  canonicalize_common()
+
+baseline_shifts <- read_optional_csv(path_from_param(params$baseline_shifts_path), "baseline-centered shifts") %>%
+  canonicalize_common()
+
+roi_long <- read_optional_csv(path_from_param(params$roi_long_path), "ROI item-level PE") %>%
+  canonicalize_common()
+
+roi_percentage <- read_optional_csv(path_from_param(params$roi_percentage_path), "ROI percentage summary")
+
+ife_item <- read_optional_csv(path_from_param(params$ife_path), "IFE item-level") %>%
+  canonicalize_common()
+
+exp2_generation <- read_optional_csv(path_from_param(params$exp2_generation_path), "Experiment 2 generation item-level") %>%
+  canonicalize_common()
+
+exp4_comprehension <- read_optional_csv(path_from_param(params$exp4_comprehension_path), "Experiment 4 comprehension item-level") %>%
+  canonicalize_common()
+```
+
+# Design Checks
+
+```{r design-checks}
+describe_table <- function(df, label) {
+  if (is.null(df)) {
+    return(invisible(NULL))
+  }
+  cat("\n\n##", label, "\n")
+  print(dim(df))
+  print(names(df))
+}
+
+describe_table(item_level, "item_level")
+describe_table(baseline_shifts, "baseline_shifts")
+describe_table(roi_long, "roi_long")
+describe_table(ife_item, "ife_item")
+describe_table(exp2_generation, "exp2_generation")
+describe_table(exp4_comprehension, "exp4_comprehension")
+```
+
+```{r balance-checks}
+if (has_cols(item_level, c("experiment", "task_type", "lexicality_condition", "model_size", "prime_condition"))) {
+  item_level %>%
+    count(experiment, task_type, lexicality_condition, model_size, prime_condition) %>%
+    arrange(experiment, task_type, lexicality_condition, model_size, prime_condition) %>%
+    knitr::kable()
+} else {
+  message("Skipping balance table; item_level is missing or lacks required grouping columns.")
+}
+```
+
+# Descriptive Plots
+
+```{r descriptive-plots, fig.width=9, fig.height=5}
+if (has_cols(item_level, c("logodds_passive", "prime_condition", "lexicality_condition", "model_size"))) {
+  ggplot(item_level, aes(prime_condition, logodds_passive, fill = lexicality_condition)) +
+    geom_hline(yintercept = 0, linetype = "dashed") +
+    stat_summary(fun = mean, geom = "col", position = position_dodge(width = 0.8)) +
+    stat_summary(fun.data = mean_cl_boot, geom = "errorbar", position = position_dodge(width = 0.8), width = 0.2) +
+    facet_wrap(~ model_size) +
+    labs(
+      title = "Passive log-odds by prime condition",
+      y = "logP(passive target) - logP(active target)",
+      x = "Prime condition"
+    )
+}
+```
+
+# RQ1: Baseline Active/Passive Bias
+
+Question: before priming, do models prefer passive or active targets, and does
+this vary by lexicality, task, and model size?
+
+Primary DV:
+
+```text
+logodds_passive = logP(passive target) - logP(active target)
+```
+
+Primary subset: `prime_condition == no_prime`. Filler baseline is a robustness
+check, not the main baseline.
+
+```{r rq1-baseline-bias}
+rq1_models <- list()
+
+if (has_cols(item_level, c("logodds_passive", "prime_condition", "lexicality_condition", "model_size"))) {
+  baseline_df <- item_level %>%
+    filter(prime_condition == params$baseline_reference) %>%
+    filter(!is.na(logodds_passive))
+
+  controls <- available_controls(
+    baseline_df,
+    c("task_type", "token_count_diff_z", "passive_minus_active_token_count_z", "item_order_z", "item_index_z")
+  )
+
+  fixed <- c("lexicality_condition * model_size", controls)
+  formula <- build_formula("logodds_passive", fixed, random_item_term(baseline_df))
+
+  rq1_models$baseline_bias <- fit_lmer_safe(formula, baseline_df, "rq1_baseline_bias")
+  save_model_summary(rq1_models$baseline_bias, "rq1_baseline_bias")
+}
+
+rq1_table <- write_model_table(
+  purrr::imap(rq1_models, ~ tidy_model(.x, .y)),
+  "rq1_baseline_bias_fixed_effects.csv"
+)
+rq1_table %>% knitr::kable()
+```
+
+```{r rq1-filler-sensitivity}
+if (isTRUE(params$run_sensitivity_models) &&
+    has_cols(item_level, c("logodds_passive", "prime_condition", "lexicality_condition", "model_size"))) {
+  filler_df <- item_level %>%
+    filter(prime_condition == "filler") %>%
+    filter(!is.na(logodds_passive))
+
+  if (nrow(filler_df) > 0) {
+    controls <- available_controls(
+      filler_df,
+      c("task_type", "token_count_diff_z", "passive_minus_active_token_count_z", "item_order_z", "item_index_z")
+    )
+    formula <- build_formula(
+      "logodds_passive",
+      c("lexicality_condition * model_size", controls),
+      random_item_term(filler_df)
+    )
+    rq1_filler <- fit_lmer_safe(formula, filler_df, "rq1_filler_baseline_sensitivity")
+    save_model_summary(rq1_filler, "rq1_filler_baseline_sensitivity")
+    tidy_model(rq1_filler, "rq1_filler_baseline_sensitivity") %>% knitr::kable()
+  }
+}
+```
+
+# RQ2: Baseline-Centered Priming Shift
+
+Question: does an active or passive prime move the model away from its own
+no-prime baseline?
+
+Recommended table: `baseline_centered_logodds_shifts.csv`.
+
+Expected columns:
+
+```text
+shift_from_no_prime
+prime_type              # active / passive
+lexicality_condition
+task_type
+model_size
+item_id
+token_count_diff
+role_order
+item_order
+```
+
+```{r rq2-baseline-centered-shift}
+rq2_models <- list()
+
+if (has_cols(baseline_shifts, c("shift_from_no_prime", "prime_type", "lexicality_condition", "model_size"))) {
+  shift_df <- baseline_shifts %>%
+    mutate(
+      prime_type = factor(prime_type, levels = c("active", "passive"))
+    ) %>%
+    filter(!is.na(shift_from_no_prime))
+
+  controls <- available_controls(
+    shift_df,
+    c("task_type", "role_order", "token_count_diff_z", "target_token_count_diff_z", "prime_token_count_diff_z", "item_order_z", "item_index_z")
+  )
+
+  formula <- build_formula(
+    "shift_from_no_prime",
+    c("prime_type * lexicality_condition * model_size", controls),
+    random_item_term(shift_df)
+  )
+
+  rq2_models$shift_no_prime <- fit_lmer_safe(formula, shift_df, "rq2_shift_from_no_prime")
+  save_model_summary(rq2_models$shift_no_prime, "rq2_shift_from_no_prime")
+}
+
+rq2_table <- write_model_table(
+  purrr::imap(rq2_models, ~ tidy_model(.x, .y)),
+  "rq2_baseline_centered_shift_fixed_effects.csv"
+)
+rq2_table %>% knitr::kable()
+```
+
+```{r rq2-estimated-marginal-means}
+if (!is.null(rq2_models$shift_no_prime)) {
+  emmeans::emmeans(
+    rq2_models$shift_no_prime,
+    specs = ~ prime_type | lexicality_condition * model_size
+  ) %>%
+    as.data.frame() %>%
+    readr::write_csv(file.path(output_dir, "rq2_shift_emmeans.csv"))
+
+  emmeans::contrast(
+    emmeans::emmeans(rq2_models$shift_no_prime, specs = ~ prime_type | lexicality_condition * model_size),
+    method = "pairwise"
+  ) %>%
+    as.data.frame() %>%
+    readr::write_csv(file.path(output_dir, "rq2_active_vs_passive_shift_contrasts.csv"))
+}
+```
+
+# RQ3: Does Priming Survive in Jabberwocky?
+
+Question: does the prime-induced shift persist when lexical semantics are
+removed/replaced by the Jabberwocky condition?
+
+This is technically part of RQ2, but it deserves a focused contrast because it
+is central to interpretation.
+
+```{r rq3-jabberwocky}
+rq3_models <- list()
+
+if (has_cols(baseline_shifts, c("shift_from_no_prime", "prime_type", "lexicality_condition", "model_size"))) {
+  jab_df <- baseline_shifts %>%
+    mutate(prime_type = factor(prime_type, levels = c("active", "passive"))) %>%
+    filter(lexicality_condition %in% c("core", "jabberwocky", "nonce", "real")) %>%
+    filter(!is.na(shift_from_no_prime))
+
+  controls <- available_controls(
+    jab_df,
+    c("task_type", "role_order", "token_count_diff_z", "target_token_count_diff_z", "prime_token_count_diff_z", "item_order_z", "item_index_z")
+  )
+
+  formula <- build_formula(
+    "shift_from_no_prime",
+    c("prime_type * lexicality_condition * model_size", controls),
+    random_item_term(jab_df)
+  )
+
+  rq3_models$lexicality_shift <- fit_lmer_safe(formula, jab_df, "rq3_lexicality_shift")
+  save_model_summary(rq3_models$lexicality_shift, "rq3_lexicality_shift")
+}
+
+rq3_table <- write_model_table(
+  purrr::imap(rq3_models, ~ tidy_model(.x, .y)),
+  "rq3_jabberwocky_fixed_effects.csv"
+)
+rq3_table %>% knitr::kable()
+```
+
+# RQ4: Does the Effect Generalize Across Tasks?
+
+Question: is the same active/passive priming pattern visible in fixed-target
+processing, free generation, event-to-syntax mapping, and comprehension?
+
+This model only makes sense after the dependent variables have been put onto a
+comparable scale, e.g. baseline-centered shift or standardized effect.
+
+```{r rq4-task-generalization}
+rq4_models <- list()
+
+task_effect_col <- NULL
+if (!is.null(baseline_shifts)) {
+  task_effect_col <- first_present(baseline_shifts, c("effect_z", "shift_z", "shift_from_no_prime"))
+}
+
+if (!is.null(task_effect_col) &&
+    has_cols(baseline_shifts, c(task_effect_col, "prime_type", "task_type", "lexicality_condition", "model_size"))) {
+  task_df <- baseline_shifts %>%
+    mutate(
+      prime_type = factor(prime_type, levels = c("active", "passive")),
+      effect_for_model = .data[[task_effect_col]]
+    ) %>%
+    filter(!is.na(effect_for_model))
+
+  controls <- available_controls(
+    task_df,
+    c("role_order", "token_count_diff_z", "target_token_count_diff_z", "prime_token_count_diff_z", "item_order_z", "item_index_z")
+  )
+
+  formula <- build_formula(
+    "effect_for_model",
+    c("prime_type * lexicality_condition * task_type * model_size", controls),
+    random_item_term(task_df)
+  )
+
+  rq4_models$task_generalization <- fit_lmer_safe(formula, task_df, "rq4_task_generalization")
+  save_model_summary(rq4_models$task_generalization, "rq4_task_generalization")
+}
+
+rq4_table <- write_model_table(
+  purrr::imap(rq4_models, ~ tidy_model(.x, .y)),
+  "rq4_task_generalization_fixed_effects.csv"
+)
+rq4_table %>% knitr::kable()
+```
+
+# Experiment 2: Generation Readout
+
+Question: does the prime change the structure the model chooses to generate?
+
+Primary DV: binary passive generation.
+
+```{r exp2-generation-glmm}
+exp2_models <- list()
+
+if (has_cols(exp2_generation, c("generation_voice", "prime_condition", "lexicality_condition", "model_size"))) {
+  exp2_df <- exp2_generation %>%
+    filter(generation_voice %in% c("active", "passive")) %>%
+    mutate(
+      is_passive = as.integer(generation_voice == "passive")
+    )
+
+  controls <- available_controls(
+    exp2_df,
+    c("role_order", "target_verb_cue", "item_order_z", "item_index_z")
+  )
+
+  formula <- build_formula(
+    "is_passive",
+    c("prime_condition * lexicality_condition * model_size", controls),
+    random_item_term(exp2_df)
+  )
+
+  exp2_models$generation_passive <- fit_glmer_safe(formula, exp2_df, "exp2_generation_passive")
+  save_model_summary(exp2_models$generation_passive, "exp2_generation_passive")
+}
+
+exp2_table <- write_model_table(
+  purrr::imap(exp2_models, ~ tidy_model(.x, .y)),
+  "exp2_generation_fixed_effects.csv"
+)
+exp2_table %>% knitr::kable()
+```
+
+# Experiment 4: Comprehension / Role Recovery
+
+Question: does priming or target voice affect role-recovery accuracy?
+
+Primary DV: correct answer to doer / acted-on question.
+
+```{r exp4-comprehension-glmm}
+exp4_models <- list()
+
+if (has_cols(exp4_comprehension, c("is_correct", "prime_condition", "target_voice", "question_type", "lexicality_condition", "model_size"))) {
+  exp4_df <- exp4_comprehension %>%
+    mutate(
+      is_correct = as.integer(is_correct),
+      target_voice = factor(target_voice, levels = c("active", "passive")),
+      question_type = factor(question_type, levels = c("doer", "acted_on"))
+    )
+
+  controls <- available_controls(
+    exp4_df,
+    c("complexity_condition", "item_order_z", "item_index_z")
+  )
+
+  formula <- build_formula(
+    "is_correct",
+    c("prime_condition * target_voice * question_type * lexicality_condition * model_size", controls),
+    random_item_term(exp4_df)
+  )
+
+  exp4_models$role_recovery_accuracy <- fit_glmer_safe(formula, exp4_df, "exp4_role_recovery_accuracy")
+  save_model_summary(exp4_models$role_recovery_accuracy, "exp4_role_recovery_accuracy")
+}
+
+exp4_table <- write_model_table(
+  purrr::imap(exp4_models, ~ tidy_model(.x, .y)),
+  "exp4_comprehension_fixed_effects.csv"
+)
+exp4_table %>% knitr::kable()
+```
+
+# ROI Analysis
+
+Question: where in the sentence does the priming effect occur?
+
+Primary DV: ROI-level PE or log-probability difference.
+
+```{r roi-model}
+roi_models <- list()
+
+roi_dv <- NULL
+if (!is.null(roi_long)) {
+  roi_dv <- first_present(roi_long, c("roi_pe", "pe", "roi_logprob_delta", "logprob_delta"))
+}
+
+if (!is.null(roi_dv) &&
+    has_cols(roi_long, c(roi_dv, "roi", "prime_condition", "target_voice", "lexicality_condition", "model_size"))) {
+  roi_df <- roi_long %>%
+    mutate(
+      roi = factor(roi),
+      target_voice = factor(target_voice, levels = c("active", "passive")),
+      roi_response = .data[[roi_dv]]
+    ) %>%
+    filter(!is.na(roi_response))
+
+  controls <- available_controls(
+    roi_df,
+    c("roi_token_count", "item_order_z", "item_index_z")
+  )
+
+  formula <- build_formula(
+    "roi_response",
+    c("roi * prime_condition * lexicality_condition * model_size", "target_voice", controls),
+    random_item_term(roi_df)
+  )
+
+  roi_models$roi_pe <- fit_lmer_safe(formula, roi_df, "roi_pe")
+  save_model_summary(roi_models$roi_pe, "roi_pe")
+}
+
+roi_table <- write_model_table(
+  purrr::imap(roi_models, ~ tidy_model(.x, .y)),
+  "roi_pe_fixed_effects.csv"
+)
+roi_table %>% knitr::kable()
+```
+
+```{r roi-percentages}
+if (!is.null(roi_percentage)) {
+  readr::write_csv(roi_percentage, file.path(output_dir, "roi_pe_percentage_summary_copy.csv"))
+  roi_percentage %>% head(30) %>% knitr::kable()
+}
+```
+
+# IFE-Style Prime Surprisal Analysis
+
+Question: do less expected primes induce larger target shifts?
+
+Primary DV: baseline-centered target shift.
+
+Primary predictor:
+
+```text
+prime_surprisal = -log P(prime structure at baseline)
+```
+
+```{r ife-model}
+ife_models <- list()
+
+ife_dv <- NULL
+if (!is.null(ife_item)) {
+  ife_dv <- first_present(ife_item, c("target_shift", "shift_from_no_prime", "passive_target_shift", "active_target_shift"))
+}
+
+if (!is.null(ife_dv) &&
+    has_cols(ife_item, c(ife_dv, "prime_surprisal", "prime_type", "lexicality_condition", "model_size"))) {
+  ife_df <- ife_item %>%
+    mutate(
+      prime_type = factor(prime_type, levels = c("active", "passive")),
+      ife_response = .data[[ife_dv]]
+    ) %>%
+    filter(!is.na(ife_response), !is.na(prime_surprisal))
+
+  controls <- available_controls(
+    ife_df,
+    c("role_order", "token_count_diff_z", "target_token_count_diff_z", "prime_token_count_diff_z", "item_order_z", "item_index_z")
+  )
+
+  formula <- build_formula(
+    "ife_response",
+    c("prime_surprisal * prime_type * lexicality_condition * model_size", controls),
+    random_item_term(ife_df)
+  )
+
+  ife_models$prime_surprisal <- fit_lmer_safe(formula, ife_df, "ife_prime_surprisal")
+  save_model_summary(ife_models$prime_surprisal, "ife_prime_surprisal")
+}
+
+ife_table <- write_model_table(
+  purrr::imap(ife_models, ~ tidy_model(.x, .y)),
+  "ife_prime_surprisal_fixed_effects.csv"
+)
+ife_table %>% knitr::kable()
+```
+
+# Sensitivity Models
+
+These should not replace the primary models. They answer: does the conclusion
+survive reasonable alternative specifications?
+
+Planned sensitivity dimensions:
+
+- total-logprob vs mean-token logprob;
+- no-prime baseline vs filler baseline;
+- with vs without token-count covariates;
+- with vs without `role_order`;
+- with vs without centered item order;
+- per-model descriptive replications.
+
+```{r sensitivity-notes}
+sensitivity_plan <- tibble::tribble(
+  ~sensitivity, ~purpose,
+  "mean-token logprob", "Reduce length sensitivity in cross-corpus comparisons.",
+  "total-logprob", "Preserve whole-candidate preference as a Sinclair-style score.",
+  "filler baseline", "Check whether results depend on no-prime baseline only.",
+  "drop token-count covariates", "Check whether tokenization controls drive the effect.",
+  "drop role_order", "Check whether deterministic prompt-role ordering drives the effect.",
+  "per-model fits", "Avoid over-aggregating across model families/tokenizers."
+)
+
+sensitivity_plan %>% knitr::kable()
+```
+
+# Model Diagnostics
+
+```{r diagnostics}
+all_models <- c(rq1_models, rq2_models, rq3_models, rq4_models, exp2_models, exp4_models, roi_models, ife_models)
+
+diagnostic_rows <- purrr::imap_dfr(
+  all_models,
+  function(model, model_id) {
+    if (is.null(model)) {
+      return(tibble::tibble())
+    }
+    tibble::tibble(
+      model_id = model_id,
+      nobs = stats::nobs(model),
+      singular = lme4::isSingular(model),
+      aic = AIC(model),
+      bic = BIC(model)
+    )
+  }
+)
+
+if (nrow(diagnostic_rows) > 0) {
+  readr::write_csv(diagnostic_rows, file.path(output_dir, "mixed_model_diagnostics.csv"))
+  diagnostic_rows %>% knitr::kable()
+}
+```
+
+# Outputs
+
+```{r output-list}
+list.files(output_dir, recursive = TRUE) %>%
+  tibble::tibble(output_file = .) %>%
+  knitr::kable()
+```
+
+# Interpretation Checklist
+
+Before writing claims:
+
+1. Baseline bias must be reported before priming effects.
+2. Priming should be reported as a shift away from no-prime baseline.
+3. Filler baseline should be shown as a robustness comparison.
+4. CORE/Jabberwocky differences should be interpreted only after token-count controls.
+5. `model_size` is the primary model-comparison variable.
+6. `model_family` should be descriptive or robustness-only.
+7. ROI results should say whether effects happen at frame onset or later passive-cue regions.
+8. IFE results should be framed as evidence for or against surprisal-linked adaptation, not assumed.

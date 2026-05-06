@@ -118,9 +118,21 @@ def batched_greedy_generate(
     old_padding_side = tokenizer.padding_side
     tokenizer.padding_side = "left"
     outputs: List[str] = []
+    effective_batch_size = max(1, int(batch_size))
+    total_batches = (len(prompts) + effective_batch_size - 1) // effective_batch_size
+    report_every = max(1, total_batches // 20)
     try:
-        for batch_start in range(0, len(prompts), max(1, int(batch_size))):
-            batch_prompts = list(prompts[batch_start : batch_start + max(1, int(batch_size))])
+        for batch_number, batch_start in enumerate(
+            range(0, len(prompts), effective_batch_size),
+            start=1,
+        ):
+            if batch_number == 1 or batch_number == total_batches or batch_number % report_every == 0:
+                print(
+                    f"Exp4 generation batch {batch_number}/{total_batches} "
+                    f"({batch_start}/{len(prompts)} prompts)",
+                    flush=True,
+                )
+            batch_prompts = list(prompts[batch_start : batch_start + effective_batch_size])
             inputs = tokenizer(
                 batch_prompts,
                 return_tensors="pt",
@@ -257,6 +269,12 @@ def main() -> None:
     output_dir = args.output_dir.resolve()
     prompt_frame = load_prompt_rows(args)
     prompts = prompt_frame["prompt"].astype(str).tolist()
+    print(
+        "Experiment 4 selected "
+        f"{len(prompt_frame)} prompt rows from {args.prompt_csv.resolve()} "
+        f"(max_items={args.max_items}, batch_size={args.batch_size}).",
+        flush=True,
+    )
 
     device = get_device(args.device)
     _, model, resolved_dtype = load_causal_lm_and_tokenizer(
