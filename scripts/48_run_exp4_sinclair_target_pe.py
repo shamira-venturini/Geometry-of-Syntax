@@ -11,6 +11,7 @@ from typing import Dict, List, Sequence
 
 import numpy as np
 import pandas as pd
+import torch
 
 SCRIPT_DIR = Path(__file__).resolve().parent
 REPO_ROOT = SCRIPT_DIR.parent
@@ -160,6 +161,7 @@ def score_target_rows(
         device=device,
         prompt_groups=prompt_groups,
         batch_size=max(1, int(batch_size)),
+        progress_label="Exp4 Sinclair target PE",
     )
 
     output_rows: List[Dict[str, object]] = []
@@ -314,12 +316,21 @@ def main() -> None:
 
     target_rows = load_prime_target_rows(args)
     device = get_device(args.device)
+    if str(args.device or "").strip().lower().startswith("cuda") and not str(device).startswith("cuda"):
+        raise RuntimeError(
+            "CUDA was requested for Exp4 Sinclair PE scoring, but no CUDA device is available. "
+            "Switch the Colab runtime to GPU and rerun the setup/model-loading cells."
+        )
+    print(f"Resolved Exp4 Sinclair PE device: {device}", flush=True)
+    if str(device).startswith("cuda"):
+        print(f"CUDA device name: {torch.cuda.get_device_name(0)}", flush=True)
     tokenizer, model, resolved_dtype = load_causal_lm_and_tokenizer(
         model_name=args.model_name,
         device=device,
         local_files_only=args.local_files_only,
         torch_dtype_name=args.torch_dtype,
     )
+    print(f"Model first parameter device: {next(model.parameters()).device}", flush=True)
 
     score_frame = score_target_rows(
         frame=target_rows,

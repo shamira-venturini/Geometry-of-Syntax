@@ -444,35 +444,72 @@ def batched_choice_detailed_scores(
     device: str,
     prompt_groups: List[Tuple[str, int, List[str], List[int]]],
     batch_size: int,
+    progress_label: Optional[str] = None,
 ) -> List[List[Dict[str, object]]]:
     """Score each continuation and return per-token diagnostics.
 
-    The scoring convention matches batched_choice_log_probs, including the
-    no-prime behavior where an empty prompt cannot score the first continuation
-    token (so token 2 onward is used).
+    Empty no-prime prompts are scored from the model's BOS token when one is
+    available. Tokenizers without a BOS token keep the older GPT-style fallback:
+    the first continuation token is unscorable, so scoring starts from token 2.
     """
     all_scores: List[List[Dict[str, object]]] = []
-    for batch_start in range(0, len(prompt_groups), batch_size):
+    total_batches = (len(prompt_groups) + batch_size - 1) // batch_size
+    report_every = max(1, total_batches // 20)
+    for batch_number, batch_start in enumerate(range(0, len(prompt_groups), batch_size), start=1):
+        if progress_label and (
+            batch_number == 1
+            or batch_number == total_batches
+            or batch_number % report_every == 0
+        ):
+            print(
+                f"{progress_label} batch {batch_number}/{total_batches} "
+                f"({batch_start}/{len(prompt_groups)} prompt groups)",
+                flush=True,
+            )
         batch_groups = prompt_groups[batch_start:batch_start + batch_size]
-        full_texts: List[str] = []
+        input_id_rows: List[List[int]] = []
         prompt_lens: List[int] = []
         continuation_texts: List[str] = []
         continuation_ids_list: List[List[int]] = []
+        empty_prompt_uses_bos: List[bool] = []
 
         for prompt, prompt_len, continuations, _ in batch_groups:
             for continuation in continuations:
                 continuation_ids = list(tokenizer(continuation, add_special_tokens=False)["input_ids"])
-                full_texts.append(prompt + continuation)
-                prompt_lens.append(int(prompt_len))
+                prompt_len = int(prompt_len)
+                if prompt_len == 0 and tokenizer.bos_token_id is not None:
+                    # Manually prepend BOS so the first continuation token has a
+                    # valid causal context without introducing a prime sentence.
+                    input_ids = [int(tokenizer.bos_token_id)] + continuation_ids
+                    uses_bos = True
+                else:
+                    input_ids = list(tokenizer(prompt + continuation, add_special_tokens=False)["input_ids"])
+                    uses_bos = False
+                input_id_rows.append([int(token_id) for token_id in input_ids])
+                prompt_lens.append(prompt_len)
                 continuation_texts.append(str(continuation))
                 continuation_ids_list.append(continuation_ids)
+                empty_prompt_uses_bos.append(uses_bos)
 
-        inputs = tokenizer(full_texts, return_tensors="pt", padding=True, add_special_tokens=False).to(device)
+        pad_token_id = tokenizer.pad_token_id
+        if pad_token_id is None:
+            pad_token_id = tokenizer.eos_token_id if tokenizer.eos_token_id is not None else 0
+        max_len = max(len(ids) for ids in input_id_rows)
+        padded_input_ids = [
+            ids + [int(pad_token_id)] * (max_len - len(ids))
+            for ids in input_id_rows
+        ]
+        attention_mask = [
+            [1] * len(ids) + [0] * (max_len - len(ids))
+            for ids in input_id_rows
+        ]
+        input_ids_tensor = torch.tensor(padded_input_ids, dtype=torch.long, device=device)
+        attention_mask_tensor = torch.tensor(attention_mask, dtype=torch.long, device=device)
         with torch.no_grad():
-            logits = model(**inputs).logits
+            logits = model(input_ids=input_ids_tensor, attention_mask=attention_mask_tensor).logits
 
         shift_logits = logits[:, :-1, :].contiguous()
-        shift_labels = inputs.input_ids[:, 1:].contiguous()
+        shift_labels = input_ids_tensor[:, 1:].contiguous()
         log_probs_all = torch.nn.functional.log_softmax(shift_logits, dim=-1)
         observed_log_probs = log_probs_all.gather(2, shift_labels.unsqueeze(2)).squeeze(2)
 
@@ -484,9 +521,12 @@ def batched_choice_detailed_scores(
                 continuation_text = continuation_texts[row_offset]
                 continuation_ids = continuation_ids_list[row_offset]
 
-                # With empty prompt, GPT-style causal scoring has no previous token for
-                # the first continuation token, so we score from token 2 onward.
-                if prompt_len == 0:
+                if prompt_len == 0 and empty_prompt_uses_bos[row_offset]:
+                    start_idx = 0
+                    candidate_token_ids = continuation_ids
+                elif prompt_len == 0:
+                    # Tokenizers without BOS cannot score the first continuation
+                    # token in an empty context, so preserve the legacy fallback.
                     start_idx = 0
                     candidate_token_ids = continuation_ids[1:]
                 else:

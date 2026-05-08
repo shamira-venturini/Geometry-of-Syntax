@@ -17,11 +17,7 @@ DEFAULT_RESULTS_ROOT = REPO_ROOT / "behavioral_results"
 DEFAULT_REVIEW_CSV = REPO_ROOT / "behavioral_results/experiment-2/exp2_master_generation_review.csv"
 DEFAULT_APPLY_SUMMARY = REPO_ROOT / "behavioral_results/experiment-2/exp2_master_generation_review_apply_summary.csv"
 
-KEY_COLUMNS = [
-    "target_active",
-    "target_passive",
-    "greedy_answer_first_sentence_normalized",
-]
+KEY_COLUMNS = ["greedy_answer_first_sentence_normalized"]
 REVIEW_COLUMNS = [
     "generation_class_detailed",
     "generation_structure_reason",
@@ -49,6 +45,12 @@ def parse_args() -> argparse.Namespace:
     )
     build.add_argument("--output-csv", type=Path, default=DEFAULT_REVIEW_CSV)
     build.add_argument(
+        "--human-csv",
+        type=Path,
+        default=None,
+        help="Optional compact review CSV with only human-editable columns.",
+    )
+    build.add_argument(
         "--include-reviewed",
         action="store_true",
         help="Include rows that are already non-other. Default keeps only rows needing review.",
@@ -58,6 +60,12 @@ def parse_args() -> argparse.Namespace:
         action="append",
         default=["experiment-2"],
         help="Only include item_generations.csv paths containing this string. Repeat for OR matching.",
+    )
+    build.add_argument(
+        "--xlsx",
+        type=Path,
+        default=None,
+        help="Optional compact Excel review workbook.",
     )
 
     apply = subparsers.add_parser("apply", help="Apply a completed master review CSV to item files.")
@@ -111,14 +119,8 @@ def normalize_text(value: object) -> str:
     return " ".join(str(value).strip().lower().split())
 
 
-def review_key_from_values(target_active: object, target_passive: object, generated_normalized: object) -> str:
-    payload = "\n".join(
-        [
-            normalize_text(target_active),
-            normalize_text(target_passive),
-            normalize_text(generated_normalized),
-        ]
-    )
+def review_key_from_values(generated_normalized: object) -> str:
+    payload = normalize_text(generated_normalized)
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()[:16]
 
 
@@ -128,12 +130,8 @@ def add_review_key(frame: pd.DataFrame) -> pd.DataFrame:
         raise ValueError(f"Cannot create review key; missing columns: {missing}")
     out = frame.copy()
     out["review_key"] = [
-        review_key_from_values(active, passive, generated)
-        for active, passive, generated in zip(
-            out["target_active"],
-            out["target_passive"],
-            out["greedy_answer_first_sentence_normalized"],
-        )
+        review_key_from_values(generated)
+        for generated in out["greedy_answer_first_sentence_normalized"]
     ]
     return out
 
@@ -220,6 +218,8 @@ def build_master_review(args: argparse.Namespace) -> None:
     grouping = ["review_key"] + KEY_COLUMNS
     first_cols = [
         "greedy_answer_first_sentence",
+        "target_active",
+        "target_passive",
         "generation_class",
         "generation_class_detailed",
         "generation_voice_auto",
@@ -244,6 +244,8 @@ def build_master_review(args: argparse.Namespace) -> None:
             prompt_columns=("prompt_column", compact_join),
             prime_conditions=("prime_condition", compact_join),
             item_indices=("item_index", compact_join),
+            target_active_examples=("target_active", compact_join),
+            target_passive_examples=("target_passive", compact_join),
             source_paths=("source_item_path", compact_join),
             **aggregations,
         )
@@ -257,17 +259,107 @@ def build_master_review(args: argparse.Namespace) -> None:
             master[f"reviewed_{column}"] = ""
 
     master["review_notes"] = ""
+    preferred_order = [
+        "review_key",
+        "greedy_answer_first_sentence_normalized",
+        "greedy_answer_first_sentence",
+        "occurrence_count",
+        "generation_class_strict",
+        "generation_class_lax",
+        "generation_class_detailed",
+        "generation_voice_auto",
+        "reviewed_generation_class_strict",
+        "reviewed_generation_class_lax",
+        "reviewed_generation_class_detailed",
+        "review_notes",
+        "model_runs",
+        "datasets",
+        "prompt_columns",
+        "prime_conditions",
+        "item_indices",
+        "target_active_examples",
+        "target_passive_examples",
+        "generation_structure_reason",
+        "argument_structure_inferred",
+        "role_frame_inferred",
+        "argument_inference_note",
+        "reviewed_generation_structure_reason",
+        "reviewed_argument_structure_inferred",
+        "reviewed_role_frame_inferred",
+        "reviewed_argument_inference_note",
+        "target_active",
+        "target_passive",
+        "source_paths",
+    ]
+    ordered_columns = [column for column in preferred_order if column in master.columns]
+    ordered_columns.extend([column for column in master.columns if column not in ordered_columns])
+    master = master[ordered_columns]
     sort_cols = [column for column in ["datasets", "occurrence_count", "greedy_answer_first_sentence_normalized"] if column in master.columns]
     master = master.sort_values(sort_cols, ascending=[True, False, True][: len(sort_cols)])
 
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
     master.to_csv(args.output_csv, index=False)
 
+    human_columns = [
+        "review_key",
+        "greedy_answer_first_sentence_normalized",
+        "greedy_answer_first_sentence",
+        "occurrence_count",
+        "model_runs",
+        "datasets",
+        "prompt_columns",
+        "prime_conditions",
+        "generation_class_strict",
+        "generation_class_lax",
+        "generation_class_detailed",
+        "generation_voice_auto",
+        "reviewed_generation_class_strict",
+        "reviewed_generation_class_lax",
+        "reviewed_generation_class_detailed",
+        "review_notes",
+    ]
+    human = master[[column for column in human_columns if column in master.columns]].copy()
+    human_csv = args.human_csv
+    if human_csv is None:
+        human_csv = args.output_csv.with_name(args.output_csv.stem + "_HUMAN_REVIEW.csv")
+    human_csv.parent.mkdir(parents=True, exist_ok=True)
+    human.to_csv(human_csv, index=False)
+
+    if args.xlsx is not None:
+        args.xlsx.parent.mkdir(parents=True, exist_ok=True)
+        with pd.ExcelWriter(args.xlsx, engine="openpyxl") as writer:
+            human.to_excel(writer, index=False, sheet_name="review")
+            worksheet = writer.sheets["review"]
+            worksheet.freeze_panes = "A2"
+            widths = {
+                "A": 18,
+                "B": 55,
+                "C": 55,
+                "D": 16,
+                "E": 35,
+                "F": 35,
+                "G": 28,
+                "H": 28,
+                "I": 22,
+                "J": 22,
+                "K": 34,
+                "L": 20,
+                "M": 26,
+                "N": 26,
+                "O": 36,
+                "P": 36,
+            }
+            for column, width in widths.items():
+                worksheet.column_dimensions[column].width = width
+
     summary = {
         "item_generation_files_scanned": len(paths),
         "rows_requiring_review": int(len(all_rows)),
         "deduplicated_review_rows": int(len(master)),
+        "deduplication_key": "greedy_answer_first_sentence_normalized",
         "output_csv": str(args.output_csv.resolve()),
+        "human_csv": str(human_csv.resolve()),
+        "xlsx": str(args.xlsx.resolve()) if args.xlsx else None,
     }
     summary_path = args.output_csv.with_suffix(".summary.json")
     summary_path.write_text(json.dumps(summary, indent=2), encoding="utf-8")
@@ -377,10 +469,15 @@ def apply_master_review(args: argparse.Namespace) -> None:
     review = pd.read_csv(args.review_csv).fillna("")
     if "review_key" not in review.columns:
         review = add_review_key(review)
-    required_review = ["review_key"] + [f"reviewed_{column}" for column in REVIEW_COLUMNS]
+    required_review = ["review_key"]
     missing = [column for column in required_review if column not in review.columns]
     if missing:
         raise ValueError(f"{args.review_csv} is missing required review columns: {missing}")
+    for column in REVIEW_COLUMNS:
+        reviewed_column = f"reviewed_{column}"
+        if reviewed_column not in review.columns:
+            review[reviewed_column] = ""
+    required_review = ["review_key"] + [f"reviewed_{column}" for column in REVIEW_COLUMNS]
 
     duplicate_keys = review["review_key"].duplicated(keep=False)
     if duplicate_keys.any():
