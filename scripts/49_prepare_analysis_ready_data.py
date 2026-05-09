@@ -229,6 +229,10 @@ def exp2_reviewed_paths() -> List[Path]:
     return sorted(selected.values())
 
 
+def exp2_prime_surprisal_paths() -> List[Path]:
+    return sorted(RESULTS_ROOT.glob("**/experiment-2/**/prime_surprisal_item_level.csv"))
+
+
 def exp4_comprehension_paths() -> List[Path]:
     return sorted(RESULTS_ROOT.glob("**/experiment-4/**/item_level_results_exp4.csv"))
 
@@ -572,6 +576,17 @@ def build_exp2_generation() -> pd.DataFrame:
     return out
 
 
+def build_exp2_prime_surprisal() -> pd.DataFrame:
+    frames = read_csvs(
+        exp2_prime_surprisal_paths(),
+        experiment="experiment_2",
+        task_type="prime_surprisal",
+    )
+    if not frames:
+        return pd.DataFrame()
+    return pd.concat(frames, ignore_index=True, sort=False)
+
+
 def build_exp4_comprehension() -> pd.DataFrame:
     frames = read_csvs(exp4_comprehension_paths(), experiment="experiment_4", task_type="role_recovery")
     if not frames:
@@ -619,6 +634,7 @@ def main() -> None:
     token_level = build_token_level_probabilities(item_level)
     token_roi_summary = build_token_roi_summary(token_level)
     exp2_generation = build_exp2_generation()
+    exp2_prime_surprisal = build_exp2_prime_surprisal()
     exp4_comprehension = build_exp4_comprehension()
     exp4_pe = build_exp4_pe()
 
@@ -628,6 +644,7 @@ def main() -> None:
         "token_level_probabilities.csv": token_level,
         "token_roi_summary.csv": token_roi_summary,
         "exp2_generation_item_level.csv": exp2_generation,
+        "exp2_prime_surprisal_item_level.csv": exp2_prime_surprisal,
         "exp4_comprehension_item_level.csv": exp4_comprehension,
         "exp4_sinclair_pe_item_level.csv": exp4_pe,
     }
