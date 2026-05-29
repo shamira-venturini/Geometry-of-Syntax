@@ -21,6 +21,8 @@ Experiments 2 and 3 now also counterbalance the order of role-description lines 
 - `src/plots.py` - PNG plots by prime/task/lexicality
 - `run_experiment.py` - CLI entry point
 - `configs/` - ready-to-run YAML configs
+- `docs/experiment_scoring_methods.md` - canonical scoring definitions for Experiments 1a-4
+- `docs/corpus_control_counterbalancing.md` - canonical corpus-control and counterbalancing ledger
 - `docs/analysis_plan_structural_priming.md` - planned baseline-centered, ROI, PE-percentage, and IFE-style diagnostics
 
 ## Installation
@@ -69,6 +71,8 @@ For each corpus row (`pa`, `pp`, `ta`, `tp`), Experiment 3 builds a demo prompt 
 All scores are teacher-forced and deterministic.
 
 ## Scoring Outputs
+
+For the full scoring conventions across Experiments 1a-4, see `docs/experiment_scoring_methods.md`.
 
 For each candidate, the pipeline stores:
 
@@ -173,11 +177,11 @@ Planned analysis outputs to add:
 3. Legacy labels (`active_prime`, `passive_prime`, `filler_prime`, `no_prime_eos`, `no_prime_empty`, `no_demo`) are normalized to canonical labels at load/analysis time.
 4. Tokenization boundary artifacts are logged in item-level debug fields.
 
-## Experiment 4 (Developmental)
+## Experiment 4
 
-Experiment 4 is a Ferreira-inspired free-answer comprehension probe aligned to Experiment 1B materials. It is not part of the current core 1b/2/3 submission backbone unless explicitly promoted after redesign and ceiling-effect checks.
+Experiment 4 is a Ferreira-inspired free-answer role-recovery probe aligned to the same controlled active/passive backbone. It reverses the Experiment 2 mapping direction: the model reads a sentence and answers who was the doer or acted-on participant.
 
-Current developmental run:
+Current run:
 
 ```bash
 python run_experiment.py --experiment exp4 --config configs/exp4.yaml

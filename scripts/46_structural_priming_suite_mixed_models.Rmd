@@ -6,42 +6,50 @@ output:
     toc: true
     toc_depth: 3
     number_sections: true
+  pdf_document:
+    toc: true
+    toc_depth: '3'
 params:
-  repo_root: "."
-  input_dir: "behavioral_results/analysis_ready"
-  output_dir: "behavioral_results/r_mixed_models"
-  item_level_path: "item_level_master.csv"
-  baseline_shifts_path: "baseline_centered_logodds_shifts.csv"
-  roi_long_path: "roi_pe_item_level.csv"
-  roi_percentage_path: "roi_pe_percentage_summary.csv"
-  ife_path: "ife_prime_surprisal_item_level.csv"
-  exp2_generation_path: "exp2_generation_item_level.csv"
-  exp4_comprehension_path: "exp4_comprehension_item_level.csv"
-  model_size_reference: "small"
-  lexicality_reference: "core"
-  baseline_reference: "no_prime"
+  repo_root: '.'
+  input_dir: behavioral_results/analysis_ready
+  output_dir: behavioral_results/r_mixed_models
+  item_level_path: item_level_master.csv
+  baseline_shifts_path: baseline_centered_logodds_shifts.csv
+  roi_long_path: roi_pe_item_level.csv
+  roi_percentage_path: roi_pe_percentage_summary.csv
+  ife_path: ife_prime_surprisal_item_level.csv
+  exp2_generation_path: exp2_generation_item_level.csv
+  exp4_comprehension_path: exp4_comprehension_item_level.csv
+  exp4_pe_path: exp4_sinclair_pe_item_level.csv
+  model_condition_reference: 774M_base
+  model_size_reference: 774M
+  lexicality_reference: core
+  baseline_reference: no_prime
   run_sensitivity_models: true
   save_model_objects: false
 ---
 
 # Purpose
 
-This notebook is the analysis scaffold for the active/passive structural priming
-suite. It is organized by **research question**, not by experiment. The same
-logic is then applied to whichever experiments and models are present in the
-analysis-ready CSVs.
+This notebook is the analysis scaffold for the active/passive structural priming suite. It is organized by **research question**, not by experiment. The same logic is then applied to whichever experiments and models are present in the analysis-ready CSVs.
 
-The notebook assumes that Python-side scripts have already exported tidy,
-analysis-ready files. If a file is missing, the relevant section is skipped with
-a clear message rather than failing the whole notebook.
+The notebook assumes that Python-side scripts have already exported tidy, analysis-ready files. If a file is missing, the relevant section is skipped with a clear message rather than failing the whole notebook.
+
+To regenerate the current analysis-ready CSVs from the available result folders:
+
+``` bash
+python3 scripts/49_prepare_analysis_ready_data.py
+```
 
 Primary analysis principle:
 
 - report baseline active/passive preference separately from prime-induced shift;
-- use `model_size` as the primary model comparison variable;
-- treat `model_family` as descriptive or robustness-only;
+- use `model_condition` as the primary model comparison variable, so base and instruction-tuned models are not accidentally pooled;
+- treat `model_size`, `model_family`, and instruction tuning as descriptive or sensitivity-only metadata unless explicitly modeled;
 - include item/order/token controls wherever available;
 - use item-level random intercepts where repeated target items are observed.
+
+Scoring conventions for Experiments 1a-4 are documented in `docs/experiment_scoring_methods.md`. In particular, `preference_total` is active-minus-passive for teacher-forced active/passive choice files, while `passive_minus_active_*` columns use the passive-centered sign.
 
 # Setup
 
@@ -49,7 +57,7 @@ Primary analysis principle:
 knitr::opts_chunk$set(
   echo = TRUE,
   warning = FALSE,
-  message = FALSE
+  message = TRUE
 )
 
 required_pkgs <- c(
@@ -67,7 +75,26 @@ if (length(missing_pkgs) > 0) {
 
 invisible(lapply(required_pkgs, library, character.only = TRUE))
 
-repo_root <- normalizePath(params$repo_root, mustWork = FALSE)
+resolve_repo_root <- function(param_root) {
+  candidates <- unique(c(
+    as.character(param_root),
+    ".",
+    "..",
+    normalizePath(file.path(getwd(), ".."), mustWork = FALSE)
+  ))
+
+  for (candidate in candidates) {
+    normalized <- normalizePath(candidate, mustWork = FALSE)
+    if (file.exists(file.path(normalized, "behavioral_results")) &&
+        file.exists(file.path(normalized, "scripts"))) {
+      return(normalized)
+    }
+  }
+
+  normalizePath(as.character(param_root), mustWork = FALSE)
+}
+
+repo_root <- resolve_repo_root(params$repo_root)
 input_dir <- file.path(repo_root, params$input_dir)
 output_dir <- file.path(repo_root, params$output_dir)
 dir.create(output_dir, recursive = TRUE, showWarnings = FALSE)
@@ -90,6 +117,13 @@ path_from_param <- function(param_value) {
 ```
 
 ```{r helper-functions}
+
+# Loads files safely without crashing if optional CSVs are missing.
+# Standardizes column names/labels, especially prime labels.
+# Creates default metadata columns if they are absent.
+# Creates z-scored numeric controls for item order and token-length differences.
+# Builds and fits mixed models safely, then saves summaries.
+
 read_optional_csv <- function(path, label) {
   if (!file.exists(path)) {
     message(glue::glue("Skipping {label}; missing file: {path}"))
@@ -160,6 +194,11 @@ canonicalize_common <- function(df) {
   out <- coalesce_missing_col(out, "task_type", "unspecified")
   out <- coalesce_missing_col(out, "model_size", "unspecified")
   out <- coalesce_missing_col(out, "model_family", "unspecified")
+  out <- coalesce_missing_col(out, "model_instruct", "unspecified")
+  if (!"model_condition" %in% names(out)) {
+    out <- out %>%
+      mutate(model_condition = paste(model_size, model_instruct, sep = "_"))
+  }
   out <- coalesce_missing_col(out, "lexicality_condition", "unspecified")
   out <- coalesce_missing_col(out, "item_id", NA_character_)
   out <- coalesce_missing_col(out, "item_index", NA_integer_)
@@ -178,7 +217,12 @@ canonicalize_common <- function(df) {
         factor(model_size),
         params$model_size_reference
       ),
+      model_condition = forcats::fct_relevel(
+        factor(model_condition),
+        params$model_condition_reference
+      ),
       model_family = factor(model_family),
+      model_instruct = factor(model_instruct),
       task_type = factor(task_type),
       role_order = factor(role_order),
       item_factor = factor(ifelse(is.na(item_id), item_index, item_id))
@@ -285,6 +329,7 @@ Expected analysis-ready files:
 - `ife_prime_surprisal_item_level.csv`: IFE-style surprisal and target shifts.
 - `exp2_generation_item_level.csv`: generation labels for Experiment 2, if not included in master.
 - `exp4_comprehension_item_level.csv`: comprehension/role-recovery accuracy for Experiment 4, if not included in master.
+- `exp4_sinclair_pe_item_level.csv`: Experiment 4 target-processing PE, exported separately because it is already contrast-level rather than prime-condition-level.
 
 ```{r load-data}
 item_level <- read_optional_csv(path_from_param(params$item_level_path), "item-level master") %>%
@@ -306,6 +351,34 @@ exp2_generation <- read_optional_csv(path_from_param(params$exp2_generation_path
 
 exp4_comprehension <- read_optional_csv(path_from_param(params$exp4_comprehension_path), "Experiment 4 comprehension item-level") %>%
   canonicalize_common()
+
+exp4_pe <- read_optional_csv(path_from_param(params$exp4_pe_path), "Experiment 4 Sinclair PE item-level") %>%
+  canonicalize_common()
+
+token_level <- readr::read_csv(
+  file.path(input_dir, "token_level_probabilities.csv"),
+  show_col_types = FALSE
+)
+
+token_roi_summary <- readr::read_csv(
+  file.path(input_dir, "token_roi_summary.csv"),
+  show_col_types = FALSE
+)
+
+```
+
+```{r}
+token_level %>%
+  dplyr::count(
+    experiment,
+    task_type,
+    lexicality_condition,
+    model_condition,
+    prime_condition,
+    candidate_voice,
+    roi
+  )
+
 ```
 
 # Design Checks
@@ -326,511 +399,3471 @@ describe_table(roi_long, "roi_long")
 describe_table(ife_item, "ife_item")
 describe_table(exp2_generation, "exp2_generation")
 describe_table(exp4_comprehension, "exp4_comprehension")
+describe_table(exp4_pe, "exp4_pe")
 ```
 
 ```{r balance-checks}
-if (has_cols(item_level, c("experiment", "task_type", "lexicality_condition", "model_size", "prime_condition"))) {
-  item_level %>%
-    count(experiment, task_type, lexicality_condition, model_size, prime_condition) %>%
-    arrange(experiment, task_type, lexicality_condition, model_size, prime_condition) %>%
+balance_table <- function(df, label, cols) {
+  if (is.null(df)) {
+    message(glue::glue("Skipping {label}; data frame is missing."))
+    return(invisible(NULL))
+  }
+
+  missing <- setdiff(cols, names(df))
+  if (length(missing) > 0) {
+    message(glue::glue(
+      "Skipping {label}; missing columns: {paste(missing, collapse = ', ')}"
+    ))
+    return(invisible(NULL))
+  }
+
+  cat("\n\n##", label, "\n")
+  df %>%
+    count(across(all_of(cols))) %>%
+    arrange(across(all_of(cols))) %>%
     knitr::kable()
-} else {
-  message("Skipping balance table; item_level is missing or lacks required grouping columns.")
 }
+
+balance_table(
+  item_level,
+  "Experiment 1b and 3 teacher-forced balance",
+  c("experiment", "task_type", "lexicality_condition", "model_condition", "prime_condition", "target_voice")
+)
+
+balance_table(
+  exp2_generation,
+  "Experiment 2 generation input balance",
+  c("experiment", "task_type", "dataset", "lexicality_condition", "model_condition", "prime_condition")
+)
+
+balance_table(
+  exp2_generation,
+  "Experiment 2 generation outcome counts",
+  c("experiment", "dataset", "lexicality_condition", "model_condition", "prime_condition", "generation_voice")
+)
+
+balance_table(
+  exp4_comprehension,
+  "Experiment 4 comprehension balance",
+  c("experiment", "task_type", "dataset", "lexicality_condition", "model_condition", "prime_condition", "target_voice", "question_type", "complexity_condition")
+)
+
+balance_table(
+  exp4_pe,
+  "Experiment 4 Sinclair PE balance",
+  c("experiment", "task_type", "dataset", "lexicality_condition", "model_condition", "complexity_condition")
+)
 ```
 
-# Descriptive Plots
+# EXPERIMENT 1
 
-```{r descriptive-plots, fig.width=9, fig.height=5}
-if (has_cols(item_level, c("logodds_passive", "prime_condition", "lexicality_condition", "model_size"))) {
-  ggplot(item_level, aes(prime_condition, logodds_passive, fill = lexicality_condition)) +
-    geom_hline(yintercept = 0, linetype = "dashed") +
-    stat_summary(fun = mean, geom = "col", position = position_dodge(width = 0.8)) +
-    stat_summary(fun.data = mean_cl_boot, geom = "errorbar", position = position_dodge(width = 0.8), width = 0.2) +
-    facet_wrap(~ model_size) +
-    labs(
-      title = "Passive log-odds by prime condition",
-      y = "logP(passive target) - logP(active target)",
-      x = "Prime condition"
-    )
-}
-```
+## RQ1: Baseline Active/Passive Bias
 
-# RQ1: Baseline Active/Passive Bias
+Premise: previous priming studies on LLMs found strong asymmetrical priming effects in favor of passive priming. No model-baseline has been established by previous studies.
 
-Question: before priming, do models prefer passive or active targets, and does
-this vary by lexicality, task, and model size?
+RQ1.1: Before priming, do models prefer passive or active targets in a fixed-target scoring task? and does this vary by lexicality, and model type/size?
+
+H1.1: In the no-prime baseline, models will show positive passive log-odds: logP(passive target) - logP(active target) \> 0 indicating that a passive target is preferrable even before any priming is introduced. This prediction is motivated by the possibility that passive targets are highly recoverable under incremental scoring because the passive frame contains overt, mutually predictive cues: auxiliary, participial morphology, and the by-phrase.
+
+H1.2: Since Passive bias is driven by overt morphological cues, it will persist in jabberwocky because passive structure remains overtly marked by function words and morphological cues.
+
+H1.3: Baseline passive bias will vary across model conditions, but we do not predict a monotonic effect of model size. Instruct models may show stronger passive bias if instruction tuning increases preference for formal, explanatory, and impersonal constructions, where passives are common. However, because SFT/RLHF data are not fully disclosed and instruction tuning also changes calibration, this prediction is exploratory.
 
 Primary DV:
 
-```text
-logodds_passive = logP(passive target) - logP(active target)
+``` text
+logodds_passive = logP(passive target) - logP(active target) -> for this exact same event, does the model assign more probability to the passive wording or the active wording?
 ```
 
-Primary subset: `prime_condition == no_prime`. Filler baseline is a robustness
-check, not the main baseline.
+Primary subset: `prime_condition == no_prime`. Filler baseline is a robustness check, not the main baseline.
 
-```{r rq1-baseline-bias}
-rq1_models <- list()
+logodds_passive \> 0 = passive preferred at baseline; logodds_passive \< 0 = active preferred at baseline; logodds_passive = 0 = no active/passive preference.
 
-if (has_cols(item_level, c("logodds_passive", "prime_condition", "lexicality_condition", "model_size"))) {
-  baseline_df <- item_level %>%
-    filter(prime_condition == params$baseline_reference) %>%
-    filter(!is.na(logodds_passive))
+```{r}
+exp1b_baseline <- item_level %>%
+  filter(
+    experiment == "experiment_1b",
+    prime_condition == "no_prime"
+  )
+```
 
-  controls <- available_controls(
-    baseline_df,
-    c("task_type", "token_count_diff_z", "passive_minus_active_token_count_z", "item_order_z", "item_index_z")
+```{r}
+m_exp1b_baseline <- lmerTest::lmer(
+  logodds_passive ~ lexicality_condition * model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp1b_baseline,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp1b_baseline, test = "Chisq")
+```
+
+```{r}
+summary(m_exp1b_baseline)
+```
+
+- Intercept: llama-3B-base is passive-biased at baseline in the core condition
+- lexicality: weaker passive bias in jabber than core for gpt-2-large; still positive tho.
+- sentence lenght: difference in token length between passive and active targets strongly predicts logodds passive
+- model: coefficients are positive for all models = all are passive-biased
+- lexicality\*model: core-jabber difference varies by model but always positive = all are passive-biased
+
+### Lexicality
+
+```{r}
+emm_exp1b_baseline <- emmeans(
+  m_exp1b_baseline,
+  ~ lexicality_condition * model_condition
+)
+
+test(emm_exp1b_baseline, null = 0)
+```
+
+```{r}
+emm_df <- as.data.frame(
+  summary(emm_exp1b_baseline, infer = c(TRUE, TRUE))
+)
+
+lcl_col <- intersect(c("lower.CL", "asymp.LCL", "lower.HPD"), names(emm_df))[1]
+ucl_col <- intersect(c("upper.CL", "asymp.UCL", "upper.HPD"), names(emm_df))[1]
+
+ggplot(
+  emm_df,
+  aes(x = model_condition, y = emmean, color = lexicality_condition)
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.4),
+    size = 2.5
+  ) +
+  geom_errorbar(
+    aes(ymin = .data[[lcl_col]], ymax = .data[[ucl_col]]),
+    position = position_dodge(width = 0.4),
+    width = 0.2
+  ) +
+  labs(
+    title = "Experiment 1: no-prime baseline passive bias",
+    x = "Model condition",
+    y = "Passive log-odds",
+    color = "Lexicality"
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+### Llama base vs Instruct
+
+```{r}
+library(dplyr)
+library(lmerTest)
+library(emmeans)
+
+exp1b_baseline_llama <- exp1b_baseline %>%
+  filter(model_condition %in% c(
+    "3B_base", "3B_instruct",
+    "8B_base", "8B_instruct"
+  )) %>%
+  mutate(
+    model_size = factor(model_size, levels = c("3B", "8B")),
+    model_instruct = factor(model_instruct, levels = c("base", "instruct")),
+    lexicality_condition = factor(lexicality_condition, levels = c("core", "jabberwocky"))
+  ) %>%
+  droplevels()
+
+m_exp1b_baseline_llama <- lmerTest::lmer(
+  logodds_passive ~ lexicality_condition * model_size * model_instruct +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp1b_baseline_llama,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+summary(m_exp1b_baseline_llama)
+drop1(m_exp1b_baseline_llama, test = "F")
+```
+
+```{r}
+emm_llama <- emmeans::emmeans(
+  m_exp1b_baseline_llama,
+  ~ lexicality_condition * model_size * model_instruct
+)
+
+contrast_llama <- pairs(
+  emm_llama,
+  by = c("lexicality_condition", "model_size"),
+  adjust = "holm"
+)
+contrast_llama
+```
+
+- core: 3B base is only marginally more passive-biased than 3B instruct. Difference is tiny.
+- jabberwocky: 3B base is clearly more passive-biased than 3B instruct.
+- core: 8B instruct is much more passive-biased than 8B base.
+- jabberwocky: 8B instruct is much more passive-biased than 8B base.
+
+### EXPL1.1: Token-count difference
+
+```{r}
+exp1b_baseline %>%
+  ggplot(aes(
+    x = passive_minus_active_token_count,
+    y = logodds_passive,
+    color = lexicality_condition
+  )) +
+  geom_point(alpha = 0.15, size = 0.7) +
+  geom_smooth(method = "lm", se = TRUE) +
+  facet_wrap(~ model_condition) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  labs(
+    title = "Experiment 1B: token-count difference and passive bias",
+    x = "Passive token count - active token count",
+    y = "Passive log-odds",
+    color = "Lexicality"
+  )
+```
+
+- higher token-count difference predicts higher passive-log odds. Passive sentences are naturally longer than actives, for this reasons we controlled for lenght and used a mean difference, but those extra tokens are signature passive morphological elements.
+
+H1B4: passive-roi (region of interest) is generating an incremental boost in passive logodds from the auxilliary and peaking at the by-phrase, even without any priming. To test this hypothesis we use token-level priming effect following Jumelet et al. 2024 work on datives.
+
+```{r}
+exp1b_passive_baseline_tokens <- token_level %>%
+  filter(
+    experiment == "experiment_1b",
+    prime_condition == "no_prime",
+    candidate_voice == "passive"
+  ) %>%
+  droplevels()
+
+passive_roi_order <- c(
+  "patient_np",
+  "aux",
+  "participle",
+  "by",
+  "agent_det",
+  "agent_np",
+  "punctuation"
+)
+
+exp1b_passive_baseline_tokens <- exp1b_passive_baseline_tokens %>%
+  filter(roi %in% passive_roi_order) %>%
+  mutate(
+    roi = factor(roi, levels = passive_roi_order)
   )
 
-  fixed <- c("lexicality_condition * model_size", controls)
-  formula <- build_formula("logodds_passive", fixed, random_item_term(baseline_df))
+exp1b_passive_baseline_tokens <- token_level %>%
+  filter(
+    experiment == "experiment_1b",
+    prime_condition == "no_prime",
+    candidate_voice == "passive"
+  ) %>%
+  droplevels()
 
-  rq1_models$baseline_bias <- fit_lmer_safe(formula, baseline_df, "rq1_baseline_bias")
-  save_model_summary(rq1_models$baseline_bias, "rq1_baseline_bias")
-}
-
-rq1_table <- write_model_table(
-  purrr::imap(rq1_models, ~ tidy_model(.x, .y)),
-  "rq1_baseline_bias_fixed_effects.csv"
+passive_roi_order <- c(
+  "patient_np",
+  "aux",
+  "participle",
+  "by",
+  "agent_det",
+  "agent_np"
 )
-rq1_table %>% knitr::kable()
+
+exp1b_passive_baseline_tokens <- exp1b_passive_baseline_tokens %>%
+  filter(roi %in% passive_roi_order) %>%
+  mutate(
+    roi = factor(roi, levels = passive_roi_order),
+    lexicality_condition = factor(lexicality_condition, levels = c("core", "jabberwocky"))
+  ) %>%
+  droplevels()
 ```
 
-```{r rq1-filler-sensitivity}
-if (isTRUE(params$run_sensitivity_models) &&
-    has_cols(item_level, c("logodds_passive", "prime_condition", "lexicality_condition", "model_size"))) {
-  filler_df <- item_level %>%
-    filter(prime_condition == "filler") %>%
-    filter(!is.na(logodds_passive))
+In passive targets, before any prime, which passive ROIs are more or less predictable?
 
-  if (nrow(filler_df) > 0) {
-    controls <- available_controls(
-      filler_df,
-      c("task_type", "token_count_diff_z", "passive_minus_active_token_count_z", "item_order_z", "item_index_z")
+```{r}
+m_exp1b_passive_roi_baseline <- lmerTest::lmer(
+  token_logprob ~ roi * lexicality_condition +
+    (1 | item_id),
+  data = exp1b_passive_baseline_tokens,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+
+drop1(m_exp1b_passive_roi_baseline, test = "F")
+```
+
+```{r}
+summary(m_exp1b_passive_roi_baseline)
+```
+
+- Content nouns are hard: patient NP and agent NP have low log-probability.
+- Passive functional cues are easy: auxiliary, by, and agent determiner are much more predictable.
+- The strongest predictability is in the by-phrase region, especially the determiner after by.
+- Jabberwocky weakens lexical/content prediction but preserves the passive cue profile, especially at by and agent determiner.
+
+```{r}
+emm_roi <- emmeans(
+  m_exp1b_passive_roi_baseline,
+  ~ roi * lexicality_condition
+)
+
+emm_roi_df <- as.data.frame(
+  summary(emm_roi, infer = c(TRUE, TRUE))
+)
+
+passive_roi_order <- c(
+  "patient_np",
+  "aux",
+  "participle",
+  "by",
+  "agent_det",
+  "agent_np"
+)
+
+emm_roi_df <- emm_roi_df %>%
+  mutate(
+    roi = factor(roi, levels = passive_roi_order),
+    lexicality_condition = factor(
+      lexicality_condition,
+      levels = c("core", "jabberwocky")
     )
-    formula <- build_formula(
-      "logodds_passive",
-      c("lexicality_condition * model_size", controls),
-      random_item_term(filler_df)
-    )
-    rq1_filler <- fit_lmer_safe(formula, filler_df, "rq1_filler_baseline_sensitivity")
-    save_model_summary(rq1_filler, "rq1_filler_baseline_sensitivity")
-    tidy_model(rq1_filler, "rq1_filler_baseline_sensitivity") %>% knitr::kable()
-  }
-}
+  )
 ```
 
-# RQ2: Baseline-Centered Priming Shift
-
-Question: does an active or passive prime move the model away from its own
-no-prime baseline?
-
-Recommended table: `baseline_centered_logodds_shifts.csv`.
-
-Expected columns:
-
-```text
-shift_from_no_prime
-prime_type              # active / passive
-lexicality_condition
-task_type
-model_size
-item_id
-token_count_diff
-role_order
-item_order
+```{r}
+ggplot(
+  emm_roi_df,
+  aes(
+    x = roi,
+    y = emmean,
+    color = lexicality_condition,
+    group = lexicality_condition
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = asymp.LCL, ymax = asymp.UCL),
+    width = 0.12
+  ) +
+  labs(
+    title = "Experiment 1B: Baseline passive-target predictability by ROI",
+    subtitle = "Estimated marginal means from token_logprob ~ roi * lexicality_condition + (1 | item_id)",
+    x = "Passive ROI",
+    y = "Estimated token log-probability\n(higher / less negative = more predictable)",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank(),
+    axis.text.x = element_text(angle = 35, hjust = 1)
+  )
 ```
+
+```{r}
+emm_roi_baseline <- emmeans::emmeans(
+  m_exp1b_passive_roi_baseline,
+  ~ roi | lexicality_condition
+)
+
+pairs(
+  emm_roi_baseline,
+  by = "lexicality_condition",
+  adjust = "holm"
+)
+```
+
+```{r}
+emm_roi_by_lex <- emmeans::emmeans(
+  m_exp1b_passive_roi_baseline,
+  ~ roi | lexicality_condition
+)
+
+roi_levels <- levels(emm_roi_by_lex)$roi
+
+aux_part_w <- setNames(rep(0, length(roi_levels)), roi_levels)
+aux_part_w["aux"] <- 1
+aux_part_w["participle"] <- -1
+
+aux_part_gap <- contrast(
+  emm_roi_by_lex,
+  method = list("aux - participle" = aux_part_w),
+  adjust = "none"
+)
+
+aux_part_gap
+
+pairs(
+  aux_part_gap,
+  by = NULL,
+  adjust = "none"
+)
+```
+
+Once lexical semantics is removed or weakened, the participial region behaves more like a formal/morphological continuation of the passive frame. The model no longer has to predict a specific meaningful lexical verb to the same extent.
+
+### Summary
+
+- All models show positive no-prime passive bias.
+- Jabberwocky reduces passive bias but does not eliminate it.
+- 8B_instruct shows the strongest passive bias among the valid models.
+- No simple monotonic size effect appears among base models.
+- Instruction tuning increases passive bias strongly for 8B but not for 3B.
+- Passive morphology increases next-token predictability. In core, the lexical-nature of the verb is way less predictable than its grammatical form: indeed, after parsing the entire form and seeing participle morpheme, the by-phrase becomes extremely predictable.
+
+## RQ2: Baseline-Centered Priming Shift
+
+RQ2.1: Relative to each item’s no-prime baseline, do active and passive primes shift the model’s active/passive preference in the expected direction?
+
+H2.1: Passive primes will produce positive shift_from_no_prime, indicating movement toward the passive target. Active primes will produce negative shift_from_no_prime, indicating movement toward the active target.
+
+RQ2.2: Are active and passive shifts symmetric in magnitude?
+
+H2.2: Because Experiment 1B showed a strong no-prime passive bias, active primes may produce larger absolute movement from baseline than passive primes. This would suggest that active primes work partly by counteracting an already passive-biased scoring state.
+
+RQ2.3: Does the baseline-centered shift differ by lexicality and model condition?
+
+H2.3: Directional shifts should survive in jabberwocky but considering the lexical semantics contribution proven in preivious studies, shifts may be reduced in jabberwocky.
+
+DV: shift_from_no_prime
 
 ```{r rq2-baseline-centered-shift}
-rq2_models <- list()
+exp1b_shifts <- baseline_shifts %>%
+  filter(
+    experiment == "experiment_1b",
+    prime_type %in% c("active", "passive"),
+  ) %>%
+  filter(!is.na(shift_from_no_prime)) %>%
+  droplevels()
 
-if (has_cols(baseline_shifts, c("shift_from_no_prime", "prime_type", "lexicality_condition", "model_size"))) {
-  shift_df <- baseline_shifts %>%
-    mutate(
-      prime_type = factor(prime_type, levels = c("active", "passive"))
-    ) %>%
-    filter(!is.na(shift_from_no_prime))
-
-  controls <- available_controls(
-    shift_df,
-    c("task_type", "role_order", "token_count_diff_z", "target_token_count_diff_z", "prime_token_count_diff_z", "item_order_z", "item_index_z")
+m_exp1b_shift <- lmerTest::lmer(
+  shift_from_no_prime ~ prime_type * lexicality_condition * model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp1b_shifts,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
   )
-
-  formula <- build_formula(
-    "shift_from_no_prime",
-    c("prime_type * lexicality_condition * model_size", controls),
-    random_item_term(shift_df)
-  )
-
-  rq2_models$shift_no_prime <- fit_lmer_safe(formula, shift_df, "rq2_shift_from_no_prime")
-  save_model_summary(rq2_models$shift_no_prime, "rq2_shift_from_no_prime")
-}
-
-rq2_table <- write_model_table(
-  purrr::imap(rq2_models, ~ tidy_model(.x, .y)),
-  "rq2_baseline_centered_shift_fixed_effects.csv"
 )
-rq2_table %>% knitr::kable()
+
+drop1(m_exp1b_shift, test = "F")
 ```
 
 ```{r rq2-estimated-marginal-means}
-if (!is.null(rq2_models$shift_no_prime)) {
-  emmeans::emmeans(
-    rq2_models$shift_no_prime,
-    specs = ~ prime_type | lexicality_condition * model_size
-  ) %>%
-    as.data.frame() %>%
-    readr::write_csv(file.path(output_dir, "rq2_shift_emmeans.csv"))
-
-  emmeans::contrast(
-    emmeans::emmeans(rq2_models$shift_no_prime, specs = ~ prime_type | lexicality_condition * model_size),
-    method = "pairwise"
-  ) %>%
-    as.data.frame() %>%
-    readr::write_csv(file.path(output_dir, "rq2_active_vs_passive_shift_contrasts.csv"))
-}
+summary(m_exp1b_shift)
 ```
 
-# RQ3: Does Priming Survive in Jabberwocky?
+Baseline-centered priming shifts are not uniform. They depend on prime type, lexicality, and model condition, and are also modulated by passive-active token-count differences.
 
-Question: does the prime-induced shift persist when lexical semantics are
-removed/replaced by the Jabberwocky condition?
+- Intercept: In CORE for 3B_base, an active prime shifts the model away from the passive target and toward the active target relative to no-prime baseline.
+- passive priming does not boost passive preference above no-prime baseline.
+- Items with larger passive-active token-count differences tend to show more active-oriented, or less passive-oriented, shifts from baseline.
 
-This is technically part of RQ2, but it deserves a focused contrast because it
-is central to interpretation.
+That is interesting because in RQ1 token-count difference helped explain passive baseline bias, but in RQ2 it predicts less additional passive movement from baseline. This fits the idea that once the baseline is already passive-biased, there may be limited room for further passive increase.
 
-```{r rq3-jabberwocky}
-rq3_models <- list()
+### H2.1: Direction of active and passive shifts
 
-if (has_cols(baseline_shifts, c("shift_from_no_prime", "prime_type", "lexicality_condition", "model_size"))) {
-  jab_df <- baseline_shifts %>%
-    mutate(prime_type = factor(prime_type, levels = c("active", "passive"))) %>%
-    filter(lexicality_condition %in% c("core", "jabberwocky", "nonce", "real")) %>%
-    filter(!is.na(shift_from_no_prime))
+Is this prime condition different from the no-prime baseline? Does priming move the model away from baseline?
 
-  controls <- available_controls(
-    jab_df,
-    c("task_type", "role_order", "token_count_diff_z", "target_token_count_diff_z", "prime_token_count_diff_z", "item_order_z", "item_index_z")
-  )
-
-  formula <- build_formula(
-    "shift_from_no_prime",
-    c("prime_type * lexicality_condition * model_size", controls),
-    random_item_term(jab_df)
-  )
-
-  rq3_models$lexicality_shift <- fit_lmer_safe(formula, jab_df, "rq3_lexicality_shift")
-  save_model_summary(rq3_models$lexicality_shift, "rq3_lexicality_shift")
-}
-
-rq3_table <- write_model_table(
-  purrr::imap(rq3_models, ~ tidy_model(.x, .y)),
-  "rq3_jabberwocky_fixed_effects.csv"
+```{r}
+emm_shift <- emmeans::emmeans(
+  m_exp1b_shift,
+  ~ prime_type | lexicality_condition * model_condition
 )
-rq3_table %>% knitr::kable()
+test(emm_shift, null = 0)
 ```
 
-# RQ4: Does the Effect Generalize Across Tasks?
+- active primes are negative in every condition -\> active primes move the model towards active targets relative to baseline.
+- passive primes are positive only for gpt-2-large in the jabber condition and they are near zero in the same condition for llama-8B -\> H2.1 for passive not supported.
 
-Question: is the same active/passive priming pattern visible in fixed-target
-processing, free generation, event-to-syntax mapping, and comprehension?
+Passive primes do not usually boost passive preference above the no-prime baseline. Instead, they produce a less active-oriented shift than active primes.
 
-This model only makes sense after the dependent variables have been put onto a
-comparable scale, e.g. baseline-centered shift or standardized effect.
+This is theoretically important. It means that because the no-prime baseline is already strongly passive-biased, passive primes often do not increase passive preference further. They mainly prevent the active-oriented movement produced by active primes.
 
-```{r rq4-task-generalization}
-rq4_models <- list()
+```{r}
+emm_shift_df <- as.data.frame(emm_shift)
 
-task_effect_col <- NULL
-if (!is.null(baseline_shifts)) {
-  task_effect_col <- first_present(baseline_shifts, c("effect_z", "shift_z", "shift_from_no_prime"))
-}
+ggplot(
+  emm_shift_df,
+  aes(x = prime_type, y = emmean, color = lexicality_condition, group = lexicality_condition)
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(position = position_dodge(width = 0.3), size = 2.8) +
+  geom_errorbar(
+    aes(ymin = asymp.LCL, ymax = asymp.UCL),
+    position = position_dodge(width = 0.3),
+    width = 0.15
+  ) +
+  facet_wrap(~ model_condition) +
+  labs(
+    title = "Experiment 1: Baseline-centered priming shifts",
+    x = "Prime type",
+    y = "Shift from no-prime baseline",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13)
+```
 
-if (!is.null(task_effect_col) &&
-    has_cols(baseline_shifts, c(task_effect_col, "prime_type", "task_type", "lexicality_condition", "model_size"))) {
-  task_df <- baseline_shifts %>%
-    mutate(
-      prime_type = factor(prime_type, levels = c("active", "passive")),
-      effect_for_model = .data[[task_effect_col]]
-    ) %>%
-    filter(!is.na(effect_for_model))
+Value Meaning above 0 = shift toward passive below 0 = shift toward active 0 no change from no-prime baseline
 
-  controls <- available_controls(
-    task_df,
-    c("role_order", "token_count_diff_z", "target_token_count_diff_z", "prime_token_count_diff_z", "item_order_z", "item_index_z")
-  )
-
-  formula <- build_formula(
-    "effect_for_model",
-    c("prime_type * lexicality_condition * task_type * model_size", controls),
-    random_item_term(task_df)
-  )
-
-  rq4_models$task_generalization <- fit_lmer_safe(formula, task_df, "rq4_task_generalization")
-  save_model_summary(rq4_models$task_generalization, "rq4_task_generalization")
-}
-
-rq4_table <- write_model_table(
-  purrr::imap(rq4_models, ~ tidy_model(.x, .y)),
-  "rq4_task_generalization_fixed_effects.csv"
+```{r}
+pairs(
+  emm_shift,
+  by = c("lexicality_condition", "model_condition"),
+  adjust = "holm"
 )
-rq4_table %>% knitr::kable()
 ```
 
-# Experiment 2: Generation Readout
+```{r}
+contrast_df <- as.data.frame(
+  pairs(
+    emm_shift,
+    by = c("lexicality_condition", "model_condition"),
+    adjust = "holm"
+  )
+)
 
-Question: does the prime change the structure the model chooses to generate?
+ggplot(
+  contrast_df,
+  aes(x = model_condition, y = estimate, color = lexicality_condition)
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(position = position_dodge(width = 0.35), size = 2.8) +
+  geom_errorbar(
+    aes(ymin = estimate - 1.96 * SE, ymax = estimate + 1.96 * SE),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  labs(
+    title = "Experiment 1B: Active vs passive prime contrast",
+    subtitle = "Negative values = passive primes are more passive-oriented than active primes",
+    x = "Model condition",
+    y = "Active shift − passive shift",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))
+```
 
-Primary DV: binary passive generation.
+Value Meaning 0 = active and passive primes shift equally negative = passive primes are more passive-oriented than active primes positive = active primes are more passive-oriented than passive primes
 
-```{r exp2-generation-glmm}
-exp2_models <- list()
+Active primes reliably shift the model toward active targets. Passive primes do not generally increase passive preference above baseline, but they do reliably produce more passive-oriented shifts than active primes.
 
-if (has_cols(exp2_generation, c("generation_voice", "prime_condition", "lexicality_condition", "model_size"))) {
-  exp2_df <- exp2_generation %>%
-    filter(generation_voice %in% c("active", "passive")) %>%
-    mutate(
-      is_passive = as.integer(generation_voice == "passive")
+Directional shifts survive in jabberwocky (H2.3a supported) but the contrast is amplified (H2.3b not supported).
+
+### H2.2: Is the active-prime movement larger than the passive-prime movement, regardless of direction?
+
+```{r}
+exp1b_shifts_abs <- exp1b_shifts %>%
+  filter(prime_type %in% c("active", "passive")) %>%
+  mutate(abs_shift_from_no_prime = abs(shift_from_no_prime))
+
+m_exp1b_abs_shift <- lmerTest::lmer(
+  abs_shift_from_no_prime ~ prime_type * lexicality_condition * model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp1b_shifts_abs,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+summary(m_exp1b_abs_shift)
+```
+
+```{r}
+emm_abs_shift <- emmeans::emmeans(
+  m_exp1b_abs_shift,
+  ~ prime_type | lexicality_condition * model_condition
+)
+
+pairs(
+  emm_abs_shift,
+  by = c("lexicality_condition", "model_condition"),
+  adjust = "holm"
+)
+```
+
+The no-prime baseline is already passive-biased. Therefore, passive primes often have little room to increase passive preference further, whereas active primes can produce a stronger counter-shift away from that passive baseline. Passive primes are more passive-oriented than active primes, but active primes often create the larger baseline-relative movement.
+
+```{r}
+emm_abs_df <- as.data.frame(emm_abs_shift)
+
+ggplot(
+  emm_abs_df,
+  aes(x = prime_type, y = emmean, color = lexicality_condition, group = lexicality_condition)
+) +
+  geom_point(position = position_dodge(width = 0.3), size = 2.8) +
+  geom_errorbar(
+    aes(ymin = asymp.LCL, ymax = asymp.UCL),
+    position = position_dodge(width = 0.3),
+    width = 0.15
+  ) +
+  facet_wrap(~ model_condition) +
+  labs(
+    title = "Experiment 1B: Absolute priming shifts from baseline",
+    x = "Prime type",
+    y = "Absolute shift from no-prime baseline",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+Higher point Meaning active higher than passive = active prime moves farther from baseline passive higher than active = passive prime moves farther from baseline
+
+### H2.3: Lexicality and model condition
+
+Directional shifts should survive in jabberwocky, but may be reduced if lexical semantics contributes.
+
+Directional shifts survive in jabberwocky (H2.3a supported) but the contrast is amplified (H2.3b not supported).
+
+### EXP2.1: ROI shift
+
+#### Targets tokens predictability after congruent prime vs baseline
+
+##### Passive targets
+
+```{r}
+exp1b_passive_tokens <- token_level %>%
+  filter(
+    experiment == "experiment_1b",
+    candidate_voice == "passive",
+    prime_condition %in% c("no_prime", "active", "passive"),
+    roi %in% passive_roi_order
+  ) %>%
+  mutate(
+    roi = factor(roi, levels = passive_roi_order)
+  ) %>%
+  group_by(
+    item_id,
+    model_condition,
+    lexicality_condition,
+    prime_condition,
+    roi
+  ) %>%
+  summarise(
+    mean_roi_logprob = mean(token_logprob, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+plot_passive_prime_collapsed <- exp1b_passive_tokens %>%
+  filter(prime_condition %in% c("no_prime", "passive")) %>%
+  group_by(lexicality_condition, prime_condition, roi) %>%
+  summarise(
+    mean_logprob = mean(mean_roi_logprob, na.rm = TRUE),
+    se = sd(mean_roi_logprob, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  )
+
+ggplot(
+  plot_passive_prime_collapsed,
+  aes(x = roi, y = mean_logprob, color = prime_condition, group = prime_condition)
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = mean_logprob - 1.96 * se,
+        ymax = mean_logprob + 1.96 * se),
+    width = 0.12
+  ) +
+  facet_wrap(~ lexicality_condition) +
+  labs(
+    title = "Experiment 1B: passive target under no-prime vs passive-prime",
+    subtitle = "Collapsed across models; higher values = more predictable token",
+    x = "Passive ROI",
+    y = "Mean token log-probability",
+    color = "Condition"
+  ) +
+  scale_x_discrete(labels = c(
+    patient_np = "Patient",
+    aux = "Aux",
+    participle = "Participle",
+    by = "by",
+    agent_det = "Agent det",
+    agent_np = "Agent"
+  )) +
+  theme_minimal(base_size = 13)
+```
+
+passive targets already have high no-prime predictability in CORE, so passive primes have little room to raise them further. when semantic content is weakened, the prime’s structural information becomes more visible.
+
+##### Active targets
+
+```{r}
+active_roi_order <- c(
+  "initial_det",
+  "agent_np",
+  "verb",
+  "patient_det",
+  "patient_np",
+  "punctuation"
+)
+
+exp1b_active_tokens <- token_level %>%
+  filter(
+    experiment == "experiment_1b",
+    candidate_voice == "active",
+    prime_condition %in% c("no_prime", "active"),
+    roi %in% active_roi_order
+  ) %>%
+  mutate(
+    roi = factor(roi, levels = active_roi_order),
+    lexicality_condition = factor(
+      lexicality_condition,
+      levels = c("core", "jabberwocky")
+    ),
+    prime_condition = factor(
+      prime_condition,
+      levels = c("no_prime", "active")
     )
-
-  controls <- available_controls(
-    exp2_df,
-    c("role_order", "target_verb_cue", "item_order_z", "item_index_z")
+  ) %>%
+  group_by(
+    item_id,
+    model_condition,
+    lexicality_condition,
+    prime_condition,
+    roi
+  ) %>%
+  summarise(
+    mean_roi_logprob = mean(token_logprob, na.rm = TRUE),
+    .groups = "drop"
   )
 
-  formula <- build_formula(
-    "is_passive",
-    c("prime_condition * lexicality_condition * model_size", controls),
-    random_item_term(exp2_df)
+plot_active_prime_collapsed <- exp1b_active_tokens %>%
+  group_by(lexicality_condition, prime_condition, roi) %>%
+  summarise(
+    mean_logprob = mean(mean_roi_logprob, na.rm = TRUE),
+    se = sd(mean_roi_logprob, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
   )
 
-  exp2_models$generation_passive <- fit_glmer_safe(formula, exp2_df, "exp2_generation_passive")
-  save_model_summary(exp2_models$generation_passive, "exp2_generation_passive")
-}
-
-exp2_table <- write_model_table(
-  purrr::imap(exp2_models, ~ tidy_model(.x, .y)),
-  "exp2_generation_fixed_effects.csv"
-)
-exp2_table %>% knitr::kable()
+ggplot(
+  plot_active_prime_collapsed,
+  aes(
+    x = roi,
+    y = mean_logprob,
+    color = prime_condition,
+    group = prime_condition
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(
+      ymin = mean_logprob - 1.96 * se,
+      ymax = mean_logprob + 1.96 * se
+    ),
+    width = 0.12
+  ) +
+  facet_wrap(~ lexicality_condition) +
+  labs(
+    title = "Experiment 1B: active target under no-prime vs active-prime",
+    subtitle = "Collapsed across models; higher values = more predictable token",
+    x = "Active ROI",
+    y = "Mean token log-probability",
+    color = "Condition"
+  ) +
+  scale_x_discrete(labels = c(
+    initial_det = "Init det",
+    agent_np = "Agent",
+    verb = "Verb",
+    patient_det = "Patient det",
+    patient_np = "Patient",
+    punctuation = "."
+  )) +
+  theme_minimal(base_size = 13)
 ```
+
+Active targets are less overtly marked, but active priming still works
+
+This is theoretically interesting. Actives do not have the same overt morphosyntactic skeleton as passives — no auxiliary, no participial morphology, no by-phrase.
+
+Yet in jabberwocky, active priming strongly boosts active target predictability.
+
+That means the active-prime effect cannot be only about passive-specific function words. It likely reflects something like:
+
+agent-first mapping → verb → patient continuation
+
+So the active structural signal is present, but it is less encoded in overt morphology and more dependent on role/order expectations.
+
+#### Targets tokens predictability after congruent prime vs baseline x model
+
+##### Passive Targets
+
+```{r}
+roi_order <- c("patient_np", "aux", "participle", "by", "agent_det", "agent_np")
+
+exp1b_passive_tokens <- token_level %>%
+  filter(
+    experiment == "experiment_1b",
+    candidate_voice == "passive",
+    prime_condition %in% c("no_prime", "active", "passive"),
+    roi %in% roi_order
+  ) %>%
+  mutate(
+    roi = factor(roi, levels = roi_order)
+  ) %>%
+  group_by(
+    item_id,
+    model_condition,
+    lexicality_condition,
+    prime_condition,
+    roi
+  ) %>%
+  summarise(
+    mean_roi_logprob = mean(token_logprob, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+plot_passive_prime <- exp1b_passive_tokens %>%
+  filter(prime_condition %in% c("no_prime", "passive")) %>%
+  group_by(model_condition, lexicality_condition, prime_condition, roi) %>%
+  summarise(
+    emmean = mean(mean_roi_logprob, na.rm = TRUE),
+    se = sd(mean_roi_logprob, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  )
+
+ggplot(
+  plot_passive_prime,
+  aes(x = roi, y = emmean, color = prime_condition, group = prime_condition)
+) +
+  geom_line(linewidth = 0.9) +
+  geom_point(size = 2.5) +
+  geom_errorbar(
+    aes(ymin = emmean - 1.96 * se, ymax = emmean + 1.96 * se),
+    width = 0.12
+  ) +
+  facet_grid(lexicality_condition ~ model_condition) +
+  labs(
+    title = "Experiment 1B: passive target under no-prime vs passive-prime",
+    subtitle = "Higher / less negative values = more predictable token",
+    x = "Passive ROI",
+    y = "Mean token log-probability",
+    color = "Condition"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(axis.text.x = element_text(angle = 35, hjust = 1))
+```
+
+##### Active targets
+
+```{r}
+active_roi_order <- c(
+  "initial_det",
+  "agent_np",
+  "verb",
+  "patient_det",
+  "patient_np",
+  "punctuation"
+)
+
+plot_active_prime_by_model <- token_level %>%
+  filter(
+    experiment == "experiment_1b",
+    candidate_voice == "active",
+    prime_condition %in% c("no_prime", "active"),
+    roi %in% active_roi_order
+  ) %>%
+  mutate(
+    roi = factor(roi, levels = active_roi_order),
+    lexicality_condition = factor(
+      lexicality_condition,
+      levels = c("core", "jabberwocky")
+    ),
+    prime_condition = factor(
+      prime_condition,
+      levels = c("no_prime", "active")
+    )
+  ) %>%
+  group_by(
+    item_id,
+    model_condition,
+    lexicality_condition,
+    prime_condition,
+    roi
+  ) %>%
+  summarise(
+    mean_roi_logprob = mean(token_logprob, na.rm = TRUE),
+    .groups = "drop"
+  ) %>%
+  group_by(
+    model_condition,
+    lexicality_condition,
+    prime_condition,
+    roi
+  ) %>%
+  summarise(
+    mean_logprob = mean(mean_roi_logprob, na.rm = TRUE),
+    se = sd(mean_roi_logprob, na.rm = TRUE) / sqrt(n()),
+    .groups = "drop"
+  )
+
+ggplot(
+  plot_active_prime_by_model,
+  aes(
+    x = roi,
+    y = mean_logprob,
+    color = prime_condition,
+    group = prime_condition
+  )
+) +
+  geom_line(linewidth = 1) +
+  geom_point(size = 2.5) +
+  geom_errorbar(
+    aes(
+      ymin = mean_logprob - 1.96 * se,
+      ymax = mean_logprob + 1.96 * se
+    ),
+    width = 0.12
+  ) +
+  facet_grid(lexicality_condition ~ model_condition) +
+  scale_x_discrete(labels = c(
+    initial_det = "Init det",
+    agent_np = "Agent",
+    verb = "Verb",
+    patient_det = "Patient det",
+    patient_np = "Patient",
+    punctuation = "."
+  )) +
+  labs(
+    title = "Experiment 1B: active target under no-prime vs active-prime",
+    subtitle = "Higher / less negative values = more predictable token",
+    x = "Active ROI",
+    y = "Mean token log-probability",
+    color = "Condition"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.spacing = unit(1, "lines")
+  )
+```
+
+### EXPL2.2: IFE
+
+Premise: previous results show how passive structures, though less frequent as a constructional choice, seem highly predictable once its morphosyntactic frame is underway. It decomposes into different predictive events. There seems to be no IFE but there seems to be a residual stream effect.
+
+```{r}
+token_roi <- readr::read_csv(
+  file.path(input_dir, "token_roi_summary.csv"),
+  show_col_types = FALSE
+) %>%
+  canonicalize_common()
+```
+
+Passive target after passive prime
+
+```{r}
+passive_roi_order <- c(
+  "patient_np",
+  "aux",
+  "participle",
+  "by",
+  "agent_det",
+  "agent_np"
+)
+
+passive_roi <- token_roi %>%
+  filter(
+    experiment == "experiment_1b",
+    candidate_voice == "passive",
+    prime_condition %in% c("no_prime", "passive"),
+    roi %in% passive_roi_order
+  ) %>%
+  mutate(
+    roi = factor(roi, levels = passive_roi_order)
+  ) %>%
+  select(
+    item_id,
+    item_index,
+    model_condition,
+    lexicality_condition,
+    prime_condition,
+    roi,
+    roi_surprisal_mean
+  ) %>%
+  tidyr::pivot_wider(
+    names_from = prime_condition,
+    values_from = roi_surprisal_mean
+  ) %>%
+  mutate(
+    passive_prime_facilitation = no_prime - passive
+  ) %>%
+  filter(!is.na(passive_prime_facilitation))
+
+m_passive_roi_facilitation <- lm(
+  passive_prime_facilitation ~ roi * lexicality_condition,
+  data = passive_roi,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+summary(m_passive_roi_facilitation)
+```
+
+```{r}
+emm_passive_roi_facilitation <- emmeans::emmeans(
+  m_passive_roi_facilitation,
+  ~ roi | lexicality_condition
+)
+
+test(emm_passive_roi_facilitation, null = 0)
+```
+
+Value Meaning positive passive prime reduced surprisal / increased predictability negative passive prime increased surprisal / reduced predictability zero no passive-prime effect relative to baseline
+
+Passive-prime facilitation is weak and uneven in CORE but strong and structurally localized in jabberwocky.
+
+Active target after active prime
+
+```{r}
+active_roi_order <- c(
+  "initial_det",
+  "agent_np",
+  "verb",
+  "patient_det",
+  "patient_np",
+  "punctuation"
+)
+
+active_roi <- token_roi %>%
+  filter(
+    experiment == "experiment_1b",
+    candidate_voice == "active",
+    prime_condition %in% c("no_prime", "active"),
+    roi %in% active_roi_order
+  ) %>%
+  mutate(
+    roi = factor(roi, levels = active_roi_order)
+  ) %>%
+  select(
+    item_id,
+    item_index,
+    model_condition,
+    lexicality_condition,
+    prime_condition,
+    roi,
+    roi_surprisal_mean
+  ) %>%
+  tidyr::pivot_wider(
+    names_from = prime_condition,
+    values_from = roi_surprisal_mean
+  ) %>%
+  mutate(
+    active_prime_facilitation = no_prime - active
+  ) %>%
+  filter(!is.na(active_prime_facilitation))
+
+m_active_roi_facilitation <- lm(
+  active_prime_facilitation ~ roi * lexicality_condition,
+  data = active_roi,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+summary(m_active_roi_facilitation)
+```
+
+```{r}
+emm_active_roi_facilitation <- emmeans::emmeans(
+  m_active_roi_facilitation,
+  ~ roi | lexicality_condition
+)
+
+test(emm_active_roi_facilitation, null = 0)
+```
+
+Estimate Meaning positive = active prime reduced surprisal / increased predictability negative = active prime increased surprisal / reduced predictability zero = no active-prime effect
+
+Does surprisal while processing the prime predict the size of the later target shift?
+
+```{r}
+item_level <- item_level %>%
+  mutate(
+    active_surprisal_mean = -active_choice_logprob,
+    passive_surprisal_mean = -passive_choice_logprob,
+    active_surprisal_sum = -active_choice_logprob_sum,
+    passive_surprisal_sum = -passive_choice_logprob_sum
+  )
+
+prime_token_level <- readr::read_csv(
+  file.path(input_dir, "token_level_probabilities.csv"),
+  show_col_types = FALSE
+) %>%
+  canonicalize_common()
+
+prime_token_level <- prime_token_level %>%
+  mutate(
+    prime_type = dplyr::case_when(
+      prime_condition %in% c("active", "active_prime") ~ "active",
+      prime_condition %in% c("passive", "passive_prime") ~ "passive",
+      TRUE ~ as.character(prime_condition)
+    )
+  )
+
+```
+
+```{r}
+prime_surprisal_item <- prime_token_level %>%
+  filter(
+    experiment == "experiment_1b",
+    prime_type %in% c("active", "passive")
+  ) %>%
+  group_by(
+    experiment,
+    item_id,
+    item_index,
+    model_condition,
+    lexicality_condition,
+    prime_type
+  ) %>%
+  summarise(
+    prime_surprisal_mean = mean(token_surprisal, na.rm = TRUE),
+    prime_surprisal_sum = sum(token_surprisal, na.rm = TRUE),
+    prime_token_count = n(),
+    .groups = "drop"
+  )
+
+```
+
+```{r}
+exp1b_ife <- baseline_shifts %>%
+  filter(
+    experiment == "experiment_1b",
+    prime_type %in% c("active", "passive"),
+    !is.na(shift_from_no_prime)
+  ) %>%
+  left_join(
+    prime_surprisal_item,
+    by = c(
+      "experiment",
+      "item_id",
+      "item_index",
+      "model_condition",
+      "lexicality_condition",
+      "prime_type"
+    )
+  )
+
+```
+
+```{r}
+exp1b_ife <- exp1b_ife %>%
+  mutate(
+    congruent_shift = dplyr::case_when(
+      prime_type == "passive" ~ shift_from_no_prime,
+      prime_type == "active"  ~ -shift_from_no_prime,
+      TRUE ~ NA_real_
+    )
+  ) %>%
+  group_by(model_condition, lexicality_condition, prime_type) %>%
+  mutate(
+    prime_surprisal_z = as.numeric(scale(prime_surprisal_mean))
+  ) %>%
+  ungroup() %>%
+  filter(
+    !is.na(congruent_shift),
+    !is.na(prime_surprisal_z)
+  )
+```
+
+```{r}
+m_exp1b_ife <- lm(
+  congruent_shift ~ prime_surprisal_z * prime_type * lexicality_condition +
+    model_condition +
+    passive_minus_active_token_count_z,
+  data = exp1b_ife,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+drop1(m_exp1b_ife, test = "F")
+```
+
+```{r}
+summary(m_exp1b_ife)
+```
+
+Slope direction
+
+```{r}
+ife_slopes <- emmeans::emtrends(
+  m_exp1b_ife,
+  ~ prime_type * lexicality_condition,
+  var = "prime_surprisal_z"
+)
+
+ife_slopes
+test(ife_slopes, null = 0)
+```
+
+IFE predicts positive slopes. -\> all slopes are negative.
+
+```{r}
+pairs(
+  ife_slopes,
+  by = "lexicality_condition",
+  adjust = "holm"
+)
+
+pairs(
+  ife_slopes,
+  by = "prime_type",
+  adjust = "holm"
+)
+```
+
+### Conclusions
+
+- Baseline passive bias: passives are already preferred before priming.
+- ROI baseline profile: passive function-word regions are highly predictable.
+- Passive-prime CORE ceiling: passive prime adds little where baseline is already high.
+- Jabberwocky amplification: structural priming becomes clearer when lexical semantics is suppressed.
+- Active-prime counter-shift: active primes often move more from baseline because they counteract passive bias.
+- No IFE: Zhou et al. 2025 found IFE with datives but the effect was tight to verb-framing bias, semantically mediated. Jumelet et al. 2024 focus on datives and argue that LLM priming asymmetries are predictable from factors like surprisal and verb preference.
+
+But Sinclair et al. did not find stronger priming for the semantically implausible-prime corpus. They found the opposite. In their §7.2 semantic implausibility experiment, they built primes that were grammatical but nonsensical, e.g. “the iron threw the hero to the chocolate,” while preserving the no-overlap/no-semantic-similarity constraints from the core corpus. Their result was that PE became negative for active and PO constructions, while passive and DO PE decreased relative to core but remained positive. They conclude that structural encoding is not fully independent from semantic plausibility.
+
+That is very relevant to your argument. Sinclair et al. 2022 already show that making the prime semantically implausible does not simply make the structural signal stronger. Semantic disruption can weaken or distort priming.
+
+Objection: Whole-target log-probability PE is not a clean measure of structural priming. In active/passive alternations, it mixes baseline constructional bias, local morphosyntactic cue predictability, lexical-semantic predictability, and possible prime-induced updating. Therefore, sentence-level PE alone cannot distinguish priming from incremental surface form predictability.
+
+Interpretation: This priming scoring task seems more similar to Paolazzi et al 2019 results in which they found that passive sentences are read faster than actives but there was a dissociation with comprehension showing the inverse effect. Humans process language at multiple levels simultaneously, could it be that the LLM only performs one task like brainlessly processing strings
+
+# EXPERIMENT 2
+
+## RQ1: Baseline Active/Passive Bias
+
+RQ1.1: Before priming, do models prefer passive or active targets in a generation task? and does this vary by lexicality, and model type/size?
+
+H1.1: In contrast to Exp1B, where passive targets received higher scored probability, we predict that in a free generation task models will preferentially generate active sentences at baseline. This is because generation requires choosing an event-to-syntax mapping, and the canonical agent-first active frame should dominate when the model is not forced to compare active and passive target strings.
+
+```{r}
+exp2_baseline <- exp2_generation %>%
+  filter(
+    experiment == "experiment_2",
+    prime_condition == "no_prime",
+    lexicality_condition %in% c("core", "mixed"),
+    generation_voice %in% c("active", "passive")
+  ) %>%
+  mutate(
+    generated_passive = as.integer(generation_voice == "passive")
+  ) %>%
+  droplevels()
+
+exp2_baseline_counts <- exp2_baseline %>%
+  count(generation_voice) %>%
+  tidyr::pivot_wider(
+    names_from = generation_voice,
+    values_from = n,
+    values_fill = 0
+  ) %>%
+  mutate(
+    total = active + passive,
+    passive_rate = passive / total,
+    active_rate = active / total
+  )
+
+exp2_baseline_counts
+
+binom.test(
+  x = exp2_baseline_counts$passive,
+  n = exp2_baseline_counts$total,
+  p = 0.5,
+  alternative = "less"
+)
+```
+
+In free generation, models overwhelmingly prefer the active frame at baseline.
+
+```{r}
+
+m_exp2_baseline <- lme4::glmer(
+  generated_passive ~ lexicality_condition * model_condition +
+    (1 | item_factor),
+  data = exp2_baseline,
+  family = binomial,
+  control = lme4::glmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+drop1(m_exp2_baseline, test = "Chisq")
+```
+
+```{r}
+m_exp2_baseline_additive <- lme4::glmer(
+  generated_passive ~ lexicality_condition + model_condition +
+    (1 | item_factor),
+  data = exp2_baseline,
+  family = binomial,
+  control = lme4::glmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp2_baseline_additive, test = "Chisq")
+```
+
+```{r}
+m_exp2_baseline_simple <- lme4::glmer(
+  generated_passive ~ model_condition +
+    (1 | item_factor),
+  data = exp2_baseline,
+  family = binomial,
+  control = lme4::glmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+summary(m_exp2_baseline_simple)
+```
+
+Do model conditions differ in how often they generate passives at baseline? Yes. But all models are active-biased.
+
+```{r}
+library(dplyr)
+library(tidyr)
+library(ggplot2)
+
+exp2_baseline_plot_df <- exp2_baseline %>%
+  count(model_condition, generation_voice) %>%
+  pivot_wider(
+    names_from = generation_voice,
+    values_from = n,
+    values_fill = 0
+  ) %>%
+  mutate(
+    total = active + passive,
+    passive_rate = passive / total,
+    active_rate = active / total,
+
+    # Exact binomial confidence intervals
+    ci_low = ifelse(
+      passive == 0,
+      0,
+      qbeta(0.025, passive, active + 1)
+    ),
+    ci_high = ifelse(
+      passive == total,
+      1,
+      qbeta(0.975, passive + 1, active)
+    ),
+
+    model_condition = factor(
+      model_condition,
+      levels = c(
+        "774M_base",
+        "3B_base",
+        "3B_instruct",
+        "8B_base",
+        "8B_instruct",
+        "9B_base"
+      )
+    )
+  )
+
+ggplot(
+  exp2_baseline_plot_df,
+  aes(x = model_condition, y = passive_rate)
+) +
+  geom_hline(
+    yintercept = 0.5,
+    linetype = "dashed"
+  ) +
+  geom_point(size = 3) +
+  geom_errorbar(
+    aes(ymin = ci_low, ymax = ci_high),
+    width = 0.15
+  ) +
+  geom_text(
+    aes(
+      label = paste0(
+        round(passive_rate * 100, 2),
+        "%\n",
+        passive, "/", total
+      )
+    ),
+    vjust = -0.8,
+    size = 3
+  ) +
+  scale_y_continuous(
+    labels = scales::percent_format(accuracy = 1),
+    limits = c(0, max(exp2_baseline_plot_df$ci_high, na.rm = TRUE) + 0.05)
+  ) +
+  labs(
+    title = "Experiment 2: baseline passive generation by model",
+    subtitle = "No-prime condition; dashed line = 50% passive generation",
+    x = "Model condition",
+    y = "Observed passive-generation rate"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+```
+
+## RQ2: Priming Effect
+
+RQ2.2: Do active and passive primes affect the probability that the model generates an active or passive sentence? H2.1: Active primes should increase active generation, whereas passive primes should increase passive generation. Passive priming may be more visible in Exp2 than in Exp1B because generation requires mapping event roles onto syntax. If passive difficulty lies less in surface-form prediction and more in event-role mapping, then passive primes may provide a stronger cue in this task than in fixed-target scoring. We treat IFE as an exploratory mechanism: if prime surprisal predicts generation shift, this would support an error-driven interpretation.
+
+```{r}
+exp2_prime <- exp2_generation %>%
+  filter(
+    experiment == "experiment_2",
+    lexicality_condition %in% c("core", "mixed"),
+    prime_condition %in% c("no_prime", "filler", "active", "passive"),
+    generation_voice %in% c("active", "passive")
+  ) %>%
+  mutate(
+    generated_passive = as.integer(generation_voice == "passive"),
+    lexicality_condition = factor(
+      lexicality_condition,
+      levels = c("core", "mixed")
+    ),
+    prime_condition = factor(
+      prime_condition,
+      levels = c("no_prime", "filler", "active", "passive")
+    )
+  ) %>%
+  droplevels()
+
+exp2_prime %>%
+  count(lexicality_condition, prime_condition, generation_voice) %>%
+  tidyr::pivot_wider(
+    names_from = generation_voice,
+    values_from = n,
+    values_fill = 0
+  ) %>%
+  mutate(
+    total = active + passive,
+    passive_rate = passive / total
+  ) %>%
+  knitr::kable()
+```
+
+```{r}
+m_exp2_prime <- lme4::glmer(
+  generated_passive ~ prime_condition * lexicality_condition +
+    model_condition +
+    (1 | item_factor),
+  data = exp2_prime,
+  family = binomial,
+  control = lme4::glmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+
+drop1(m_exp2_prime, test = "Chisq")
+```
+
+```{r}
+summary(m_exp2_prime)
+```
+
+```{r}
+emm_exp2_prime <- emmeans::emmeans(
+  m_exp2_prime,
+  ~ prime_condition | lexicality_condition,
+  type = "response"
+)
+
+emm_exp2_prime
+```
+
+```{r}
+emm_exp2_prime_link <- emmeans::emmeans(
+  m_exp2_prime,
+  ~ prime_condition | lexicality_condition,
+  type = "link"
+)
+
+exp2_prime_contrasts <- contrast(
+  emm_exp2_prime_link,
+  method = list(
+    "filler - no_prime"  = c(-1,  1,  0,  0),
+    "active - no_prime"  = c(-1,  0,  1,  0),
+    "passive - no_prime" = c(-1,  0,  0,  1),
+    "passive - active"   = c( 0,  0, -1,  1)
+  ),
+  by = "lexicality_condition",
+  adjust = "holm"
+)
+
+exp2_prime_contrasts
+```
+
+```{r}
+exp2_prime_plot_df <- as.data.frame(emm_exp2_prime)
+
+ggplot(
+  exp2_prime_plot_df,
+  aes(
+    x = prime_condition,
+    y = prob,
+    color = lexicality_condition,
+    group = lexicality_condition
+  )
+) +
+  geom_point(position = position_dodge(width = 0.35), size = 3) +
+  geom_errorbar(
+    aes(ymin = asymp.LCL, ymax = asymp.UCL),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Experiment 2: passive generation by prime condition",
+    subtitle = "Estimated probabilities from binomial GLMM",
+    x = "Prime condition",
+    y = "Estimated probability of passive generation",
+    color = "Condition"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+```{r}
+emm_exp2_prime_prob <- as.data.frame(
+  emmeans::emmeans(
+    m_exp2_prime,
+    ~ prime_condition | lexicality_condition,
+    type = "response"
+  )
+)
+
+exp2_prob_shifts <- emm_exp2_prime_prob %>%
+  select(lexicality_condition, prime_condition, prob) %>%
+  tidyr::pivot_wider(
+    names_from = prime_condition,
+    values_from = prob
+  ) %>%
+  mutate(
+    filler_shift = filler - no_prime,
+    active_shift = active - no_prime,
+    passive_shift = passive - no_prime
+  )
+
+exp2_prob_shifts
+```
+
+```{r}
+emm_exp2_prime_by_model_link <- emmeans::emmeans(
+  m_exp2_prime,
+  ~ prime_condition | lexicality_condition * model_condition,
+  type = "link"
+)
+
+exp2_shift_by_model <- contrast(
+  emm_exp2_prime_by_model_link,
+  method = list(
+    "active - no_prime"  = c(-1,  0,  1,  0),
+    "passive - no_prime" = c(-1,  0,  0,  1)
+  ),
+  by = c("lexicality_condition", "model_condition"),
+  adjust = "holm"
+) %>%
+  as.data.frame() %>%
+  mutate(
+    contrast = factor(
+      contrast,
+      levels = c(
+        "active - no_prime",
+        "passive - no_prime"
+      )
+    )
+  )
+
+ggplot(
+  exp2_shift_by_model,
+  aes(x = model_condition, y = estimate, color = contrast)
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.55),
+    size = 2.7
+  ) +
+  geom_errorbar(
+    aes(ymin = estimate - 1.96 * SE,
+        ymax = estimate + 1.96 * SE),
+    position = position_dodge(width = 0.55),
+    width = 0.15
+  ) +
+  facet_wrap(~ lexicality_condition) +
+  labs(
+    title = "Experiment 2: baseline-centered generation shifts by model",
+    subtitle = "Log-odds contrasts relative to no-prime baseline",
+    x = "Model condition",
+    y = "Shift in log-odds of passive generation",
+    color = "Prime contrast"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+```
+
+```{r}
+emm_exp2_prime_by_model_prob <- emmeans::emmeans(
+  m_exp2_prime,
+  ~ prime_condition | lexicality_condition * model_condition,
+  type = "response"
+) %>%
+  as.data.frame()
+
+exp2_prob_shift_by_model <- emm_exp2_prime_by_model_prob %>%
+  select(lexicality_condition, model_condition, prime_condition, prob) %>%
+  tidyr::pivot_wider(
+    names_from = prime_condition,
+    values_from = prob
+  ) %>%
+  mutate(
+    active_shift = active - no_prime,
+    passive_shift = passive - no_prime
+  ) %>%
+  tidyr::pivot_longer(
+    cols = c(active_shift, passive_shift),
+    names_to = "shift_type",
+    values_to = "probability_shift"
+  )
+
+ggplot(
+  exp2_prob_shift_by_model,
+  aes(x = model_condition, y = probability_shift, color = shift_type)
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.55),
+    size = 2.7
+  ) +
+  facet_wrap(~ lexicality_condition) +
+  scale_y_continuous(labels = scales::percent_format()) +
+  labs(
+    title = "Experiment 2: probability shifts from no-prime baseline",
+    subtitle = "Response-scale change in passive-generation probability",
+    x = "Model condition",
+    y = "Change in probability of passive generation",
+    color = "Shift type"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+```
+
+#### EXPL2: IFE
+
+H2.4: In Experiment 1B, the model does not need to understand the event and then choose a structure. It only scores two fixed target strings. In that setting, passives get a boost because their morphosyntactic spine is highly predictable.
+
+But in a production task, the model has to do something closer to:
+
+1.  parse the prime
+2.  map roles: who did what to whom
+3.  process a new target event
+4.  choose how to describe that event
+
+In that setting, the passive prime may create a stronger prediction error because the event roles are mapped onto syntax in a less canonical way:
+
+patient/theme → subject agent → by-phrase
+
+Then, if the model updates from that unexpected mapping, it may be more likely to reuse the passive structure when describing the next event.
+
+That is exactly the kind of situation where an inverse frequency / inverse preference effect would be expected.
+
+```{r}
+exp2_prime_surprisal <- readr::read_csv(
+  file.path(input_dir, "exp2_prime_surprisal_item_level.csv"),
+  show_col_types = FALSE
+) %>%
+  canonicalize_common()
+
+names(exp2_prime_surprisal)
+```
+
+```{r}
+exp2_prime_surprisal_clean <- exp2_prime_surprisal %>%
+  mutate(
+    exp2_lexicality = dplyr::case_when(
+      lexicality_condition == "core" ~ "core",
+      lexicality_condition %in% c("mixed", "core_targets_jabberwocky_primes") ~ "mixed",
+      TRUE ~ NA_character_
+    ),
+    prime_type = dplyr::case_when(
+      prime_condition %in% c("active", "active_prime") ~ "active",
+      prime_condition %in% c("passive", "passive_prime") ~ "passive",
+      TRUE ~ as.character(prime_condition)
+    )
+  ) %>%
+  filter(
+    experiment == "experiment_2",
+    exp2_lexicality %in% c("core", "mixed"),
+    prime_type %in% c("active", "passive")
+  ) %>%
+  select(
+    experiment,
+    item_id,
+    item_index,
+    model_condition,
+    exp2_lexicality,
+    prime_type,
+    prime_surprisal_mean,
+    prime_surprisal_sum
+  )
+
+exp2_ife <- exp2_generation %>%
+  filter(
+    experiment == "experiment_2",
+    lexicality_condition %in% c("core", "mixed", "core_targets_jabberwocky_primes"),
+    prime_condition %in% c("active", "passive"),
+    generation_voice %in% c("active", "passive")
+  ) %>%
+  mutate(
+    exp2_lexicality = dplyr::case_when(
+      lexicality_condition == "core" ~ "core",
+      lexicality_condition %in% c("mixed", "core_targets_jabberwocky_primes") ~ "mixed",
+      TRUE ~ NA_character_
+    ),
+    prime_type = as.character(prime_condition),
+    congruent_generation = dplyr::case_when(
+      prime_type == "active"  & generation_voice == "active"  ~ 1,
+      prime_type == "passive" & generation_voice == "passive" ~ 1,
+      prime_type == "active"  & generation_voice == "passive" ~ 0,
+      prime_type == "passive" & generation_voice == "active"  ~ 0,
+      TRUE ~ NA_real_
+    )
+  ) %>%
+  left_join(
+    exp2_prime_surprisal_clean,
+    by = c(
+      "experiment",
+      "item_id",
+      "item_index",
+      "model_condition",
+      "exp2_lexicality",
+      "prime_type"
+    )
+  )
+exp2_ife <- exp2_ife %>%
+  group_by(model_condition, exp2_lexicality, prime_type) %>%
+  mutate(
+    prime_surprisal_z = as.numeric(scale(prime_surprisal_mean))
+  ) %>%
+  ungroup() %>%
+  filter(
+    !is.na(congruent_generation),
+    !is.na(prime_surprisal_z)
+  ) %>%
+  mutate(
+    exp2_lexicality = factor(exp2_lexicality, levels = c("core", "mixed")),
+    prime_type = factor(prime_type, levels = c("active", "passive"))
+  )
+```
+
+```{r}
+m_exp2_ife <- lme4::glmer(
+  congruent_generation ~ prime_surprisal_z * prime_type * exp2_lexicality +
+    model_condition +
+    (1 | item_factor),
+  data = exp2_ife,
+  family = binomial,
+  control = lme4::glmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp2_ife, test = "Chisq")
+```
+
+```{r}
+m_exp2_ife2 <- lme4::glmer(
+  congruent_generation ~ prime_surprisal_z + prime_type + exp2_lexicality +
+    model_condition +
+    (1 | item_factor),
+  data = exp2_ife,
+  family = binomial,
+  control = lme4::glmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp2_ife2, test = "Chisq")
+```
+
+NO IFE!!!! Exp2 shows strong structural priming in generation, but sentence-level prime surprisal does not predict congruent generation. This argues against a simple IFE account. However, because IFE effects in prior LLM work are closely tied to lexical/verb-specific and structural preferences, a more targeted semantic or event-role surprisal measure may be needed to test whether error-driven updating operates at the event-mapping level.
+
+Summary: \* baseline generation is strongly active-bias \* passive primes increase passive generation \* active prime increase active generation but does not move significantly the already active baseline \* jabber passive primes boost priming even more than core -\> structural signal becomes clearer when lexical semantics is attenuated \* active priming is stronger in core than jabber but baseline is already at ceiling
+
+Exp2 is compatible with the idea that event-to-syntax mapping reveals stronger passive priming
+
+RQ2.3: Do Exp1B scoring preferences and Exp2 generation choices align? H2.3: We predict a dissociation: scored log-probability preference and free construction choice are not the same process. Exp1B may show passive preference because passive strings contain predictable morphosyntactic cues, whereas Exp2 may show active preference because generation favors canonical agent-first event expression. -\> supported by results
+
+# Experiment 3: event-to-syntax mapping with fix-target scoring
+
+RQ1: Does the Exp1B passive scoring bias persist when the model is explicitly given event-role information, and does role mapping make priming effects stronger? H1: We predict the same qualitative baseline pattern as Exp1B: models will show positive passive log-odds, indicating a passive scoring preference. This prediction follows from Exp1B: passive targets contain highly predictable morphosyntactic cues, so even when event roles are explicit, the passive target may still receive higher mean-token probability than the active target.
+
+Primary DV:
+
+``` text
+logodds_passive = logP(passive target) - logP(active target) -> for this exact same event, does the model assign more probability to the passive wording or the active wording?
+```
+
+```{r}
+# EXPERIMENT 3 — RQ1: Baseline active/passive bias
+
+exp3_baseline <- item_level %>%
+  filter(
+    experiment == "experiment_3",
+    task_type == "event_to_syntax_mapping",
+    prime_condition == "no_prime"
+  ) %>%
+  filter(!is.na(logodds_passive)) %>%
+  droplevels()
+
+m_exp3_baseline <- lmerTest::lmer(
+  logodds_passive ~ lexicality_condition * model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp3_baseline,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+
+drop1(m_exp3_baseline, test = "F")
+```
+
+```{r}
+summary(m_exp3_baseline)
+```
+
+- In CORE, most models are close to zero, with only modest passive bias.
+- In jabberwocky, most models show a clearer passive preference, except 9B_base, which reverses strongly. when lexical-semantic information is reduced, the structural/formal passive signal becomes more visible.
+- larger passive-active token-count differences are associated with higher passive log-odds. Event roles mapping engagement attenuates passive bias.
+
+```{r}
+emm_exp3_baseline <- emmeans::emmeans(
+  m_exp3_baseline,
+  ~ lexicality_condition * model_condition
+)
+
+test(
+  emm_exp3_baseline,
+  null = 0
+)
+```
+
+```{r}
+pairs(
+  emmeans::emmeans(
+    m_exp3_baseline,
+    ~ lexicality_condition | model_condition
+  ),
+  adjust = "holm"
+)
+```
+
+```{r}
+emm_exp3_baseline_df <- as.data.frame(emm_exp3_baseline)
+
+ggplot(
+  emm_exp3_baseline_df,
+  aes(
+    x = model_condition,
+    y = emmean,
+    color = lexicality_condition
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.35),
+    size = 3
+  ) +
+  geom_errorbar(
+    aes(
+      ymin = asymp.LCL,
+      ymax = asymp.UCL
+    ),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  labs(
+    title = "Experiment 3: no-prime active/passive baseline bias",
+    subtitle = "Positive values indicate passive target preference",
+    x = "Model condition",
+    y = "Estimated passive log-odds",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+```
+
+- core: most models are close to zero
+- jabberwocky: clearer passive preference than in core exept for gemma which has active preference at baseline This seems to suggest that the big passive bias in experiment 1 was tight to the scoring setup and passive surface form predictability. Exp3 makes event roles explicit. If the model is using those roles to map event participants onto syntax, then the canonical active mapping becomes more competitive.
+
+That reduces the passive advantage, especially in CORE.
+
+But in jabberwocky, lexical-semantic content is reduced, so formal structural cues become more important again. That may explain why most jabberwocky conditions show stronger passive bias than CORE.
+
+RQ2: Do active and passive primes shift event-to-syntax target scoring away from each item’s no-prime baseline? H2: Active primes should shift the model toward active targets, and passive primes should shift the model toward passive targets. However, because Exp3 requires mapping explicit thematic roles onto syntactic form, we predict that passive primes may produce a stronger positive baseline-centered shift than in Exp1B.
+
+```{r}
+exp3_shifts <- baseline_shifts %>%
+  filter(
+    experiment == "experiment_3",
+    task_type == "event_to_syntax_mapping",
+    prime_type %in% c("active", "passive")
+  ) %>%
+  filter(!is.na(shift_from_no_prime)) %>%
+  mutate(
+    prime_type = factor(prime_type, levels = c("active", "passive"))
+  ) %>%
+  droplevels()
+
+m_exp3_shift <- lmerTest::lmer(
+  shift_from_no_prime ~ prime_type * lexicality_condition * model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp3_shifts,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+
+drop1(m_exp3_shift, test = "F")
+```
+
+```{r}
+summary(m_exp3_shift)
+```
+
+- active primes active (positive shift)
+- passive primes passive (negative shift)
+- jabber strenghtens passive prime shift for some models
+- token length effect is small but significant
+
+```{r}
+emm_exp3_shift <- emmeans::emmeans(
+  m_exp3_shift,
+  ~ prime_type | lexicality_condition * model_condition
+)
+
+test(
+  emm_exp3_shift,
+  null = 0
+)
+```
+
+- clear bidirectional priming
+
+```{r}
+pairs(
+  emm_exp3_shift,
+  by = c("lexicality_condition", "model_condition"),
+  adjust = "holm"
+)
+```
+
+In every lexicality × model condition, passive primes produce a more passive-oriented shift than active primes.
+
+RQ3: Is the baseline-centered priming effect stronger in Exp3 than Exp1B?
+
+H3: If Exp1B primarily reflects surface-string predictability, but Exp3 additionally recruits event-role mapping, then priming should be more visible in Exp3, especially for passive primes. A stronger passive-prime shift in Exp3 would suggest that passive priming emerges more clearly when the model must align syntax with event role
+
+```{r}
+exp3_shifts_abs <- exp3_shifts %>%
+  mutate(
+    abs_shift_from_no_prime = abs(shift_from_no_prime)
+  )
+
+m_exp3_abs_shift <- lmerTest::lmer(
+  abs_shift_from_no_prime ~ prime_type * lexicality_condition * model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp3_shifts_abs,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+
+drop1(m_exp3_abs_shift, test = "F")
+```
+
+```{r}
+m_exp3_abs_shift2 <- lmerTest::lmer(
+  abs_shift_from_no_prime ~ prime_type * lexicality_condition * model_condition +
+    (1 | item_factor),
+  data = exp3_shifts_abs,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp3_abs_shift2, test = "F")
+```
+
+```{r}
+summary(m_exp3_abs_shift2)
+```
+
+- the relative magnitude of active vs passive shifts depends strongly on lexicality and model condition.
+- In CORE, passive primes generally produce larger absolute shifts than active primes.
+- In jabberwocky, the pattern is model-dependent
+
+the baseline passive bias is much weaker, and passive primes produce clear positive shifts. Therefore, passive primes often produce larger absolute movement, especially in CORE.
+
+```{r}
+emm_exp3_abs_shift <- emmeans::emmeans(
+  m_exp3_abs_shift,
+  ~ prime_type | lexicality_condition * model_condition
+)
+
+pairs(
+  emm_exp3_abs_shift,
+  by = c("lexicality_condition", "model_condition"),
+  adjust = "holm"
+)
+```
+
+In that task, lexical semantics may actually help. Real verbs and real nouns provide anchors for event interpretation. When you replace them with jabberwocky material, you remove semantic noise, but you also remove useful cues for event-role mapping.
+
+So the effect of jabberwocky changes by task:
+
+Task What jabberwocky does Exp1B fixed-target scoring reduces semantic noise and exposes form predictability Exp3 event-to-syntax mapping removes semantic anchors needed for role-to-syntax mapping
+
+```{r}
+emm_exp3_shift_df <- as.data.frame(
+  summary(emm_exp3_shift, infer = c(TRUE, TRUE))
+)
+
+ggplot(
+  emm_exp3_shift_df,
+  aes(
+    x = prime_type,
+    y = emmean,
+    color = lexicality_condition,
+    group = lexicality_condition
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.35),
+    size = 3
+  ) +
+  geom_errorbar(
+    aes(ymin = asymp.LCL, ymax = asymp.UCL),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  facet_wrap(~ model_condition) +
+  labs(
+    title = "Experiment 3: baseline-centered priming shifts",
+    subtitle = "Positive = shift toward passive; negative = shift toward active",
+    x = "Prime type",
+    y = "Shift from no-prime baseline",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13)
+```
+
+Passive primes produce larger absolute movement from baseline than active primes.
+
+In CORE event-to-syntax mapping, passive primes produce both the expected direction and the larger movement from baseline. This suggests that explicit role-mapping makes passive priming more visible than in Exp1B.
+
+```{r}
+exp1b_exp3_shifts <- baseline_shifts %>%
+  filter(
+    experiment %in% c("experiment_1b", "experiment_3"),
+    prime_type %in% c("active", "passive"),
+    !is.na(shift_from_no_prime)
+  ) %>%
+  mutate(
+    experiment_label = dplyr::recode(
+      experiment,
+      experiment_1b = "Exp1B: fixed-target scoring",
+      experiment_3  = "Exp3: event-to-syntax mapping"
+    ),
+    experiment_label = factor(
+      experiment_label,
+      levels = c(
+        "Exp1B: fixed-target scoring",
+        "Exp3: event-to-syntax mapping"
+      )
+    ),
+    prime_type = factor(prime_type, levels = c("active", "passive"))
+  ) %>%
+  droplevels()
+
+m_exp1b_exp3_shift <- lmerTest::lmer(
+  shift_from_no_prime ~ experiment_label * prime_type * lexicality_condition * model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp1b_exp3_shifts,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp1b_exp3_shift, test = "F")
+```
+
+```{r}
+summary(m_exp1b_exp3_shift)
+```
+
+Passive-prime shifts are more positive in Exp3 than in Exp1B.
+
+```{r}
+exp1b_exp3_shifts_simple <- baseline_shifts %>%
+  filter(
+    experiment %in% c("experiment_1b", "experiment_3"),
+    prime_type %in% c("active", "passive"),
+    !is.na(shift_from_no_prime)
+  ) %>%
+  mutate(
+    experiment_label = dplyr::recode(
+      experiment,
+      experiment_1b = "Exp1B_fixed_target",
+      experiment_3  = "Exp3_event_to_syntax"
+    ),
+    experiment_label = factor(
+      experiment_label,
+      levels = c("Exp1B_fixed_target", "Exp3_event_to_syntax")
+    ),
+    prime_type = factor(prime_type, levels = c("active", "passive"))
+  ) %>%
+  droplevels()
+
+m_exp1b_exp3_shift_simple <- lmerTest::lmer(
+  shift_from_no_prime ~ experiment_label * prime_type * lexicality_condition +
+    model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp1b_exp3_shifts_simple,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+summary(m_exp1b_exp3_shift_simple)
+drop1(m_exp1b_exp3_shift_simple, test = "F")
+```
+
+```{r}
+emm_exp1b_exp3_by_prime <- emmeans::emmeans(
+  m_exp1b_exp3_shift_simple,
+  ~ experiment_label | prime_type * lexicality_condition
+)
+
+contrast(
+  emm_exp1b_exp3_by_prime,
+  method = list("Exp3 - Exp1B" = c(-1, 1)),
+  by = c("prime_type", "lexicality_condition"),
+  adjust = "holm"
+)
+```
+
+active and passive priming shifted more in the expected direction in Exp3.
+
+```{r}
+exp1b_exp3_congruent <- exp1b_exp3_shifts_simple %>%
+  mutate(
+    congruent_shift = dplyr::case_when(
+      prime_type == "passive" ~ shift_from_no_prime,
+      prime_type == "active"  ~ -shift_from_no_prime,
+      TRUE ~ NA_real_
+    )
+  )
+
+m_exp1b_exp3_congruent <- lmerTest::lmer(
+  congruent_shift ~ experiment_label * prime_type * lexicality_condition +
+    model_condition +
+    passive_minus_active_token_count_z +
+    (1 | item_factor),
+  data = exp1b_exp3_congruent,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp1b_exp3_congruent, test = "F")
+```
+
+```{r}
+m_exp1b_exp3_congruent2 <- lmerTest::lmer(
+  congruent_shift ~ experiment_label * prime_type * lexicality_condition +
+    model_condition +
+    (1 | item_factor),
+  data = exp1b_exp3_congruent,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp1b_exp3_congruent2, test = "F")
+```
+
+```{r}
+m_exp1b_exp3_congruent2lm <- lm(
+  congruent_shift ~ experiment_label * prime_type * lexicality_condition +
+    model_condition,
+  data = exp1b_exp3_congruent,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+summary(m_exp1b_exp3_congruent2lm)
+```
+
+```{r}
+emm_exp1b_exp3_congruent2lm <- emmeans::emmeans(
+  m_exp1b_exp3_congruent2lm,
+  ~ experiment_label | prime_type * lexicality_condition
+)
+
+contrast(
+  emm_exp1b_exp3_congruent2lm,
+  method = list("Exp3 - Exp1B" = c(-1, 1)),
+  by = c("prime_type", "lexicality_condition"),
+  adjust = "holm"
+)
+```
+
+Passive congruent shifts were boosted in Exp3. Active congruent shifts were smaller in Exp3 than in Exp1B.
+
+```{r}
+emm_exp1b_exp3_shift <- emmeans::emmeans(
+  m_exp1b_exp3_shift,
+  ~ prime_type | experiment_label * lexicality_condition * model_condition
+)
+
+emm_exp1b_exp3_shift_df <- as.data.frame(
+  summary(emm_exp1b_exp3_shift, infer = c(TRUE, TRUE))
+)
+
+# Robust CI column handling
+ci_low_col <- intersect(c("lower.CL", "asymp.LCL"), names(emm_exp1b_exp3_shift_df))[1]
+ci_high_col <- intersect(c("upper.CL", "asymp.UCL"), names(emm_exp1b_exp3_shift_df))[1]
+
+emm_exp1b_exp3_shift_df <- emm_exp1b_exp3_shift_df %>%
+  mutate(
+    ci_low = .data[[ci_low_col]],
+    ci_high = .data[[ci_high_col]]
+  )
+
+ggplot(
+  emm_exp1b_exp3_shift_df,
+  aes(
+    x = prime_type,
+    y = emmean,
+    color = experiment_label,
+    group = experiment_label
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.4),
+    size = 2.7
+  ) +
+  geom_errorbar(
+    aes(ymin = ci_low, ymax = ci_high),
+    position = position_dodge(width = 0.4),
+    width = 0.15
+  ) +
+  facet_grid(lexicality_condition ~ model_condition) +
+  labs(
+    title = "Baseline-centered priming shifts: Exp1B vs Exp3",
+    subtitle = "Positive values = shift toward passive; negative values = shift toward active",
+    x = "Prime type",
+    y = "Shift from no-prime baseline",
+    color = "Experiment"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 35, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+```
+
+```{r}
+library(dplyr)
+library(ggplot2)
+library(emmeans)
+library(lmerTest)
+
+# Build congruent-shift dataframe
+exp1b_exp3_congruent <- baseline_shifts %>%
+  filter(
+    experiment %in% c("experiment_1b", "experiment_3"),
+    prime_type %in% c("active", "passive"),
+    !is.na(shift_from_no_prime)
+  ) %>%
+  mutate(
+    experiment_label = dplyr::recode(
+      experiment,
+      experiment_1b = "Exp1B fixed-target",
+      experiment_3  = "Exp3 event-to-syntax"
+    ),
+    experiment_label = factor(
+      experiment_label,
+      levels = c("Exp1B fixed-target", "Exp3 event-to-syntax")
+    ),
+    prime_type = factor(prime_type, levels = c("active", "passive")),
+
+    # Put active and passive shifts on same congruent scale
+    congruent_shift = dplyr::case_when(
+      prime_type == "active"  ~ -shift_from_no_prime,
+      prime_type == "passive" ~  shift_from_no_prime,
+      TRUE ~ NA_real_
+    )
+  ) %>%
+  droplevels()
+
+m_exp1b_exp3_congruent <- lmerTest::lmer(
+  congruent_shift ~ experiment_label * prime_type * lexicality_condition +
+    model_condition +
+    (1 | item_factor),
+  data = exp1b_exp3_congruent,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp1b_exp3_congruent, test = "F")
+```
+
+```{r}
+emm_congruent <- emmeans::emmeans(
+  m_exp1b_exp3_congruent,
+  ~ experiment_label | prime_type * lexicality_condition
+)
+
+emm_congruent <- emmeans::emmeans(
+  m_exp1b_exp3_congruent,
+  ~ experiment_label | prime_type * lexicality_condition
+)
+
+exp3_minus_exp1b <- contrast(
+  emm_congruent,
+  method = list("Exp3 - Exp1B" = c(-1, 1)),
+  by = c("prime_type", "lexicality_condition"),
+  adjust = "holm"
+)
+
+exp3_minus_exp1b_df <- as.data.frame(
+  summary(exp3_minus_exp1b, infer = c(TRUE, TRUE))
+)
+
+ci_low_col <- intersect(
+  c("lower.CL", "asymp.LCL", "LCL"),
+  names(exp3_minus_exp1b_df)
+)[1]
+
+ci_high_col <- intersect(
+  c("upper.CL", "asymp.UCL", "UCL"),
+  names(exp3_minus_exp1b_df)
+)[1]
+
+exp3_minus_exp1b_df <- exp3_minus_exp1b_df %>%
+  mutate(
+    ci_low = .data[[ci_low_col]],
+    ci_high = .data[[ci_high_col]]
+  )
+
+ggplot(
+  exp3_minus_exp1b_df,
+  aes(
+    x = prime_type,
+    y = estimate,
+    color = lexicality_condition
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.35),
+    size = 3
+  ) +
+  geom_errorbar(
+    aes(ymin = ci_low, ymax = ci_high),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  labs(
+    title = "Change in congruent priming from Exp1B to Exp3",
+    subtitle = "Positive values = stronger congruent priming in Exp3",
+    x = "Prime type",
+    y = "Exp3 − Exp1B congruent shift",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+```
+
+#### EXPL 3: IFE
+
+```{r}
+exp3_ife <- readr::read_csv(
+  file.path(input_dir, "exp3_prime_surprisal_item_level.csv"),
+  show_col_types = FALSE
+) %>%
+  canonicalize_common()
+
+names(exp3_ife)
+```
+
+```{r}
+exp3_ife_clean <- exp3_ife %>%
+  filter(
+    experiment == "experiment_3",
+    prime_condition %in% c("active", "passive"),
+    !is.na(prime_surprisal_mean),
+    !is.na(congruent_shift_from_no_prime),
+    same_prime_sentence_as_scored == TRUE
+  ) %>%
+  mutate(
+    prime_condition = factor(prime_condition, levels = c("active", "passive"))
+  ) %>%
+  group_by(model_condition, lexicality_condition, prime_condition) %>%
+  mutate(
+    prime_surprisal_z = as.numeric(scale(prime_surprisal_mean))
+  ) %>%
+  ungroup() %>%
+  droplevels()
+
+m_exp3_ife <- lmerTest::lmer(
+  congruent_shift_from_no_prime ~
+    prime_surprisal_z * prime_condition * lexicality_condition +
+    model_condition +
+    (1 | item_factor),
+  data = exp3_ife_clean,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+summary(m_exp3_ife)
+drop1(m_exp3_ife, test = "F")
+```
+
+```{r}
+ife_exp3_slopes <- emmeans::emtrends(
+  m_exp3_ife,
+  ~ prime_condition * lexicality_condition,
+  var = "prime_surprisal_z"
+)
+
+ife_exp3_slopes
+test(ife_exp3_slopes, null = 0)
+```
+
+NO IFE!!
+
+In Exp3, prime surprisal predicted congruent priming shifts, but not in a uniform IFE-compatible direction. Active primes showed a small positive surprisal effect: more surprising active primes produced stronger active-congruent shifts. Passive primes, however, showed the opposite pattern: higher passive-prime surprisal predicted weaker passive-congruent shifts, with the strongest negative slope in jabberwocky. Thus, although Exp3 showed clear passive priming, this passive priming was not explained by an inverse-frequency/error-driven account. Instead, passive priming appears stronger when passive primes are more fluently encoded, consistent with a residual structural-trace or mapping-fluency interpretation.
 
 # Experiment 4: Comprehension / Role Recovery
 
 Question: does priming or target voice affect role-recovery accuracy?
 
-Primary DV: correct answer to doer / acted-on question.
+Primary DV: correct answer to doer / acted-on question. Experiment 4 scoring is referent-head based: a response can be correct with the head noun alone or a larger NP containing that head, provided the foil head is absent. Inspect `matched_label` rates (`correct`, `foil`, `ambiguous`, `other`) alongside binary accuracy so role reversals are not hidden.
 
-```{r exp4-comprehension-glmm}
-exp4_models <- list()
+```{r}
+# Load data and sanity checks
+exp4_comprehension <- read_optional_csv(
+  path_from_param(params$exp4_comprehension_path),
+  "Experiment 4 comprehension item-level"
+) %>%
+  canonicalize_common()
 
-if (has_cols(exp4_comprehension, c("is_correct", "prime_condition", "target_voice", "question_type", "lexicality_condition", "model_size"))) {
-  exp4_df <- exp4_comprehension %>%
-    mutate(
-      is_correct = as.integer(is_correct),
-      target_voice = factor(target_voice, levels = c("active", "passive")),
-      question_type = factor(question_type, levels = c("doer", "acted_on"))
-    )
+exp4_pe <- read_optional_csv(
+  path_from_param(params$exp4_pe_path),
+  "Experiment 4 Sinclair PE item-level"
+) %>%
+  canonicalize_common()
 
-  controls <- available_controls(
-    exp4_df,
-    c("complexity_condition", "item_order_z", "item_index_z")
-  )
+exp4_comprehension %>%
+  count(
+    model_condition,
+    lexicality_condition
+  ) %>%
+  knitr::kable()
 
-  formula <- build_formula(
-    "is_correct",
-    c("prime_condition * target_voice * question_type * lexicality_condition * model_size", controls),
-    random_item_term(exp4_df)
-  )
+exp4_comprehension %>%
+  summarise(
+    n = n(),
+    missing_is_correct = sum(is.na(is_correct)),
+    mean_accuracy = mean(is_correct, na.rm = TRUE)
+  ) %>%
+  knitr::kable()
 
-  exp4_models$role_recovery_accuracy <- fit_glmer_safe(formula, exp4_df, "exp4_role_recovery_accuracy")
-  save_model_summary(exp4_models$role_recovery_accuracy, "exp4_role_recovery_accuracy")
-}
+exp4_pe %>%
+  count(
+    model_condition,
+    lexicality_condition
+  ) %>%
+  knitr::kable()
 
-exp4_table <- write_model_table(
-  purrr::imap(exp4_models, ~ tidy_model(.x, .y)),
-  "exp4_comprehension_fixed_effects.csv"
-)
-exp4_table %>% knitr::kable()
-```
-
-# ROI Analysis
-
-Question: where in the sentence does the priming effect occur?
-
-Primary DV: ROI-level PE or log-probability difference.
-
-```{r roi-model}
-roi_models <- list()
-
-roi_dv <- NULL
-if (!is.null(roi_long)) {
-  roi_dv <- first_present(roi_long, c("roi_pe", "pe", "roi_logprob_delta", "logprob_delta"))
-}
-
-if (!is.null(roi_dv) &&
-    has_cols(roi_long, c(roi_dv, "roi", "prime_condition", "target_voice", "lexicality_condition", "model_size"))) {
-  roi_df <- roi_long %>%
-    mutate(
-      roi = factor(roi),
-      target_voice = factor(target_voice, levels = c("active", "passive")),
-      roi_response = .data[[roi_dv]]
-    ) %>%
-    filter(!is.na(roi_response))
-
-  controls <- available_controls(
-    roi_df,
-    c("roi_token_count", "item_order_z", "item_index_z")
-  )
-
-  formula <- build_formula(
-    "roi_response",
-    c("roi * prime_condition * lexicality_condition * model_size", "target_voice", controls),
-    random_item_term(roi_df)
-  )
-
-  roi_models$roi_pe <- fit_lmer_safe(formula, roi_df, "roi_pe")
-  save_model_summary(roi_models$roi_pe, "roi_pe")
-}
-
-roi_table <- write_model_table(
-  purrr::imap(roi_models, ~ tidy_model(.x, .y)),
-  "roi_pe_fixed_effects.csv"
-)
-roi_table %>% knitr::kable()
-```
-
-```{r roi-percentages}
-if (!is.null(roi_percentage)) {
-  readr::write_csv(roi_percentage, file.path(output_dir, "roi_pe_percentage_summary_copy.csv"))
-  roi_percentage %>% head(30) %>% knitr::kable()
-}
-```
-
-# IFE-Style Prime Surprisal Analysis
-
-Question: do less expected primes induce larger target shifts?
-
-Primary DV: baseline-centered target shift.
-
-Primary predictor:
-
-```text
-prime_surprisal = -log P(prime structure at baseline)
-```
-
-```{r ife-model}
-ife_models <- list()
-
-ife_dv <- NULL
-if (!is.null(ife_item)) {
-  ife_dv <- first_present(ife_item, c("target_shift", "shift_from_no_prime", "passive_target_shift", "active_target_shift"))
-}
-
-if (!is.null(ife_dv) &&
-    has_cols(ife_item, c(ife_dv, "prime_surprisal", "prime_type", "lexicality_condition", "model_size"))) {
-  ife_df <- ife_item %>%
-    mutate(
-      prime_type = factor(prime_type, levels = c("active", "passive")),
-      ife_response = .data[[ife_dv]]
-    ) %>%
-    filter(!is.na(ife_response), !is.na(prime_surprisal))
-
-  controls <- available_controls(
-    ife_df,
-    c("role_order", "token_count_diff_z", "target_token_count_diff_z", "prime_token_count_diff_z", "item_order_z", "item_index_z")
-  )
-
-  formula <- build_formula(
-    "ife_response",
-    c("prime_surprisal * prime_type * lexicality_condition * model_size", controls),
-    random_item_term(ife_df)
-  )
-
-  ife_models$prime_surprisal <- fit_lmer_safe(formula, ife_df, "ife_prime_surprisal")
-  save_model_summary(ife_models$prime_surprisal, "ife_prime_surprisal")
-}
-
-ife_table <- write_model_table(
-  purrr::imap(ife_models, ~ tidy_model(.x, .y)),
-  "ife_prime_surprisal_fixed_effects.csv"
-)
-ife_table %>% knitr::kable()
-```
-
-# Sensitivity Models
-
-These should not replace the primary models. They answer: does the conclusion
-survive reasonable alternative specifications?
-
-Planned sensitivity dimensions:
-
-- total-logprob vs mean-token logprob;
-- no-prime baseline vs filler baseline;
-- with vs without token-count covariates;
-- with vs without `role_order`;
-- with vs without centered item order;
-- per-model descriptive replications.
-
-```{r sensitivity-notes}
-sensitivity_plan <- tibble::tribble(
-  ~sensitivity, ~purpose,
-  "mean-token logprob", "Reduce length sensitivity in cross-corpus comparisons.",
-  "total-logprob", "Preserve whole-candidate preference as a Sinclair-style score.",
-  "filler baseline", "Check whether results depend on no-prime baseline only.",
-  "drop token-count covariates", "Check whether tokenization controls drive the effect.",
-  "drop role_order", "Check whether deterministic prompt-role ordering drives the effect.",
-  "per-model fits", "Avoid over-aggregating across model families/tokenizers."
-)
-
-sensitivity_plan %>% knitr::kable()
-```
-
-# Model Diagnostics
-
-```{r diagnostics}
-all_models <- c(rq1_models, rq2_models, rq3_models, rq4_models, exp2_models, exp4_models, roi_models, ife_models)
-
-diagnostic_rows <- purrr::imap_dfr(
-  all_models,
-  function(model, model_id) {
-    if (is.null(model)) {
-      return(tibble::tibble())
-    }
-    tibble::tibble(
-      model_id = model_id,
-      nobs = stats::nobs(model),
-      singular = lme4::isSingular(model),
-      aic = AIC(model),
-      bic = BIC(model)
-    )
-  }
-)
-
-if (nrow(diagnostic_rows) > 0) {
-  readr::write_csv(diagnostic_rows, file.path(output_dir, "mixed_model_diagnostics.csv"))
-  diagnostic_rows %>% knitr::kable()
-}
-```
-
-# Outputs
-
-```{r output-list}
-list.files(output_dir, recursive = TRUE) %>%
-  tibble::tibble(output_file = .) %>%
+exp4_pe %>%
+  summarise(
+    n = n(),
+    missing_pe_mean = sum(is.na(pe_passive_minus_active_mean)),
+    missing_pe_sum = sum(is.na(pe_passive_minus_active_sum))
+  ) %>%
   knitr::kable()
 ```
+
+RQ1: does priming or target voice affect role-recovery accuracy? H1: Passives may be predictable as strings but harder as event-role mappings.
+
+```{r}
+# Prepare main comprehension dataframe
+exp4_comp <- exp4_comprehension %>%
+  filter(!is.na(is_correct)) %>%
+  mutate(
+    is_correct = as.integer(is_correct),
+    target_voice = factor(target_voice, levels = c("active", "passive")),
+    prime_condition = factor(
+      prime_condition,
+      levels = c("no_prime", "filler", "active", "passive")
+    ),
+    lexicality_condition = factor(lexicality_condition),
+    complexity_condition = factor(complexity_condition),
+    question_type = factor(question_type),
+    model_condition = factor(model_condition),
+    item_factor = factor(item_factor)
+  ) %>%
+  droplevels()
+
+exp4_comp %>%
+  count(
+    model_condition,
+    lexicality_condition,
+    target_voice,
+    prime_condition,
+    question_type,
+    complexity_condition
+  ) %>%
+  arrange(
+    model_condition,
+    lexicality_condition,
+    target_voice,
+    prime_condition
+  ) %>%
+  print(n = 50)
+```
+
+#### baseline comprehension/role recovery
+
+RQ: Before priming, how well do models recover event roles from active and passive targets? H: we hypothesis a divergence between passive predictability (easier; higher summed/mean probabilities) and passive thematic-role recovering (lower than active overall). For the latter our prediction is nuanced: we expect easier agent recovery in both actives (=grammatical subject) and passives (the by-phrase is a strong cue) when lexico-semantics is present; when it is not (jabberwocky) we expect the expect lower accuracy for the agent in the active and higher in the passive. Then we expect easier patient recovering in the actives but not in the passive.
+
+Question Prediction doer / agent = active should be poor, because the model lacks semantic support for identifying the agent; -\> confirmed doer / agent = passive should be better because the by-phrase explicitly marks the doer -\> confirmed acted-on / patient = active should be better than passive; -\> confirmed acted-on / patient = passive patient recovery should be poor because the patient-as-subject mapping is less semantically supported -\> confirmed
+
+```{r}
+exp4_baseline <- exp4_comp %>%
+  filter(prime_condition == "no_prime") %>%
+  droplevels()
+
+exp4_baseline %>%
+  group_by(
+    lexicality_condition,
+    target_voice,
+    question_type,
+    complexity_condition
+  ) %>%
+  summarise(
+    n = n(),
+    accuracy = mean(is_correct),
+    .groups = "drop"
+  ) %>%
+  knitr::kable(digits = 3)
+
+exp4_baseline %>%
+  group_by(
+    model_condition,
+    lexicality_condition,
+    target_voice
+  ) %>%
+  summarise(
+    n = n(),
+    accuracy = mean(is_correct),
+    .groups = "drop"
+  ) %>%
+  arrange(model_condition, lexicality_condition, target_voice) %>%
+  knitr::kable(digits = 3)
+```
+
+- CORE: Active accuracy is higher when the question asks about the doer, especially when the patient is complex. But active acted_on questions are around chance or below. Passive doer questions are relatively better. -\> accuracy depends heavily on question type and which role has to be recovered.
+- JABBER: In jabberwocky, active comprehension is very poor, especially for doer questions. Passive acted_on is also very poor but passive doer remains much higher. -\> It suggests that in jabberwocky, models are not generally recovering event roles. Instead, they may be relying on surface heuristics or question-specific cues.
+
+```{r}
+exp4_baseline_agg <- exp4_baseline %>%
+  filter(model_condition != "9B_base") %>%
+  group_by(
+    item_factor,
+    model_condition,
+    lexicality_condition,
+    target_voice,
+    question_type,
+    complexity_condition
+  ) %>%
+  summarise(
+    correct = sum(is_correct),
+    total = n(),
+    incorrect = total - correct,
+    .groups = "drop"
+  ) %>%
+  droplevels()
+
+m_exp4_baseline <- lme4::glmer(
+  cbind(correct, incorrect) ~
+    target_voice * lexicality_condition * question_type +
+    complexity_condition +
+    model_condition +
+    (1 | item_factor),
+  data = exp4_baseline_agg,
+  family = binomial,
+  control = lme4::glmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+
+drop1(m_exp4_baseline, test = "Chisq")
+```
+
+- So in CORE, stronger models do better, and active is often easier than passive, especially for base models. But 3B_instruct and 8B_instruct are fairly balanced.
+
+- In jabberwocky, passive accuracy is consistently higher than active accuracy for the non-9B models. Event-role recovery is difficult overall, and passive comprehension is not uniformly worse. Instead, passive comprehension depends strongly on question type and lexicality. In jabberwocky, passive sentences may even produce higher accuracy than active sentences because passive morphology and the by-phrase provide overt role cues.
+
+```{r}
+summary(m_exp4_baseline)
+```
+
+Estimated baseline accuracy
+
+```{r}
+emm_exp4_baseline <- emmeans::emmeans(
+  m_exp4_baseline,
+  ~ target_voice | lexicality_condition * question_type,
+  type = "response"
+)
+
+emm_exp4_baseline
+```
+
+active/passive baseline contrast
+
+```{r}
+pairs(
+  emm_exp4_baseline,
+  by = c("lexicality_condition", "question_type"),
+  adjust = "holm"
+)
+```
+
+comprehension accuracy depends jointly on:
+
+- voice of the target sentence
+- lexicality
+- which role the question asks for
+
+Baseline comprehension accuracy showed a strong target voice × lexicality × question type interaction. \* In CORE, active targets were more accurate than passive targets for acted-on questions (patient recovery), but active and passive targets did not differ for doer questions (agent recovery). \* In jabberwocky, the pattern diverged sharply: active targets were more accurate for acted-on questions (direct object), whereas passive targets were dramatically more accurate for doer questions (by-phrase cue).
+
+#### baseline-centred comprehension priming effect
+
+RQ: Does an active or passive prime move comprehension accuracy away from the no-prime baseline? H: If structural priming supports role recovery, congruent primes should improve accuracy relative to no-prime.
+
+```{r}
+# prepare baseline-centred data
+exp4_comp_analysis <- exp4_comp %>%
+  filter(
+    model_condition != "9B_base",
+    prime_condition %in% c("no_prime", "active", "passive"),
+    target_voice %in% c("active", "passive"),
+    !is.na(is_correct)
+  ) %>%
+  mutate(
+    is_correct = as.integer(is_correct),
+    prime_condition_chr = as.character(prime_condition),
+    target_voice_chr = as.character(target_voice),
+
+    prime_relation = dplyr::case_when(
+      prime_condition_chr == "no_prime" ~ "no_prime",
+      prime_condition_chr == target_voice_chr ~ "congruent",
+      prime_condition_chr != target_voice_chr ~ "incongruent",
+      TRUE ~ NA_character_
+    ),
+
+    prime_relation = factor(
+      prime_relation,
+      levels = c("no_prime", "incongruent", "congruent")
+    ),
+
+    prime_condition = factor(
+      prime_condition_chr,
+      levels = c("no_prime", "active", "passive")
+    ),
+    target_voice = factor(target_voice_chr, levels = c("active", "passive")),
+    lexicality_condition = factor(lexicality_condition),
+    question_type = factor(question_type),
+    complexity_condition = factor(
+      complexity_condition,
+      levels = c("agent_complex", "patient_complex", "both_complex")
+    ),
+    model_condition = factor(model_condition),
+    item_factor = factor(item_factor)
+  ) %>%
+  select(-prime_condition_chr, -target_voice_chr) %>%
+  filter(!is.na(prime_relation)) %>%
+  droplevels()
+
+exp4_comp_analysis %>%
+  count(prime_condition, target_voice, prime_relation) %>%
+  knitr::kable()
+```
+
+```{r}
+exp4_comp_shift_cell <- exp4_comp_analysis %>%
+  group_by(
+    model_condition,
+    lexicality_condition,
+    target_voice,
+    question_type,
+    complexity_condition,
+    prime_relation
+  ) %>%
+  summarise(
+    correct = sum(is_correct),
+    total = n(),
+    incorrect = total - correct,
+    .groups = "drop"
+  )
+
+m_exp4_comp_shift <- glm(
+  cbind(correct, incorrect) ~
+    prime_relation * target_voice * lexicality_condition * question_type +
+    complexity_condition +
+    model_condition,
+  data = exp4_comp_shift_cell,
+  family = binomial()
+)
+
+
+drop1(m_exp4_comp_shift_fast, test = "Chisq")
+
+```
+
+```{r}
+summary(m_exp4_comp_shift)
+```
+
+Estimated accuracy by prime relation
+
+```{r}
+emm_exp4_comp_shift <- emmeans::emmeans(
+  m_exp4_comp_shift,
+  ~ prime_relation | lexicality_condition * target_voice * question_type,
+  type = "response"
+)
+
+emm_exp4_comp_shift
+```
+
+Baseline-centered contrasts
+
+```{r}
+emm_exp4_comp_shift_link <- emmeans::emmeans(
+  m_exp4_comp_shift,
+  ~ prime_relation | lexicality_condition * target_voice * question_type,
+  type = "link"
+)
+
+exp4_comp_baseline_contrasts <- contrast(
+  emm_exp4_comp_shift_link,
+  method = list(
+    "incongruent - no_prime"  = c(-1, 1, 0),
+    "congruent - no_prime"    = c(-1, 0, 1),
+    "congruent - incongruent" = c(0, -1, 1)
+  ),
+  by = c("lexicality_condition", "target_voice", "question_type"),
+  adjust = "holm"
+)
+
+exp4_comp_baseline_contrasts
+```
+CORE ACTIVE: 
+
+* patient qs: no priming effect
+* agent qs: no priming effect
+
+CORE PASSIVE:
+
+* patient qs: Passive congruency helps relative to an incongruent prime, but not relative to no prime.
+* agent qs: ""
+
+JABBERWOCKY ACTIVE:
+
+* patient qs: Both primes hurt relative to baseline, but congruent hurts less.
+* agent qs: Both primes improve over baseline, and congruent improves more.
+Active congruent primes help doer recovery, but not acted-on recovery. For acted-on questions, the prime context disrupts performance, although congruent structure is less disruptive than incongruent structure.
+
+JABBERWOCKY PASSIVE:
+* patient qs: Both primes strongly improve comprehension, and congruent improves more.
+* agent qs: Both primes hurt comprehension, and congruent passive primes hurt more.
+For jabberwocky passive targets, priming helps patient/acted-on recovery but harms doer recovery. Congruent passive primes are especially harmful for doer questions.
+
+#### The role of complexity
+
+RQ: Does priming help more when the sentence has more role-mapping load?
+
+H: If complexity increases role-recovery difficulty, congruent primes may help more in complex conditions. However, priming may also reverse if structural repetition does not support the queried role.
+
+```{r}
+exp4_congruency_only_df <- exp4_comp_complex_df %>%
+  filter(contrast == "congruent - incongruent") %>%
+  mutate(
+    complexity_condition = factor(
+      complexity_condition,
+      levels = c("agent_complex", "patient_complex", "both_complex")
+    )
+  )
+
+ggplot(
+  exp4_congruency_only_df,
+  aes(
+    x = complexity_condition,
+    y = estimate,
+    color = target_voice,
+    group = target_voice
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.35),
+    size = 3
+  ) +
+  geom_errorbar(
+    aes(ymin = ci_low, ymax = ci_high),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  geom_line(position = position_dodge(width = 0.35)) +
+  facet_grid(question_type ~ lexicality_condition) +
+  labs(
+    title = "Experiment 4: comprehension priming by complexity",
+    subtitle = "Variable plotted: congruent - incongruent. Positive = matching prime improves role recovery.",
+    x = "Complexity condition",
+    y = "Comprehension priming effect, log-odds scale",
+    color = "Target voice"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    axis.text.x = element_text(angle = 30, hjust = 1),
+    panel.grid.minor = element_blank()
+  )
+```
+complexity levels do not qualitatively change the priming pattern. Priming helps or hurts depending on which role has to be recovered.
+
+```{r}
+emm_exp4_shift_simple_link <- emmeans::emmeans(
+  m_exp4_comp_shift_fast,
+  ~ prime_relation | lexicality_condition * target_voice * question_type,
+  type = "link"
+)
+
+exp4_congruent_baseline_simple <- contrast(
+  emm_exp4_shift_simple_link,
+  method = list(
+    "congruent - no_prime" = c(-1, 0, 1)
+  ),
+  by = c("lexicality_condition", "target_voice", "question_type"),
+  adjust = "holm"
+)
+
+exp4_congruent_baseline_simple_df <- as.data.frame(
+  summary(exp4_congruent_baseline_simple, infer = c(TRUE, TRUE))
+)
+
+ci_low_col <- intersect(
+  c("lower.CL", "asymp.LCL", "LCL"),
+  names(exp4_congruent_baseline_simple_df)
+)[1]
+
+ci_high_col <- intersect(
+  c("upper.CL", "asymp.UCL", "UCL"),
+  names(exp4_congruent_baseline_simple_df)
+)[1]
+
+exp4_congruent_baseline_simple_df <- exp4_congruent_baseline_simple_df %>%
+  mutate(
+    ci_low = .data[[ci_low_col]],
+    ci_high = .data[[ci_high_col]]
+  )
+
+ggplot(
+  exp4_congruent_baseline_simple_df,
+  aes(
+    x = target_voice,
+    y = estimate,
+    color = lexicality_condition
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(
+    position = position_dodge(width = 0.35),
+    size = 3.2
+  ) +
+  geom_errorbar(
+    aes(ymin = ci_low, ymax = ci_high),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  facet_wrap(~ question_type) +
+  labs(
+    title = "Experiment 4: congruent-prime shift from no-prime baseline",
+    subtitle = "Variable plotted: congruent - no_prime. Positive = matching prime improves role recovery.",
+    x = "Target voice",
+    y = "Shift in comprehension accuracy, log-odds scale",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank()
+  )
+```
+* When lexical-semantic information is available, the model may already use the event content to recover roles. The prime has less room to help, and in some cases the extra prime context slightly disrupts comprehension.
+
+* without lexical semantics, the prime matters much more. But whether it helps depends on which role is being queried.
+
+Passive structures can be predictable and strongly primed at the surface-structural level, especially without lexical semantics, but this does not guarantee robust thematic-role recovery.
+
+#### comprehension independent priming effect
+
+RQ: Does Exp4 show structural priming in probability space, independent of comprehension? H1. baseline preference: we expect higher passive preference as in experiment 1b and 3 given passives structural predictability 2. priming shift: we expect balanced priming effect
+
+```{r}
+exp4_pe_baseline <- exp4_pe %>%
+  filter(
+    model_condition != "9B_base",
+    lexicality_condition %in% c("core", "jabberwocky")
+  ) %>%
+  droplevels()
+
+m_exp4_pe_baseline <- lmerTest::lmer(
+  baseline_no_prime_passive_minus_active_logprob_mean ~
+    lexicality_condition * complexity_condition +
+    model_condition +
+    (1 | item_factor),
+  data = exp4_pe_baseline,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp4_pe_baseline, test = "F")
+
+```
+
+```{r}
+summary(m_exp4_pe_baseline)
+```
+
+Interpretation:
+
+positive = passive target scored higher than active target 
+negative = active target scored higher than passive target
+
+Estimated PE baseline:
+
+```{r}
+emm_exp4_pe_baseline <- emmeans::emmeans(
+  m_exp4_pe_baseline,
+  ~ lexicality_condition * complexity_condition
+)
+
+emm_exp4_pe_baseline
+
+test(emm_exp4_pe_baseline, null = 0)
+```
+* passive targets are consistently more predictable than active targets at the no-prime baseline.
+* Adding complexity reduces the passive scoring advantage, especially when both roles are complex, but the passive target remains more probable than the active target in every condition.
+* Jabberwocky slightly reduces the passive scoring advantage in agent_complex and patient_complex but in both_complex, core and jabberwocky are essentially identical
+So lexicality matters, but only modestly compared with the overall passive advantage.
+
+Passive targets are highly predictable in the scoring/PE measure, even though passive role comprehension is not uniformly better.
+
+the scoring system is not simply measuring “better comprehension.” It is capturing a strong surface-form / morphosyntactic predictability advantage for passives.
+
+#### PE baseline-centered target-congruent shifts
+
+```{r}
+exp4_pe_shift_long <- exp4_pe %>%
+  filter(
+    model_condition != "9B_base",
+    lexicality_condition %in% c("core", "jabberwocky")
+  ) %>%
+  select(
+    item_factor,
+    item_id,
+    item_index,
+    model_condition,
+    lexicality_condition,
+    complexity_condition,
+    active_target_shift_active_minus_no_prime_mean,
+    passive_target_shift_passive_minus_no_prime_mean
+  ) %>%
+  pivot_longer(
+    cols = c(
+      active_target_shift_active_minus_no_prime_mean,
+      passive_target_shift_passive_minus_no_prime_mean
+    ),
+    names_to = "target_voice",
+    values_to = "pe_shift_from_no_prime",
+    names_pattern = "(active|passive)_target_shift_.*_minus_no_prime_mean"
+  ) %>%
+  mutate(
+    target_voice = factor(target_voice, levels = c("active", "passive"))
+  ) %>%
+  droplevels()
+
+m_exp4_pe_shift <- lmerTest::lmer(
+  pe_shift_from_no_prime ~
+    target_voice * lexicality_condition * complexity_condition +
+    model_condition +
+    (1 | item_factor),
+  data = exp4_pe_shift_long,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp4_pe_shift, test = "F")
+```
+
+```{r}
+summary(m_exp4_pe_shift)
+```
+
+Interpretation:
+
+active row = active prime effect on active target relative to no-prime 
+passive row = passive prime effect on passive target relative to no-prime 
+positive = target-congruent scoring improved relative to baseline
+
+Estimated PE shift:
+
+```{r}
+emm_exp4_pe_shift <- emmeans::emmeans(
+  m_exp4_pe_shift,
+  ~ target_voice | lexicality_condition * complexity_condition
+)
+
+emm_exp4_pe_shift
+
+test(emm_exp4_pe_shift, null = 0)
+```
+
+```{r}
+emm_exp4_pe_shift_df <- as.data.frame(
+  summary(emm_exp4_pe_shift, infer = c(TRUE, TRUE))
+)
+
+ci_low_col <- intersect(
+  c("lower.CL", "asymp.LCL", "LCL"),
+  names(emm_exp4_pe_shift_df)
+)[1]
+
+ci_high_col <- intersect(
+  c("upper.CL", "asymp.UCL", "UCL"),
+  names(emm_exp4_pe_shift_df)
+)[1]
+
+emm_exp4_pe_shift_df <- emm_exp4_pe_shift_df %>%
+  mutate(
+    ci_low = .data[[ci_low_col]],
+    ci_high = .data[[ci_high_col]]
+  )
+
+ggplot(
+  emm_exp4_pe_shift_df,
+  aes(
+    x = complexity_condition,
+    y = emmean,
+    color = target_voice,
+    group = target_voice
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(position = position_dodge(width = 0.35), size = 3) +
+  geom_errorbar(
+    aes(ymin = ci_low, ymax = ci_high),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  geom_line(position = position_dodge(width = 0.35)) +
+  facet_wrap(~ lexicality_condition) +
+  labs(
+    title = "Experiment 4: PE shifts from no-prime baseline",
+    subtitle = "Variable plotted: pe_shift_from_no_prime. Positive = target-congruent scoring improved.",
+    x = "Complexity condition",
+    y = "PE shift from no-prime baseline",
+    color = "Target voice"
+  ) +
+  theme_minimal(base_size = 13)
+```
+* Both active and passive primes reliably increase the probability of the matching target relative to baseline.
+* Jabberwocky has much larger PE shifts than CORE.
+* real-language active targets get the larger target-congruent probability boost.
+* under semantic impoverishment, passive structural repetition gets the larger probability boost.
+
+```{r}
+pairs(
+  emm_exp4_pe_shift,
+  by = c("lexicality_condition", "complexity_condition"),
+  adjust = "holm"
+)
+```
+In real-language contexts, active mappings remain strongly supported by lexical/event semantics. In jabberwocky, passive surface cues become especially salient, so passive structural repetition gives a larger scoring boost.
+
+#### PE-comprehension dissociation
+
+RQ: Does structural probability priming predict comprehension improvement? H: If structural PE reflects genuine role-comprehension support, stronger congruent PE should predict larger comprehension benefit.
+
+If probability priming and comprehension dissociate, PE will not reliably predict comprehension improvement, or the relationship will differ by target voice, lexicality, and question type.
+
+```{r}
+exp4_prime_for_dissociation <- exp4_comp %>%
+  filter(
+    model_condition != "9B_base",
+    prime_condition %in% c("active", "passive"),
+    target_voice %in% c("active", "passive"),
+    !is.na(is_correct)
+  ) %>%
+  mutate(
+    is_correct = as.integer(is_correct),
+    prime_condition_chr = as.character(prime_condition),
+    target_voice_chr = as.character(target_voice),
+
+    prime_congruent = prime_condition_chr == target_voice_chr,
+    prime_congruent = factor(
+      prime_congruent,
+      levels = c(FALSE, TRUE),
+      labels = c("incongruent", "congruent")
+    ),
+
+    prime_condition = factor(prime_condition_chr, levels = c("active", "passive")),
+    target_voice = factor(target_voice_chr, levels = c("active", "passive"))
+  ) %>%
+  select(-prime_condition_chr, -target_voice_chr) %>%
+  droplevels()
+
+exp4_comp_congruency <- exp4_prime_for_dissociation %>%
+  group_by(
+    item_factor,
+    item_id,
+    item_index,
+    model_condition,
+    lexicality_condition,
+    target_voice,
+    question_type,
+    complexity_condition,
+    prime_congruent
+  ) %>%
+  summarise(
+    correct = sum(is_correct),
+    total = n(),
+    accuracy = correct / total,
+    .groups = "drop"
+  ) %>%
+  mutate(
+    elogit_accuracy = qlogis((correct + 0.5) / (total + 1))
+  ) %>%
+  select(
+    item_factor,
+    item_id,
+    item_index,
+    model_condition,
+    lexicality_condition,
+    target_voice,
+    question_type,
+    complexity_condition,
+    prime_congruent,
+    accuracy,
+    elogit_accuracy
+  ) %>%
+  pivot_wider(
+    names_from = prime_congruent,
+    values_from = c(accuracy, elogit_accuracy)
+  ) %>%
+  mutate(
+    comprehension_congruency_effect =
+      accuracy_congruent - accuracy_incongruent,
+
+    comprehension_congruency_logodds =
+      elogit_accuracy_congruent - elogit_accuracy_incongruent
+  )
+```
+
+Prepare target-specific congruent PE:
+
+```{r}
+exp4_pe_congruent <- exp4_pe %>%
+  filter(
+    model_condition != "9B_base",
+    lexicality_condition %in% c("core", "jabberwocky")
+  ) %>%
+  mutate(
+    item_index_key = as.character(item_index),
+    model_condition = as.character(model_condition),
+    lexicality_condition = as.character(lexicality_condition),
+    complexity_condition = as.character(complexity_condition)
+  ) %>%
+  select(
+    item_index_key,
+    model_condition,
+    lexicality_condition,
+    complexity_condition,
+    pe_active_target_logprob_mean_same_minus_other,
+    pe_passive_target_logprob_mean_same_minus_other,
+    pe_active_target_logprob_sum_same_minus_other,
+    pe_passive_target_logprob_sum_same_minus_other
+  ) %>%
+  pivot_longer(
+    cols = c(
+      pe_active_target_logprob_mean_same_minus_other,
+      pe_passive_target_logprob_mean_same_minus_other,
+      pe_active_target_logprob_sum_same_minus_other,
+      pe_passive_target_logprob_sum_same_minus_other
+    ),
+    names_to = c("target_voice", ".value"),
+    names_pattern = "pe_(active|passive)_target_logprob_(mean|sum)_same_minus_other"
+  ) %>%
+  rename(
+    congruent_pe_mean = mean,
+    congruent_pe_sum = sum
+  ) %>%
+  mutate(
+    target_voice = as.character(target_voice)
+  ) %>%
+  distinct()
+
+exp4_pe_congruent %>%
+  summarise(
+    n = n(),
+    missing_pe_mean = sum(is.na(congruent_pe_mean)),
+    missing_pe_sum = sum(is.na(congruent_pe_sum)),
+    mean_pe = mean(congruent_pe_mean, na.rm = TRUE)
+  ) %>%
+  knitr::kable()
+```
+
+Join PE and comprehension:
+
+```{r}
+exp4_comp_congruency_keyed <- exp4_comp_congruency %>%
+  mutate(
+    item_index_key = as.character(item_index),
+    model_condition = as.character(model_condition),
+    lexicality_condition = as.character(lexicality_condition),
+    complexity_condition = as.character(complexity_condition),
+    target_voice = as.character(target_voice)
+  )
+
+exp4_pe_comp_compare <- exp4_comp_congruency_keyed %>%
+  left_join(
+    exp4_pe_congruent,
+    by = c(
+      "item_index_key",
+      "model_condition",
+      "lexicality_condition",
+      "complexity_condition",
+      "target_voice"
+    )
+  )
+
+exp4_pe_comp_compare %>%
+  summarise(
+    n = n(),
+    missing_pe = sum(is.na(congruent_pe_mean)),
+    nonmissing_pe = sum(!is.na(congruent_pe_mean)),
+    mean_comp_effect = mean(comprehension_congruency_effect, na.rm = TRUE),
+    mean_pe = mean(congruent_pe_mean, na.rm = TRUE)
+  ) %>%
+  knitr::kable()
+```
+
+```{r}
+exp4_pe_comp_compare_model <- exp4_pe_comp_compare %>%
+  group_by(model_condition, lexicality_condition, target_voice) %>%
+  mutate(
+    congruent_pe_z = as.numeric(scale(congruent_pe_mean))
+  ) %>%
+  ungroup() %>%
+  filter(
+    !is.na(comprehension_congruency_logodds),
+    !is.na(congruent_pe_z)
+  ) %>%
+  droplevels()
+
+m_exp4_pe_comp <- lmerTest::lmer(
+  comprehension_congruency_logodds ~
+    congruent_pe_z * target_voice * lexicality_condition * question_type +
+    model_condition +
+    (1 | item_factor),
+  data = exp4_pe_comp_compare_model,
+  REML = FALSE,
+  control = lme4::lmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp4_pe_comp, test = "F")
+```
+Within each condition, do items/models with stronger structural PE also show stronger comprehension priming?
+
+```{r}
+summary(m_exp4_pe_comp)
+```
+
+Slopes:
+
+```{r}
+pe_comp_slopes <- emmeans::emtrends(
+  m_exp4_pe_comp,
+  ~ target_voice * lexicality_condition * question_type,
+  var = "congruent_pe_z"
+)
+
+pe_comp_slopes
+
+test(pe_comp_slopes, null = 0)
+```
+
+```{r}
+pe_comp_slopes_df <- as.data.frame(
+  summary(pe_comp_slopes, infer = c(TRUE, TRUE))
+)
+
+ci_low_col <- intersect(
+  c("lower.CL", "asymp.LCL", "LCL"),
+  names(pe_comp_slopes_df)
+)[1]
+
+ci_high_col <- intersect(
+  c("upper.CL", "asymp.UCL", "UCL"),
+  names(pe_comp_slopes_df)
+)[1]
+
+pe_comp_slopes_df <- pe_comp_slopes_df %>%
+  mutate(
+    ci_low = .data[[ci_low_col]],
+    ci_high = .data[[ci_high_col]]
+  )
+
+ggplot(
+  pe_comp_slopes_df,
+  aes(
+    x = target_voice,
+    y = congruent_pe_z.trend,
+    color = lexicality_condition
+  )
+) +
+  geom_hline(yintercept = 0, linetype = "dashed") +
+  geom_point(position = position_dodge(width = 0.35), size = 3) +
+  geom_errorbar(
+    aes(ymin = ci_low, ymax = ci_high),
+    position = position_dodge(width = 0.35),
+    width = 0.15
+  ) +
+  facet_wrap(~ question_type) +
+  labs(
+    title = "Exp4: Does structural PE predict comprehension priming?",
+    subtitle = "Variable plotted: congruent_pe_z.trend. Positive = stronger PE predicts larger comprehension benefit.",
+    x = "Target voice",
+    y = "Slope of congruent PE",
+    color = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13)
+```
+Even within the same condition, the magnitude of structural PE usually does not explain the magnitude of comprehension priming.
+
+Whereas Sinclair et al. show that LM surprisal priming and human EEG priming only partially align, our study shows why that partial alignment may arise: LM priming can reflect surface morphosyntactic expectation rather than the integrated event-role representation that human comprehension ultimately requires.
 
 # Interpretation Checklist
 
 Before writing claims:
 
-1. Baseline bias must be reported before priming effects.
-2. Priming should be reported as a shift away from no-prime baseline.
-3. Filler baseline should be shown as a robustness comparison.
-4. CORE/Jabberwocky differences should be interpreted only after token-count controls.
-5. `model_size` is the primary model-comparison variable.
-6. `model_family` should be descriptive or robustness-only.
-7. ROI results should say whether effects happen at frame onset or later passive-cue regions.
-8. IFE results should be framed as evidence for or against surprisal-linked adaptation, not assumed.
+1.  Baseline bias must be reported before priming effects.
+2.  Priming should be reported as a shift away from no-prime baseline.
+3.  Filler baseline should be shown as a robustness comparison.
+4.  CORE/Jabberwocky differences should be interpreted only after token-count controls.
+5.  `model_condition` is the primary model-comparison variable so base and instruct models remain distinct.
+6.  `model_size`, `model_family`, and instruction tuning should be descriptive or robustness-only unless explicitly tested.
+7.  ROI results should say whether effects happen at frame onset or later passive-cue regions.
+8.  IFE results should be framed as evidence for or against surprisal-linked adaptation, not assumed.

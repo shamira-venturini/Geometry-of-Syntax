@@ -16,6 +16,7 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parent.parent
 RESULTS_ROOT = REPO_ROOT / "behavioral_results"
 OUTPUT_DIR = RESULTS_ROOT / "analysis_ready"
+VERB_LIST_PATH = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
 
 
 MODEL_METADATA: Dict[str, Dict[str, str]] = {
@@ -150,6 +151,65 @@ def numeric_column(frame: pd.DataFrame, column: str) -> pd.Series:
     if column not in frame.columns:
         return pd.Series(np.nan, index=frame.index)
     return pd.to_numeric(frame[column], errors="coerce")
+
+
+def safe_logit(numerator: pd.Series, denominator: pd.Series, alpha: float = 0.5) -> pd.Series:
+    """Smoothed log-odds for count/rate diagnostics."""
+    return np.log((pd.to_numeric(numerator, errors="coerce") + alpha) / (pd.to_numeric(denominator, errors="coerce") + alpha))
+
+
+def sentence_tokens(value: object) -> List[str]:
+    text = str(value or "").strip().lower().replace('"', "")
+    return re.findall(r"[a-z]+|[.?!]", text)
+
+
+def active_verb_form(value: object) -> str:
+    tokens = sentence_tokens(value)
+    if len(tokens) >= 5:
+        return tokens[2]
+    return ""
+
+
+def content_frame_key(value: object) -> str:
+    tokens = sentence_tokens(value)
+    if len(tokens) >= 5:
+        return f"{tokens[1]}|{tokens[2]}|{tokens[4]}"
+    return ""
+
+
+def load_verb_lemma_map() -> Dict[str, str]:
+    if not VERB_LIST_PATH.exists():
+        return {}
+    frame = pd.read_csv(VERB_LIST_PATH, sep=";")
+    frame.columns = [str(column).strip().lower() for column in frame.columns]
+    form_map: Dict[str, str] = {}
+    for row in frame.to_dict(orient="records"):
+        lemma = str(row.get("v", "")).strip().lower()
+        if not lemma:
+            continue
+        for column in ("v", "past_a", "past_p", "pres_3s"):
+            form = str(row.get(column, "")).strip().lower()
+            if form:
+                form_map[form] = lemma
+    return form_map
+
+
+def add_target_frame_columns(frame: pd.DataFrame) -> pd.DataFrame:
+    out = frame.copy()
+    lemma_map = load_verb_lemma_map()
+    if "target_active" in out.columns:
+        target_active = out["target_active"]
+        if "candidate_a_text" in out.columns:
+            target_active = target_active.where(target_active.notna() & target_active.astype(str).str.strip().ne(""), out["candidate_a_text"])
+    elif "candidate_a_text" in out.columns:
+        target_active = out["candidate_a_text"]
+    else:
+        target_active = pd.Series("", index=out.index)
+    out["target_active_text_for_bias"] = target_active
+    out["target_verb_form"] = target_active.map(active_verb_form)
+    out["target_verb_lemma"] = out["target_verb_form"].map(lambda value: lemma_map.get(str(value), str(value)))
+    out["target_content_frame"] = target_active.map(content_frame_key)
+    return out
 
 
 def finalize_teacher_forced(frame: pd.DataFrame) -> pd.DataFrame:
@@ -584,7 +644,484 @@ def build_exp2_prime_surprisal() -> pd.DataFrame:
     )
     if not frames:
         return pd.DataFrame()
-    return pd.concat(frames, ignore_index=True, sort=False)
+    out = pd.concat(frames, ignore_index=True, sort=False)
+    if "prime_sentence" in out.columns:
+        out["prime_sentence_key"] = out["prime_sentence"].map(sentence_match_key)
+    return out
+
+
+def build_scored_candidate_baseline_bias(item_level: pd.DataFrame) -> pd.DataFrame:
+    """No-prime active/passive candidate preference for Exp1b and Exp3.
+
+    This is a scored-candidate predictability baseline, not a pure verb-bias
+    estimate: passive log-odds can reflect event/frame preference, constructional
+    predictability, and tokenization/length.
+    """
+    if item_level.empty or "prime_condition" not in item_level.columns:
+        return pd.DataFrame()
+    baseline = item_level.loc[item_level["prime_condition"].eq("no_prime")].copy()
+    if baseline.empty:
+        return pd.DataFrame()
+    baseline = add_target_frame_columns(baseline)
+    baseline["baseline_bias_type"] = "scored_candidate_no_prime"
+    keep = [
+        "experiment",
+        "task_type",
+        "source_model_run",
+        "model_condition",
+        "model_size",
+        "model_family",
+        "model_instruct",
+        "model_label",
+        "model_name",
+        "dataset",
+        "lexicality_condition",
+        "item_id",
+        "item_index",
+        "item_order",
+        "target_active_text_for_bias",
+        "target_passive",
+        "candidate_b_text",
+        "target_verb_form",
+        "target_verb_lemma",
+        "target_content_frame",
+        "role_order",
+        "logodds_passive",
+        "logodds_passive_sum",
+        "active_choice_logprob",
+        "passive_choice_logprob",
+        "active_choice_logprob_sum",
+        "passive_choice_logprob_sum",
+        "active_target_token_count",
+        "passive_target_token_count",
+        "passive_minus_active_token_count",
+        "token_count_diff",
+        "baseline_bias_type",
+        "source_path",
+    ]
+    keep = [column for column in keep if column in baseline.columns]
+    return baseline[keep].reset_index(drop=True)
+
+
+def build_scored_candidate_baseline_bias_summary(scored_bias: pd.DataFrame) -> pd.DataFrame:
+    if scored_bias.empty:
+        return pd.DataFrame()
+    group_cols = [
+        "experiment",
+        "task_type",
+        "source_model_run",
+        "model_condition",
+        "model_size",
+        "model_family",
+        "model_instruct",
+        "model_label",
+        "lexicality_condition",
+        "target_verb_lemma",
+    ]
+    group_cols = [column for column in group_cols if column in scored_bias.columns]
+    return (
+        scored_bias.groupby(group_cols, dropna=False)
+        .agg(
+            n_items=("logodds_passive", "size"),
+            mean_logodds_passive=("logodds_passive", "mean"),
+            sd_logodds_passive=("logodds_passive", "std"),
+            mean_logodds_passive_sum=("logodds_passive_sum", "mean"),
+            mean_token_count_diff=("token_count_diff", "mean"),
+        )
+        .reset_index()
+    )
+
+
+def build_exp2_no_prime_generation_bias(exp2_generation: pd.DataFrame) -> pd.DataFrame:
+    """No-prime production baseline for Exp2.
+
+    This estimates which structure the model chooses before priming. The main
+    log-odds contrasts passive vs active among generated outputs, with an
+    additional passive-vs-nonpassive contrast retaining `other` generations.
+    """
+    if exp2_generation.empty or "prime_condition" not in exp2_generation.columns:
+        return pd.DataFrame()
+    baseline = exp2_generation.loc[exp2_generation["prime_condition"].eq("no_prime")].copy()
+    if baseline.empty:
+        return pd.DataFrame()
+    baseline = add_target_frame_columns(baseline)
+    group_cols = [
+        "source_model_run",
+        "model_condition",
+        "model_size",
+        "model_family",
+        "model_instruct",
+        "model_label",
+        "dataset",
+        "lexicality_condition",
+        "item_id",
+        "item_index",
+        "item_order",
+        "target_active",
+        "target_passive",
+        "target_verb_form",
+        "target_verb_lemma",
+        "target_content_frame",
+        "role_order",
+    ]
+    group_cols = [column for column in group_cols if column in baseline.columns]
+    rows = (
+        baseline.groupby(group_cols, dropna=False)
+        .agg(
+            n_outputs=("generation_voice", "size"),
+            n_active_lax=("is_active_lax", "sum"),
+            n_passive_lax=("is_passive_lax", "sum"),
+            n_other_lax=("is_other_lax", "sum"),
+            n_active_strict=("is_active_strict", "sum"),
+            n_passive_strict=("is_passive_strict", "sum"),
+            n_other_strict=("is_other_strict", "sum"),
+        )
+        .reset_index()
+    )
+    rows["n_classifiable_lax"] = rows["n_active_lax"] + rows["n_passive_lax"]
+    rows["passive_rate_all_lax"] = rows["n_passive_lax"] / rows["n_outputs"].replace(0, np.nan)
+    rows["active_rate_all_lax"] = rows["n_active_lax"] / rows["n_outputs"].replace(0, np.nan)
+    rows["other_rate_lax"] = rows["n_other_lax"] / rows["n_outputs"].replace(0, np.nan)
+    rows["passive_rate_classifiable_lax"] = rows["n_passive_lax"] / rows["n_classifiable_lax"].replace(0, np.nan)
+    rows["active_rate_classifiable_lax"] = rows["n_active_lax"] / rows["n_classifiable_lax"].replace(0, np.nan)
+    rows["passive_vs_active_logodds_lax"] = safe_logit(rows["n_passive_lax"], rows["n_active_lax"])
+    rows["passive_vs_nonpassive_logodds_lax"] = safe_logit(
+        rows["n_passive_lax"],
+        rows["n_active_lax"] + rows["n_other_lax"],
+    )
+    rows["baseline_bias_type"] = "exp2_no_prime_generation"
+    rows["experiment"] = "experiment_2"
+    rows["task_type"] = "free_generation_baseline_bias"
+    return rows
+
+
+def build_exp2_no_prime_generation_bias_summary(exp2_bias: pd.DataFrame) -> pd.DataFrame:
+    if exp2_bias.empty:
+        return pd.DataFrame()
+    group_cols = [
+        "source_model_run",
+        "model_condition",
+        "model_size",
+        "model_family",
+        "model_instruct",
+        "model_label",
+        "dataset",
+        "lexicality_condition",
+        "target_verb_lemma",
+    ]
+    group_cols = [column for column in group_cols if column in exp2_bias.columns]
+    return (
+        exp2_bias.groupby(group_cols, dropna=False)
+        .agg(
+            n_items=("item_id", "size"),
+            n_outputs=("n_outputs", "sum"),
+            n_active_lax=("n_active_lax", "sum"),
+            n_passive_lax=("n_passive_lax", "sum"),
+            n_other_lax=("n_other_lax", "sum"),
+            mean_passive_rate_all_lax=("passive_rate_all_lax", "mean"),
+            mean_passive_rate_classifiable_lax=("passive_rate_classifiable_lax", "mean"),
+            mean_passive_vs_active_logodds_lax=("passive_vs_active_logodds_lax", "mean"),
+            mean_passive_vs_nonpassive_logodds_lax=("passive_vs_nonpassive_logodds_lax", "mean"),
+        )
+        .reset_index()
+    )
+
+
+def build_prime_event_structure_bias(exp2_prime_surprisal: pd.DataFrame) -> pd.DataFrame:
+    """Prime-side active/passive bias from scoring both prime answers.
+
+    This is the closest available analogue to a prime event/frame bias: for the
+    same prime event context, compare logP(passive prime) against logP(active
+    prime) before using either as the demonstrated prime.
+    """
+    if exp2_prime_surprisal.empty:
+        return pd.DataFrame()
+    required = {
+        "source_model_run",
+        "dataset",
+        "item_index",
+        "prime_condition",
+        "prime_logprob_sum",
+        "prime_logprob_mean",
+        "prime_sentence",
+    }
+    if not required.issubset(exp2_prime_surprisal.columns):
+        return pd.DataFrame()
+    prime = exp2_prime_surprisal.loc[
+        exp2_prime_surprisal["prime_condition"].isin(["active", "passive"])
+    ].copy()
+    prime["item_index_key"] = item_index_match_key(prime["item_index"])
+    prime["prime_verb_form"] = prime["prime_sentence"].map(active_verb_form)
+    lemma_map = load_verb_lemma_map()
+    prime["prime_verb_lemma"] = prime["prime_verb_form"].map(lambda value: lemma_map.get(str(value), str(value)))
+    prime["prime_content_frame"] = prime["prime_sentence"].map(content_frame_key)
+
+    index_cols = [
+        "source_model_run",
+        "model_condition",
+        "model_size",
+        "model_family",
+        "model_instruct",
+        "model_label",
+        "model_name",
+        "dataset",
+        "lexicality_condition",
+        "item_index_key",
+        "item_index",
+        "item_id",
+        "item_order",
+        "role_order",
+    ]
+    index_cols = [column for column in index_cols if column in prime.columns]
+    active = prime.loc[prime["prime_condition"].eq("active")].copy()
+    passive = prime.loc[prime["prime_condition"].eq("passive")].copy()
+    active_keep = index_cols + [
+        "prime_sentence",
+        "prime_logprob_sum",
+        "prime_logprob_mean",
+        "prime_surprisal_sum",
+        "prime_surprisal_mean",
+        "prime_token_count",
+        "prime_verb_form",
+        "prime_verb_lemma",
+        "prime_content_frame",
+    ]
+    passive_keep = index_cols + [
+        "prime_sentence",
+        "prime_logprob_sum",
+        "prime_logprob_mean",
+        "prime_surprisal_sum",
+        "prime_surprisal_mean",
+        "prime_token_count",
+        "prime_verb_form",
+        "prime_verb_lemma",
+        "prime_content_frame",
+    ]
+    active = active[[column for column in active_keep if column in active.columns]].rename(
+        columns={
+            "prime_sentence": "prime_active_sentence",
+            "prime_logprob_sum": "prime_active_logprob_sum",
+            "prime_logprob_mean": "prime_active_logprob_mean",
+            "prime_surprisal_sum": "prime_active_surprisal_sum",
+            "prime_surprisal_mean": "prime_active_surprisal_mean",
+            "prime_token_count": "prime_active_token_count",
+            "prime_verb_form": "prime_active_verb_form",
+            "prime_verb_lemma": "prime_active_verb_lemma",
+            "prime_content_frame": "prime_active_content_frame",
+        }
+    )
+    passive = passive[[column for column in passive_keep if column in passive.columns]].rename(
+        columns={
+            "prime_sentence": "prime_passive_sentence",
+            "prime_logprob_sum": "prime_passive_logprob_sum",
+            "prime_logprob_mean": "prime_passive_logprob_mean",
+            "prime_surprisal_sum": "prime_passive_surprisal_sum",
+            "prime_surprisal_mean": "prime_passive_surprisal_mean",
+            "prime_token_count": "prime_passive_token_count",
+            "prime_verb_form": "prime_passive_verb_form",
+            "prime_verb_lemma": "prime_passive_verb_lemma",
+            "prime_content_frame": "prime_passive_content_frame",
+        }
+    )
+    merged = active.merge(
+        passive,
+        on=index_cols,
+        how="inner",
+        validate="one_to_one",
+    )
+    merged["prime_logodds_passive_sum"] = (
+        merged["prime_passive_logprob_sum"] - merged["prime_active_logprob_sum"]
+    )
+    merged["prime_logodds_passive_mean"] = (
+        merged["prime_passive_logprob_mean"] - merged["prime_active_logprob_mean"]
+    )
+    merged["prime_passive_minus_active_token_count"] = (
+        merged["prime_passive_token_count"] - merged["prime_active_token_count"]
+    )
+    merged["prime_bias_type"] = "prime_event_scored_candidate_bias"
+    merged["experiment"] = "experiment_2"
+    merged["task_type"] = "prime_event_structure_bias"
+    return merged
+
+
+def sentence_match_key(value: object) -> str:
+    text = str(value or "").strip().lower()
+    text = text.replace('"', "")
+    text = re.sub(r"\s+", " ", text)
+    text = re.sub(r"\s+([.?!,;:])", r"\1", text)
+    text = re.sub(r"([.?!,;:])", r" \1 ", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
+def item_index_match_key(values: pd.Series) -> pd.Series:
+    numeric = pd.to_numeric(values, errors="coerce").astype("Int64")
+    return numeric.astype(str)
+
+
+def build_exp3_prime_surprisal(
+    item_level: pd.DataFrame,
+    exp2_prime_surprisal: pd.DataFrame,
+) -> pd.DataFrame:
+    """Attach independently scored prime surprisal to Exp3 target shifts.
+
+    Exp3 uses the same solved event-to-sentence prime format as Exp2, so the
+    prime-surprisal predictor can be reused only when the model, lexicality,
+    item index, prime condition, and normalized prime sentence all match.
+    """
+    if item_level.empty or exp2_prime_surprisal.empty:
+        return pd.DataFrame()
+
+    required_exp3 = {
+        "experiment",
+        "source_model_run",
+        "lexicality_condition",
+        "prime_condition",
+        "prime_text",
+        "item_id",
+        "item_index",
+        "logodds_passive",
+    }
+    required_prime = {
+        "source_model_run",
+        "dataset",
+        "prime_condition",
+        "item_index",
+        "prime_sentence",
+        "prime_surprisal_sum",
+        "prime_surprisal_mean",
+    }
+    if not required_exp3.issubset(item_level.columns) or not required_prime.issubset(exp2_prime_surprisal.columns):
+        return pd.DataFrame()
+
+    exp3 = item_level.loc[
+        (item_level["experiment"] == "experiment_3")
+        & item_level["prime_condition"].isin(["active", "passive"])
+    ].copy()
+    if exp3.empty:
+        return pd.DataFrame()
+
+    baseline_keys = ["source_model_run", "lexicality_condition", "item_id"]
+    baseline = item_level.loc[
+        (item_level["experiment"] == "experiment_3")
+        & (item_level["prime_condition"] == "no_prime")
+    ].copy()
+    baseline_cols = baseline_keys + ["logodds_passive", "logodds_passive_sum"]
+    baseline_cols = [column for column in baseline_cols if column in baseline.columns]
+    baseline = (
+        baseline[baseline_cols]
+        .drop_duplicates(subset=baseline_keys)
+        .rename(
+            columns={
+                "logodds_passive": "baseline_logodds_passive",
+                "logodds_passive_sum": "baseline_logodds_passive_sum",
+            }
+        )
+    )
+
+    exp3["prime_sentence_key"] = exp3["prime_text"].map(sentence_match_key)
+    exp3["prime_dataset_for_match"] = exp3["lexicality_condition"].map(
+        {"core": "core", "jabberwocky": "jabberwocky"}
+    )
+    exp3["item_index_key"] = item_index_match_key(exp3["item_index"])
+
+    prime = exp2_prime_surprisal.loc[
+        exp2_prime_surprisal["dataset"].isin(["core", "jabberwocky"])
+        & exp2_prime_surprisal["prime_condition"].isin(["active", "passive"])
+    ].copy()
+    prime["prime_sentence_key"] = prime["prime_sentence"].map(sentence_match_key)
+    prime["item_index_key"] = item_index_match_key(prime["item_index"])
+
+    prime_keep = [
+        "source_model_run",
+        "dataset",
+        "prime_condition",
+        "item_index_key",
+        "prime_sentence_key",
+        "prime_sentence",
+        "prime_context",
+        "prime_logprob_sum",
+        "prime_logprob_mean",
+        "prime_surprisal_sum",
+        "prime_surprisal_mean",
+        "prime_token_count",
+        "prime_token_ids_json",
+        "prime_tokens_json",
+        "prime_token_logprobs_json",
+        "prime_sentence_matches_column",
+        "prompt_format_used",
+        "source_path",
+    ]
+    prime_keep = [column for column in prime_keep if column in prime.columns]
+    prime = prime[prime_keep].drop_duplicates(
+        subset=[
+            "source_model_run",
+            "dataset",
+            "prime_condition",
+            "item_index_key",
+            "prime_sentence_key",
+        ]
+    )
+    prime = prime.rename(
+        columns={
+            "dataset": "prime_surprisal_dataset",
+            "prime_sentence": "scored_prime_sentence",
+            "prime_context": "scored_prime_context",
+            "prompt_format_used": "prime_surprisal_prompt_format_used",
+            "source_path": "prime_surprisal_source_path",
+        }
+    )
+
+    merge_keys_left = [
+        "source_model_run",
+        "prime_dataset_for_match",
+        "prime_condition",
+        "item_index_key",
+        "prime_sentence_key",
+    ]
+    merge_keys_right = [
+        "source_model_run",
+        "prime_surprisal_dataset",
+        "prime_condition",
+        "item_index_key",
+        "prime_sentence_key",
+    ]
+    merged = exp3.merge(
+        prime,
+        left_on=merge_keys_left,
+        right_on=merge_keys_right,
+        how="left",
+        validate="many_to_one",
+    )
+    merged = merged.merge(baseline, on=baseline_keys, how="left", validate="many_to_one")
+    merged["target_logodds_passive"] = merged["logodds_passive"]
+    merged["target_logodds_passive_sum"] = merged.get("logodds_passive_sum", np.nan)
+    merged["target_shift_from_no_prime"] = (
+        merged["target_logodds_passive"] - merged["baseline_logodds_passive"]
+    )
+    if "baseline_logodds_passive_sum" in merged.columns:
+        merged["target_shift_from_no_prime_sum"] = (
+            merged["target_logodds_passive_sum"] - merged["baseline_logodds_passive_sum"]
+        )
+    else:
+        merged["target_shift_from_no_prime_sum"] = np.nan
+    merged["congruent_shift_from_no_prime"] = np.where(
+        merged["prime_condition"].eq("passive"),
+        merged["target_shift_from_no_prime"],
+        -merged["target_shift_from_no_prime"],
+    )
+    merged["same_prime_sentence_as_scored"] = (
+        merged["prime_sentence_key"].notna()
+        & merged["scored_prime_sentence"].notna()
+        & (merged["prime_sentence_key"] == merged["scored_prime_sentence"].map(sentence_match_key))
+    )
+    merged["prime_surprisal_match_status"] = np.where(
+        merged["same_prime_sentence_as_scored"],
+        "exact_sentence_match",
+        "missing_or_mismatch",
+    )
+    merged["target_dataset"] = merged["lexicality_condition"]
+    merged["dataset"] = merged["target_dataset"]
+    return merged
 
 
 def build_exp4_comprehension() -> pd.DataFrame:
@@ -635,6 +1172,16 @@ def main() -> None:
     token_roi_summary = build_token_roi_summary(token_level)
     exp2_generation = build_exp2_generation()
     exp2_prime_surprisal = build_exp2_prime_surprisal()
+    exp3_prime_surprisal = build_exp3_prime_surprisal(item_level, exp2_prime_surprisal)
+    scored_candidate_baseline_bias = build_scored_candidate_baseline_bias(item_level)
+    scored_candidate_baseline_bias_summary = build_scored_candidate_baseline_bias_summary(
+        scored_candidate_baseline_bias
+    )
+    exp2_no_prime_generation_bias = build_exp2_no_prime_generation_bias(exp2_generation)
+    exp2_no_prime_generation_bias_summary = build_exp2_no_prime_generation_bias_summary(
+        exp2_no_prime_generation_bias
+    )
+    prime_event_structure_bias = build_prime_event_structure_bias(exp2_prime_surprisal)
     exp4_comprehension = build_exp4_comprehension()
     exp4_pe = build_exp4_pe()
 
@@ -645,6 +1192,13 @@ def main() -> None:
         "token_roi_summary.csv": token_roi_summary,
         "exp2_generation_item_level.csv": exp2_generation,
         "exp2_prime_surprisal_item_level.csv": exp2_prime_surprisal,
+        "exp3_prime_surprisal_item_level.csv": exp3_prime_surprisal,
+        "ife_prime_surprisal_item_level.csv": exp3_prime_surprisal,
+        "scored_candidate_baseline_bias_item_level.csv": scored_candidate_baseline_bias,
+        "scored_candidate_baseline_bias_by_verb.csv": scored_candidate_baseline_bias_summary,
+        "exp2_no_prime_generation_bias_item_level.csv": exp2_no_prime_generation_bias,
+        "exp2_no_prime_generation_bias_by_verb.csv": exp2_no_prime_generation_bias_summary,
+        "prime_event_structure_bias_item_level.csv": prime_event_structure_bias,
         "exp4_comprehension_item_level.csv": exp4_comprehension,
         "exp4_sinclair_pe_item_level.csv": exp4_pe,
     }
