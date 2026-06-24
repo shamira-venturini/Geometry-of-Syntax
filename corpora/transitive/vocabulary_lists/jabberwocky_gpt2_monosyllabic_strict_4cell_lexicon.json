@@ -1,8 +1,8 @@
 {
   "metadata": {
-    "description": "GPT-2-large one-token old-style monosyllabic Jabberwocky nouns for strict 4-cell corpus.",
+    "description": "Frozen GPT-2-large one-token monosyllabic Jabberwocky lexicon for the canonical strict 4-cell corpus.",
     "tokenizer_model": "gpt2-large",
-    "source_candidates_csv": "corpora/transitive/vocabulary_lists/jabberwocky_gpt2_old_style_monosyllabic_noun_candidates.csv",
+    "selection_provenance": "Curated from leading-space GPT-2-large single-token candidates and frozen for exact reproducibility.",
     "noun_count": 40
   },
   "nouns": [

@@ -10,7 +10,10 @@ from transformers import AutoModel, AutoTokenizer
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-VOCAB_PATH = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_strict_vocabulary.json"
+VOCAB_PATH = (
+    REPO_ROOT
+    / "corpora/transitive/vocabulary_lists/jabberwocky_gpt2_monosyllabic_strict_4cell_lexicon.json"
+)
 REFERENCE_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
 NOUN_REF_PATH = REFERENCE_VOCAB_DIR / "nounlist_usf_freq.csv"
 VERB_REF_PATH = REFERENCE_VOCAB_DIR / "verblist_T_usf_freq.csv"
@@ -79,8 +82,14 @@ def load_nonce_vocabulary(path: Path) -> Dict[str, List[str]]:
     elif "verb_present" in payload and "verb_past" in payload:
         verb_present = payload["verb_present"]
         verb_past = payload["verb_past"]
+    elif payload.get("verb_fragments") == ["s", "ed"]:
+        verb_present = ["s"]
+        verb_past = ["ed"]
     else:
-        raise ValueError("Vocabulary JSON must contain either verb_stems or both verb_present and verb_past.")
+        raise ValueError(
+            "Vocabulary JSON must contain verb_stems, verb_present/verb_past, "
+            "or the canonical s/ed verb_fragments."
+        )
 
     return {
         "nouns": nouns,

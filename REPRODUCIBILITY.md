@@ -72,9 +72,10 @@ to the repository root.
 ## Controlled vocabulary resources
 
 `corpora/transitive/vocabulary_lists/` contains the noun, verb, adjective, and
-nonce-candidate resources required by the corpus builders. The USF association
-edge table records directed cue-target pairs used to exclude semantic
-associations during material construction and validation.
+frozen Jabberwocky lexicon required by the corpus builders. Historical nonce
+candidate pools are archived locally rather than published as active inputs.
+The USF association edge table records directed cue-target pairs used to
+exclude semantic associations during material construction and validation.
 
 ## Generated working artifacts
 

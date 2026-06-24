@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build a GPT-2-large one-token-noun Jabberwocky strict 4-cell corpus."""
+"""Build the GPT-2-large one-token-noun Jabberwocky strict 4-cell corpus."""
 
 from __future__ import annotations
 
@@ -17,10 +17,6 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_CORE = (
     REPO_ROOT
     / "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv"
-)
-DEFAULT_NOUN_CANDIDATES = (
-    REPO_ROOT
-    / "corpora/transitive/vocabulary_lists/jabberwocky_gpt2_old_style_monosyllabic_noun_candidates.csv"
 )
 DEFAULT_OUTPUT = (
     REPO_ROOT / "corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
@@ -54,12 +50,20 @@ def parse_args() -> argparse.Namespace:
         )
     )
     parser.add_argument("--core-csv", type=Path, default=DEFAULT_CORE)
-    parser.add_argument("--noun-candidates-csv", type=Path, default=DEFAULT_NOUN_CANDIDATES)
+    parser.add_argument(
+        "--lexicon-json",
+        type=Path,
+        default=DEFAULT_LEXICON,
+        help="Frozen curated noun and verb-fragment inventory.",
+    )
     parser.add_argument("--output-csv", type=Path, default=DEFAULT_OUTPUT)
-    parser.add_argument("--lexicon-json", type=Path, default=DEFAULT_LEXICON)
     parser.add_argument("--summary-json", type=Path, default=DEFAULT_SUMMARY)
     parser.add_argument("--tokenizer-model", default="gpt2-large")
-    parser.add_argument("--target-noun-count", type=int, default=40)
+    parser.add_argument(
+        "--local-files-only",
+        action="store_true",
+        help="Use only an already-cached tokenizer instead of allowing a download.",
+    )
     return parser.parse_args()
 
 
@@ -132,21 +136,15 @@ def passive_fragment_from_template(passive_sentence: str, agent: str, patient: s
     return f"{patient_det} {patient} {aux} ed by {agent_det} {agent} ."
 
 
-def load_nouns(path: Path, target_count: int) -> list[str]:
-    frame = pd.read_csv(path).fillna("")
-    usable = frame.loc[
-        frame["recommendation"].isin(["strict_candidate", "review_candidate"]), "candidate"
-    ].astype(str)
-    nouns = []
-    seen = set()
-    for noun in usable:
-        noun = noun.strip().lower()
-        if noun and noun not in TOKENIZER_COMPATIBILITY_EXCLUDES and noun not in seen:
-            nouns.append(noun)
-            seen.add(noun)
-    if len(nouns) < target_count:
-        raise ValueError(f"Only {len(nouns)} usable nouns found, need {target_count}.")
-    return nouns[:target_count]
+def load_nouns(path: Path) -> list[str]:
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    nouns = [str(noun).strip().lower() for noun in payload.get("nouns", [])]
+    if len(nouns) < 4 or len(nouns) != len(set(nouns)) or any(not noun for noun in nouns):
+        raise ValueError("Lexicon must contain at least four unique, non-empty nouns.")
+    excluded = sorted(set(nouns) & TOKENIZER_COMPATIBILITY_EXCLUDES)
+    if excluded:
+        raise ValueError(f"Lexicon contains tokenizer-incompatible nouns: {excluded}")
+    return nouns
 
 
 def build_frame(core: pd.DataFrame, nouns: Sequence[str]) -> pd.DataFrame:
@@ -276,8 +274,11 @@ def fail_if_bad(summary: dict[str, object]) -> None:
 def main() -> None:
     args = parse_args()
     core = read_frame(args.core_csv)
-    nouns = load_nouns(args.noun_candidates_csv, args.target_noun_count)
-    tokenizer = AutoTokenizer.from_pretrained(args.tokenizer_model, local_files_only=True)
+    nouns = load_nouns(args.lexicon_json)
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.tokenizer_model,
+        local_files_only=args.local_files_only,
+    )
     jabber = build_frame(core, nouns)
 
     target_cells = Counter(cell_from_active_passive(row.ta, row.tp) for row in jabber.itertuples(index=False))
@@ -285,13 +286,12 @@ def main() -> None:
 
     summary = {
         "source_core_csv": portable_path(args.core_csv),
-        "noun_candidates_csv": portable_path(args.noun_candidates_csv),
         "output_csv": portable_path(args.output_csv),
         "lexicon_json": portable_path(args.lexicon_json),
         "summary_json": portable_path(args.summary_json),
         "tokenizer_model": args.tokenizer_model,
         "row_count": int(len(jabber)),
-        "manipulation": "GPT-2 one-token old-style nonce nouns plus standalone inflectional verb fragments s/ed",
+        "manipulation": "Curated GPT-2 one-token monosyllabic nonce nouns plus standalone inflectional verb fragments s/ed",
         "nouns": list(nouns),
         "target_cell_counts": dict(sorted(target_cells.items())),
         "prime_cell_counts": dict(sorted(prime_cells.items())),
@@ -309,29 +309,11 @@ def main() -> None:
     fail_if_bad(summary)
 
     args.output_csv.parent.mkdir(parents=True, exist_ok=True)
-    args.lexicon_json.parent.mkdir(parents=True, exist_ok=True)
     args.summary_json.parent.mkdir(parents=True, exist_ok=True)
     jabber.to_csv(args.output_csv, index=False)
-    args.lexicon_json.write_text(
-        json.dumps(
-            {
-                "metadata": {
-                    "description": "GPT-2-large one-token old-style monosyllabic Jabberwocky nouns for strict 4-cell corpus.",
-                    "tokenizer_model": args.tokenizer_model,
-                    "source_candidates_csv": portable_path(args.noun_candidates_csv),
-                    "noun_count": len(nouns),
-                },
-                "nouns": list(nouns),
-                "verb_fragments": ["s", "ed"],
-            },
-            indent=2,
-        )
-        + "\n"
-    )
     args.summary_json.write_text(json.dumps(summary, indent=2) + "\n")
 
     print(f"Saved {args.output_csv}")
-    print(f"Lexicon: {args.lexicon_json}")
     print(f"Summary: {args.summary_json}")
 
 
