@@ -31,35 +31,35 @@ config-check:
 	$(PYTHON) run_experiment.py --experiment exp4 --config configs/experiment4_default.yaml --dry-run
 
 transitive-priming:
-	$(PYTHON) scripts/2_transitive_token_priming.py --preset paper_main
+	$(PYTHON) scripts/experiments/2_transitive_token_priming.py --preset paper_main
 
 transitive-report:
-	$(PYTHON) scripts/3_summarize_transitive_priming.py
+	$(PYTHON) scripts/analysis/3_summarize_transitive_priming.py
 
 transitive-stats:
-	$(PYTHON) scripts/5_analyze_transitive_statistics.py
+	$(PYTHON) scripts/analysis/5_analyze_transitive_statistics.py
 
 processing-experiment-1b-report:
-	$(PYTHON) scripts/18_report_processing_experiment_1b.py
+	$(PYTHON) scripts/reporting/18_report_processing_experiment_1b.py
 
 emnlp-story-figures:
 	mkdir -p .cache/matplotlib
-	MPLCONFIGDIR=$(CURDIR)/.cache/matplotlib $(PYTHON) scripts/17_make_emnlp_story_figures.py
+	MPLCONFIGDIR=$(CURDIR)/.cache/matplotlib $(PYTHON) scripts/reporting/17_make_emnlp_story_figures.py
 
 jabberwocky-lexicon-audit:
-	$(PYTHON) scripts/1_audit_jabberwocky_lexicon.py
+	$(PYTHON) scripts/audits/1_audit_jabberwocky_lexicon.py
 
 jabberwocky-semantic-audit:
-	$(PYTHON) scripts/2_audit_jabberwocky_semantics.py
+	$(PYTHON) scripts/audits/2_audit_jabberwocky_semantics.py
 
 regenerate-jabberwocky-transitive:
-	$(PYTHON) scripts/42_build_gpt2_monosyllabic_jabberwocky_strict_4cell.py
+	$(PYTHON) scripts/materials/42_build_gpt2_monosyllabic_jabberwocky_strict_4cell.py
 
 export-experiment-2-prompts:
-	$(PYTHON) scripts/28_export_demo_prompt_csvs.py
+	$(PYTHON) scripts/materials/28_export_demo_prompt_csvs.py
 
 export-experiment-4-materials:
-	$(PYTHON) scripts/43_build_exp4_complex_np_role_recovery.py
-	$(PYTHON) scripts/44_export_exp4_complex_np_prompts.py
+	$(PYTHON) scripts/materials/43_build_exp4_complex_np_role_recovery.py
+	$(PYTHON) scripts/materials/44_export_exp4_complex_np_prompts.py
 
 generated-materials: export-experiment-2-prompts export-experiment-4-materials

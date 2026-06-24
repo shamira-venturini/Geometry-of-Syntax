@@ -38,7 +38,7 @@ The notebook assumes that Python-side scripts have already exported tidy, analys
 To regenerate the current analysis-ready CSVs from the available result folders:
 
 ``` bash
-python3 scripts/49_prepare_analysis_ready_data.py
+python3 scripts/analysis/49_prepare_analysis_ready_data.py
 ```
 
 Primary analysis principle:

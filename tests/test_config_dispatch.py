@@ -39,7 +39,9 @@ class ConfigDispatchTests(unittest.TestCase):
         _, plans = build_legacy_plan(experiment_id="exp1a", config=config)
         self.assertEqual(len(plans), 1)
         command = plans[0].command
-        self.assertTrue(command[1].endswith("scripts/10_run_colab_experiment_1a.py"))
+        self.assertTrue(
+            command[1].endswith("scripts/experiments/10_run_colab_experiment_1a.py")
+        )
         self.assertIn("--preset", command)
         self.assertIn("paper_main", command)
         self.assertIn("--output-root", command)

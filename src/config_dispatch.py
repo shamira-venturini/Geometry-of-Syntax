@@ -149,7 +149,10 @@ def _build_exp1a_plan(
     plans: List[CommandPlan] = []
     for model in models:
         output_dir = _model_output_dir(base, model, len(models))
-        command = [sys.executable, str(REPO_ROOT / "scripts/10_run_colab_experiment_1a.py")]
+        command = [
+            sys.executable,
+            str(REPO_ROOT / "scripts/experiments/10_run_colab_experiment_1a.py"),
+        ]
         _common_model_args(command, model, default_batch_size=32)
         command.extend(
             [
@@ -202,7 +205,10 @@ def _build_exp1b_plan(
     plans: List[CommandPlan] = []
     for model in models:
         output_dir = _model_output_dir(base, model, len(models))
-        command = [sys.executable, str(REPO_ROOT / "scripts/16_run_processing_experiment_1b.py")]
+        command = [
+            sys.executable,
+            str(REPO_ROOT / "scripts/experiments/16_run_processing_experiment_1b.py"),
+        ]
         _common_model_args(command, model, default_batch_size=128)
         command.extend(
             [
@@ -275,7 +281,7 @@ def _build_exp2_plan(
 
     export_command = [
         sys.executable,
-        str(REPO_ROOT / "scripts/28_export_demo_prompt_csvs.py"),
+        str(REPO_ROOT / "scripts/materials/28_export_demo_prompt_csvs.py"),
         "--core-prime-mode",
         mode,
         "--max-items",
@@ -304,7 +310,7 @@ def _build_exp2_plan(
             output_dir = model_root / condition
             command = [
                 sys.executable,
-                str(REPO_ROOT / "scripts/29_demo_prompt_generation_audit.py"),
+                str(REPO_ROOT / "scripts/experiments/29_demo_prompt_generation_audit.py"),
             ]
             _common_model_args(command, model, default_batch_size=2)
             command.extend(

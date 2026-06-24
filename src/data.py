@@ -542,7 +542,7 @@ def _load_semantic_edges(path: Path) -> Dict[str, Set[str]]:
         raise DatasetValidationError(
             "USF association CSV for strict validation not found. "
             f"Checked: {checked}. "
-            "Run scripts/33_build_usf_association_edges.py first."
+            "Run scripts/materials/33_build_usf_association_edges.py first."
         )
 
     frame = pd.read_csv(resolved)

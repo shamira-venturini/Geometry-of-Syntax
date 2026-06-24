@@ -30,8 +30,8 @@ generation, continuation-scoring, and role-recovery tasks.
 ```text
 configs/        Experiment configuration files
 corpora/        Controlled materials, metadata, and lexical resources
-notebooks/      Colab and exploratory notebooks
-scripts/        Corpus construction, experiment, and analysis scripts
+colab_*.ipynb   Reproducible Colab workflow
+scripts/        Grouped experiment, material, audit, analysis, and reporting tools
 src/            Shared experiment and scoring modules
 tests/          Configuration and dispatch regression tests
 ```
@@ -76,7 +76,7 @@ make generated-materials
 
 All configs use the shared top-level keys `schema_version`, `experiment`, and
 `models`. Task-specific settings remain inside `experiment`. Lower-level
-experiment components are available in `scripts/`.
+experiment components are documented in `scripts/README.md`.
 
 See [REPRODUCIBILITY.md](REPRODUCIBILITY.md) for the canonical materials,
 generated-artifact policy, provenance records, and complete run interface.
