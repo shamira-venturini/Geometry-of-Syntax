@@ -34,7 +34,6 @@ generation, continuation-scoring, and role-recovery tasks.
 ```text
 configs/        Experiment configuration files
 corpora/        Controlled experimental materials
-docs/           Methods and design documentation
 notebooks/      Colab and exploratory notebooks
 scripts/        Corpus construction, experiment, and analysis scripts
 src/            Shared experiment and scoring modules
@@ -68,9 +67,7 @@ Experiment 4:
 python run_experiment.py --experiment exp4 --config configs/exp4.yaml
 ```
 
-Additional experiment-specific runners are available in `scripts/`. See
-`docs/experiment_scoring_methods.md` for the current scoring definitions and
-`docs/corpus_control_counterbalancing.md` for corpus controls.
+Additional experiment-specific runners are available in `scripts/`.
 
 ## Reproducibility note
 
