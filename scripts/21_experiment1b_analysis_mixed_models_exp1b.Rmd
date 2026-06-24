@@ -69,7 +69,21 @@ if (length(missing_pkgs) > 0) {
 
 invisible(lapply(required_pkgs, library, character.only = TRUE))
 
-repo_root <- "/Users/shamiraventurini/PycharmProjects/Geometry-of-Syntax"
+find_repo_root <- function(start = getwd()) {
+  current <- normalizePath(start, mustWork = TRUE)
+  repeat {
+    if (file.exists(file.path(current, "run_experiment.py"))) {
+      return(current)
+    }
+    parent <- dirname(current)
+    if (identical(parent, current)) {
+      stop("Could not locate the repository root from: ", start)
+    }
+    current <- parent
+  }
+}
+
+repo_root <- find_repo_root()
 exp1_root <- file.path(repo_root, "behavioral_results", "experiment-1")
 exp1b_root <- file.path(exp1_root, "experiment-1b")
 

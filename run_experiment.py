@@ -16,6 +16,13 @@ import torch
 import yaml
 
 from src.analysis import run_analysis
+from src.config_dispatch import (
+    LEGACY_EXPERIMENTS,
+    load_config,
+    run_legacy_experiment,
+    select_model_entries,
+    validate_common_config,
+)
 from src.data import DatasetBundle, ExperimentItem, load_dataset_from_experiment_config
 from src.models import CausalLMWrapper, ModelConfig
 from src.plots import save_all_default_plots
@@ -115,13 +122,16 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
             "Run structural-priming experiments. "
+            "exp1a = token-level processing priming; "
+            "exp1b = controlled active/passive competition; "
+            "exp2 = full-sentence generation audit; "
             "exp3 = demo-prompt continuation preference scoring; "
             "exp4 = Ferreira-inspired free-answer comprehension probe."
         )
     )
     parser.add_argument(
         "--experiment",
-        choices=("exp3", "exp4"),
+        choices=("exp1a", "exp1b", "exp2", "exp3", "exp4"),
         default="exp3",
         help="Experiment to run. Default: exp3.",
     )
@@ -135,6 +145,11 @@ def parse_args() -> argparse.Namespace:
             "Optional model selector. Repeatable. Matches either config model name "
             "(e.g., 'gpt2-large') or model_condition (e.g., 'gpt2_large_plain')."
         ),
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Validate the config and print the execution plan without loading models or writing outputs.",
     )
     return parser.parse_args()
 
@@ -157,14 +172,6 @@ def _safe_candidate_join(prefix: str, candidate: str) -> str:
     if prefix.endswith((" ", "\n", "\t", '"', "'")):
         return candidate
     return " " + candidate
-
-
-def _load_yaml(path: Path) -> Dict[str, object]:
-    with path.open("r", encoding="utf-8") as handle:
-        payload = yaml.safe_load(handle)
-    if not isinstance(payload, dict):
-        raise ValueError(f"Config root must be a mapping: {path}")
-    return payload
 
 
 def _setup_logging(output_dir: Path) -> None:
@@ -482,6 +489,34 @@ def main() -> None:
     args = parse_args()
     config_path = args.config.expanduser().resolve()
 
+    if args.experiment in LEGACY_EXPERIMENTS:
+        run_legacy_experiment(
+            experiment_id=args.experiment,
+            config_path=config_path,
+            output_dir_override=args.output_dir,
+            model_filters=args.model_filter,
+            dry_run=args.dry_run,
+        )
+        return
+
+    config = load_config(config_path)
+    experiment_cfg, model_entries = validate_common_config(config, args.experiment)
+    selected_model_entries = select_model_entries(model_entries, args.model_filter)
+
+    if args.dry_run:
+        print(f"Validated configuration for {args.experiment}.")
+        print(f"Output directory: {args.output_dir or experiment_cfg.get('output_dir')}")
+        print("Models:")
+        for model in selected_model_entries:
+            print(f"- {model['name']} ({model['model_condition']})")
+        corpora = experiment_cfg.get("corpora", [])
+        if isinstance(corpora, list):
+            print("Corpora:")
+            for corpus in corpora:
+                if isinstance(corpus, dict):
+                    print(f"- {corpus.get('name')}: {corpus.get('path')}")
+        return
+
     if args.experiment == "exp4":
         from src.exp4_pipeline import run_experiment_4
 
@@ -491,12 +526,6 @@ def main() -> None:
             model_filters=args.model_filter,
         )
         return
-
-    config = _load_yaml(config_path)
-
-    experiment_cfg = config.get("experiment", {})
-    if not isinstance(experiment_cfg, dict):
-        raise ValueError("Config key 'experiment' must be a mapping.")
 
     output_dir = (
         args.output_dir.expanduser().resolve()

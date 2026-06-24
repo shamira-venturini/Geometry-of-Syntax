@@ -5,10 +5,6 @@ syntactic priming. The project compares real-word and Jabberwocky materials to
 investigate how active and passive structure is represented across processing,
 generation, continuation-scoring, and role-recovery tasks.
 
-> **Project status:** Active research. The repository is currently being
-> reorganized for reproducibility and public release. Results and documentation
-> may change while analyses are finalized.
-
 ## Research questions
 
 - Can structural priming serve as a behavioral probe of latent syntactic
@@ -37,11 +33,12 @@ corpora/        Controlled experimental materials
 notebooks/      Colab and exploratory notebooks
 scripts/        Corpus construction, experiment, and analysis scripts
 src/            Shared experiment and scoring modules
+tests/          Configuration and dispatch regression tests
 ```
 
-Large raw outputs, model artifacts, temporary files, and working archives are
-being moved out of the public repository. A curated set of summary results and
-figures will be added when the analysis structure is finalized.
+Generated materials and run outputs are written under `behavioral_results/` and
+are not source-controlled. Retired designs remain in a dated local archive and
+are not part of the reproducibility package.
 
 ## Installation
 
@@ -53,29 +50,39 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Running the current pipelines
+## Running the experiments
 
-Experiment 3:
+Every experiment uses the same entry point and YAML configuration pattern:
 
 ```bash
+python run_experiment.py --experiment exp1a --config configs/experiment1a_default.yaml
+python run_experiment.py --experiment exp1b --config configs/experiment1b_default.yaml
+python run_experiment.py --experiment exp2 --config configs/experiment2_default.yaml
 python run_experiment.py --experiment exp3 --config configs/experiment3_default.yaml
+python run_experiment.py --experiment exp4 --config configs/experiment4_default.yaml
 ```
 
-Experiment 4:
+Validate a config and inspect its execution plan without loading a model:
 
 ```bash
-python run_experiment.py --experiment exp4 --config configs/exp4.yaml
+python run_experiment.py --experiment exp2 --config configs/experiment2_default.yaml --dry-run
 ```
 
-Additional experiment-specific runners are available in `scripts/`.
+Regenerate the expanded Experiment 2 and complex-NP Experiment 4 materials:
 
-## Reproducibility note
+```bash
+make generated-materials
+```
+
+All configs use the shared top-level keys `schema_version`, `experiment`, and
+`models`. Task-specific settings remain inside `experiment`. Lower-level
+experiment components are available in `scripts/`.
+
+See [REPRODUCIBILITY.md](REPRODUCIBILITY.md) for the canonical materials,
+generated-artifact policy, provenance records, and complete run interface.
+
+## Reproducibility
 
 The experiment configurations record model and task settings, while run outputs
 include resolved configurations and software metadata where supported. Model
 weights are not stored in this repository.
-
-## Citation and license
-
-Citation information and a project license will be added before the first
-archival release.

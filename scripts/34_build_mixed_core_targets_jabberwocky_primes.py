@@ -19,6 +19,14 @@ DEFAULT_SUMMARY = (
 )
 
 
+def portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
@@ -185,10 +193,10 @@ def main() -> None:
     mixed_frame.to_csv(args.output_csv, index=False)
 
     summary = {
-        "core_csv": str(args.core_csv.resolve()),
-        "jabberwocky_csv": str(args.jabberwocky_csv.resolve()),
-        "output_csv": str(args.output_csv.resolve()),
-        "summary_json": str(args.summary_json.resolve()),
+        "core_csv": portable_path(args.core_csv),
+        "jabberwocky_csv": portable_path(args.jabberwocky_csv),
+        "output_csv": portable_path(args.output_csv),
+        "summary_json": portable_path(args.summary_json),
         "n_items": int(args.n_items),
         "seed": int(args.seed),
         "selected_prime_source_row_indices_preview": [int(index) for index in selected_prime_indices[:25]],

@@ -9,18 +9,27 @@ import requests
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_NOUNS = REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "nounlist_usf_freq.csv"
-DEFAULT_VERBS = REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
+DEFAULT_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
+DEFAULT_NOUNS = DEFAULT_VOCAB_DIR / "nounlist_usf_freq.csv"
+DEFAULT_VERBS = DEFAULT_VOCAB_DIR / "verblist_T_usf_freq.csv"
 DEFAULT_OUTPUT = REPO_ROOT / "corpora" / "transitive" / "usf_association_edges_core_vocab.csv"
 DEFAULT_SUMMARY = REPO_ROOT / "corpora" / "transitive" / "usf_association_edges_core_vocab_summary.json"
-USF_APPENDIX_A_INDEX = "http://w3.usf.edu/FreeAssociation/AppendixA/index.html"
-USF_APPENDIX_A_BASE = "http://w3.usf.edu/FreeAssociation/AppendixA/"
+USF_APPENDIX_A_INDEX = "https://w3.usf.edu/FreeAssociation/AppendixA/index.html"
+USF_APPENDIX_A_BASE = "https://w3.usf.edu/FreeAssociation/AppendixA/"
+
+
+def portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description=(
-            "Build a compact USF association edge list for the PrimeLM core vocab. "
+            "Build a compact USF association edge list for the controlled core vocabulary. "
             "Edges are kept when FSG > 0 and both cue/target are in the selected vocab."
         )
     )
@@ -164,9 +173,9 @@ def main() -> None:
         covered_words.add(target)
 
     summary = {
-        "noun_source": str(args.noun_list),
-        "verb_source": str(args.verb_list),
-        "output_csv": str(args.output),
+        "noun_source": portable_path(args.noun_list),
+        "verb_source": portable_path(args.verb_list),
+        "output_csv": portable_path(args.output),
         "max_rank": int(args.max_rank),
         "vocab": vocab_stats,
         "usf": edge_stats,

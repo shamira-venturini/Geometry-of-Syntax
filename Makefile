@@ -1,9 +1,34 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: python-version transitive-priming transitive-report transitive-stats colab-experiment-1a processing-experiment-1b processing-experiment-1b-suite processing-experiment-1b-report core-completion-choice-pilot counterbalanced-completion-choice counterbalanced-generation-choice counterbalanced-production-suite emnlp-story-figures jabberwocky-lexicon-audit jabberwocky-semantic-audit jabberwocky-tokenizer-filter regenerate-jabberwocky-transitive regenerate-jabberwocky-transitive-bpe export-experiment-2-prompts
+.PHONY: python-version test experiment-1a experiment-1b experiment-2 experiment-3 experiment-4 config-check transitive-priming transitive-report transitive-stats processing-experiment-1b-report emnlp-story-figures jabberwocky-lexicon-audit jabberwocky-semantic-audit regenerate-jabberwocky-transitive export-experiment-2-prompts export-experiment-4-materials generated-materials
 
 python-version:
 	$(PYTHON) --version
+
+test:
+	$(PYTHON) -m unittest discover -s tests -v
+
+experiment-1a:
+	$(PYTHON) run_experiment.py --experiment exp1a --config configs/experiment1a_default.yaml
+
+experiment-1b:
+	$(PYTHON) run_experiment.py --experiment exp1b --config configs/experiment1b_default.yaml
+
+experiment-2:
+	$(PYTHON) run_experiment.py --experiment exp2 --config configs/experiment2_default.yaml
+
+experiment-3:
+	$(PYTHON) run_experiment.py --experiment exp3 --config configs/experiment3_default.yaml
+
+experiment-4:
+	$(PYTHON) run_experiment.py --experiment exp4 --config configs/experiment4_default.yaml
+
+config-check:
+	$(PYTHON) run_experiment.py --experiment exp1a --config configs/experiment1a_default.yaml --dry-run
+	$(PYTHON) run_experiment.py --experiment exp1b --config configs/experiment1b_default.yaml --dry-run
+	$(PYTHON) run_experiment.py --experiment exp2 --config configs/experiment2_default.yaml --dry-run
+	$(PYTHON) run_experiment.py --experiment exp3 --config configs/experiment3_default.yaml --dry-run
+	$(PYTHON) run_experiment.py --experiment exp4 --config configs/experiment4_default.yaml --dry-run
 
 transitive-priming:
 	$(PYTHON) scripts/2_transitive_token_priming.py --preset paper_main
@@ -14,29 +39,8 @@ transitive-report:
 transitive-stats:
 	$(PYTHON) scripts/5_analyze_transitive_statistics.py
 
-colab-experiment-1a:
-	$(PYTHON) scripts/10_run_colab_experiment_1a.py
-
-processing-experiment-1b:
-	$(PYTHON) scripts/15_counterbalanced_processing_experiment_1b.py
-
-processing-experiment-1b-suite:
-	$(PYTHON) scripts/16_run_processing_experiment_1b.py
-
 processing-experiment-1b-report:
 	$(PYTHON) scripts/18_report_processing_experiment_1b.py
-
-core-completion-choice-pilot:
-	@echo "Retired: completion-choice pilot path. Use 'make colab-experiment-1a' for Experiment 1a."
-
-counterbalanced-completion-choice:
-	@echo "Retired: Experiment 2a completion-choice."
-
-counterbalanced-generation-choice:
-	@echo "Retired: Experiment 2b generation-choice."
-
-counterbalanced-production-suite:
-	@echo "Retired: 2a/2b production suite wrapper."
 
 emnlp-story-figures:
 	mkdir -p .cache/matplotlib
@@ -48,14 +52,14 @@ jabberwocky-lexicon-audit:
 jabberwocky-semantic-audit:
 	$(PYTHON) scripts/2_audit_jabberwocky_semantics.py
 
-jabberwocky-tokenizer-filter:
-	@echo "Retired: old BPE-filtered Jabberwocky vocabulary path. Use 'make regenerate-jabberwocky-transitive'."
-
 regenerate-jabberwocky-transitive:
 	$(PYTHON) scripts/42_build_gpt2_monosyllabic_jabberwocky_strict_4cell.py
 
-regenerate-jabberwocky-transitive-bpe:
-	@echo "Retired: old BPE-filtered Jabberwocky corpus path. Use 'make regenerate-jabberwocky-transitive'."
-
 export-experiment-2-prompts:
 	$(PYTHON) scripts/28_export_demo_prompt_csvs.py
+
+export-experiment-4-materials:
+	$(PYTHON) scripts/43_build_exp4_complex_np_role_recovery.py
+	$(PYTHON) scripts/44_export_exp4_complex_np_prompts.py
+
+generated-materials: export-experiment-2-prompts export-experiment-4-materials

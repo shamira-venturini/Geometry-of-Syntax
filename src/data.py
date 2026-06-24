@@ -10,7 +10,6 @@ import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BUNDLED_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
-LEGACY_VOCAB_DIR = REPO_ROOT / "PrimeLM" / "vocabulary_lists"
 DEFAULT_VERB_LIST_PATH = BUNDLED_VOCAB_DIR / "verblist_T_usf_freq.csv"
 DEFAULT_ASSOCIATION_CSV_PATH = (
     REPO_ROOT / "corpora" / "transitive" / "usf_association_edges_core_vocab.csv"
@@ -478,7 +477,6 @@ def _load_verb_maps(path: Path) -> Tuple[Dict[str, str], Dict[str, str]]:
     fallback_candidates = [
         requested,
         (BUNDLED_VOCAB_DIR / "verblist_T_usf_freq.csv").resolve(),
-        (LEGACY_VOCAB_DIR / "verblist_T_usf_freq.csv").resolve(),
     ]
     seen: Set[Path] = set()
     candidate_paths: List[Path] = []
@@ -833,7 +831,9 @@ def load_dataset_from_experiment_config(experiment_cfg: Mapping[str, object]) ->
             f"Unknown experiment.prime_conditions values: {unknown}."
         )
 
-    max_items_default_raw = experiment_cfg.get("max_items_per_corpus")
+    max_items_default_raw = experiment_cfg.get(
+        "max_items", experiment_cfg.get("max_items_per_corpus")
+    )
     max_items_default: Optional[int] = int(max_items_default_raw) if max_items_default_raw is not None else None
     filler_mode = str(experiment_cfg.get("filler_mode", "pool")).strip().lower()
     filler_offset = int(experiment_cfg.get("filler_offset", 137))

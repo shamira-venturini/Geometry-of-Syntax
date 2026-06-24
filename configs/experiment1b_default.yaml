@@ -1,0 +1,25 @@
+schema_version: 1
+
+experiment:
+  id: exp1b
+  seed: 13
+  output_dir: behavioral_results/experiment-1/experiment-1b/default_run
+  max_items: 2048
+  conditions:
+    - core
+    - jabberwocky
+  core_prime_mode: lexically_controlled
+  prime_conditions:
+    - active
+    - passive
+    - no_prime
+    - filler
+
+models:
+  - name: gpt2-large
+    model_condition: gpt2_large
+    device: cuda
+    torch_dtype: auto
+    batch_size: 8
+    local_files_only: false
+

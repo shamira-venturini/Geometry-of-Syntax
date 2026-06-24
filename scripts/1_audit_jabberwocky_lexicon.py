@@ -37,11 +37,12 @@ def load_dictionary(path: Path) -> Set[str]:
 
 def load_primelm_vocabulary() -> Set[str]:
     vocab: Set[str] = set()
+    vocab_dir = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
     vocab_files = [
-        REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "nounlist_usf_freq.csv",
-        REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "verblist_T_usf_freq.csv",
-        REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "verblist_DT_usf_freq.csv",
-        REPO_ROOT / "PrimeLM" / "vocabulary_lists" / "adjective_voc_list_USF.csv",
+        vocab_dir / "nounlist_usf_freq.csv",
+        vocab_dir / "verblist_T_usf_freq.csv",
+        vocab_dir / "verblist_DT_usf_freq.csv",
+        vocab_dir / "adjective_voc_list_USF.csv",
     ]
     for path in vocab_files:
         if not path.exists():

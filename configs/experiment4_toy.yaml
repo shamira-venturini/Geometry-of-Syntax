@@ -1,4 +1,7 @@
+schema_version: 1
+
 experiment:
+  id: exp4
   dataset_mode: corpora
   seed: 13
   output_dir: behavioral_results/experiment-4/toy_run

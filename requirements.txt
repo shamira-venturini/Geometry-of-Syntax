@@ -7,3 +7,6 @@ transformers
 tqdm
 matplotlib
 PyYAML
+python-pptx
+requests
+wordfreq

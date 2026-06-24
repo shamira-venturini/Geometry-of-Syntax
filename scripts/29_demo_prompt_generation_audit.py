@@ -17,7 +17,9 @@ from production_priming_common import (
 
 
 DEFAULT_PROMPT_CSV = (
-    REPO_ROOT / "corpora" / "transitive" / "experiment_2_core_demo_prompts_lexically_controlled.csv"
+    REPO_ROOT
+    / "behavioral_results/generated_materials/experiment-2/prompts"
+    / "experiment_2_core_demo_prompts_lexically_controlled.csv"
 )
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "_smoke_demo_prompt_generation_audit"
 PROMPT_COLUMN_TO_CONDITION = {

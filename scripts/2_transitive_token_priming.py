@@ -17,23 +17,8 @@ LOCAL_PAPER_INPUTS = {
     "CORE": REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv",
     "jabberwocky": REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv",
 }
-PRIMELM_ROOT = REPO_ROOT / "PrimeLM" / "corpora"
 PRESETS = {
     "paper_main": LOCAL_PAPER_INPUTS,
-    "primelm_core": {
-        "CORE": PRIMELM_ROOT / "CORE_transitive_15000sampled_10-1.csv",
-        "ANOMALOUS": PRIMELM_ROOT / "ANOMALOUS_chomsky_transitive_15000sampled_10-1.csv",
-    },
-    "primelm_recency": {
-        "RECENCY_5": PRIMELM_ROOT / "RECENCY_5_transitive_15000sampled_10-1.csv",
-    },
-    "primelm_cumulative": {
-        "CUMULATIVE_5": PRIMELM_ROOT / "CUMULATIVE_5_transitive_15000sampled_10-1.csv",
-    },
-    "primelm_semsim": {
-        "SEMSIM_Vonly": PRIMELM_ROOT / "SEMSIM_Vonly_transitive_15000sampled_10-1.csv",
-        "SEMSIM_Nall": PRIMELM_ROOT / "SEMSIM_Nall_transitive_15000sampled_10-1.csv",
-    },
 }
 
 

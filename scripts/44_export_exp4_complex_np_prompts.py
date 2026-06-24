@@ -11,12 +11,21 @@ import pandas as pd
 
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
-DEFAULT_CORE = REPO_ROOT / "corpora/transitive/experiment_4_complex_np_core_role_recovery.csv"
-DEFAULT_JABBER = REPO_ROOT / "corpora/transitive/experiment_4_complex_np_jabberwocky_role_recovery.csv"
-DEFAULT_CORE_OUTPUT = REPO_ROOT / "corpora/transitive/experiment_4_complex_np_core_role_recovery_prompts.csv"
-DEFAULT_JABBER_OUTPUT = REPO_ROOT / "corpora/transitive/experiment_4_complex_np_jabberwocky_role_recovery_prompts.csv"
+GENERATED_DIR = REPO_ROOT / "behavioral_results/generated_materials/experiment-4/complex_np"
+DEFAULT_CORE = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery.csv"
+DEFAULT_JABBER = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery.csv"
+DEFAULT_CORE_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery_prompts.csv"
+DEFAULT_JABBER_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery_prompts.csv"
 DEFAULT_SUMMARY = REPO_ROOT / "corpora/transitive/experiment_4_complex_np_role_recovery_prompts_summary.json"
 VERB_LIST_PATH = REPO_ROOT / "corpora/transitive/vocabulary_lists/verblist_T_usf_freq.csv"
+
+
+def portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
 
 PRIME_CONDITIONS = ("active", "passive", "filler", "no_prime")
 TARGET_VOICES = ("active", "passive")
@@ -378,8 +387,8 @@ def main() -> None:
             "Bare concatenated Exp4 prompts. Format: optional prime sentence, blank line, "
             "target sentence, blank line, role question, newline, answer prefix."
         ),
-        "core_output": str(args.core_output.relative_to(REPO_ROOT)),
-        "jabberwocky_output": str(args.jabber_output.relative_to(REPO_ROOT)),
+        "core_output": portable_path(args.core_output),
+        "jabberwocky_output": portable_path(args.jabber_output),
         "questions": {
             "core_doer": "In the [target nominalized-verb] event, who was the doer?",
             "core_acted_on": "In the [target nominalized-verb] event, who was the one acted on?",

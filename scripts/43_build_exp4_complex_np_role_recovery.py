@@ -19,13 +19,22 @@ DEFAULT_NOUNS = REPO_ROOT / "corpora/transitive/vocabulary_lists/nounlist_usf_fr
 DEFAULT_JABBER_LEXICON = (
     REPO_ROOT / "corpora/transitive/vocabulary_lists/jabberwocky_gpt2_monosyllabic_strict_4cell_lexicon.json"
 )
-DEFAULT_CORE_OUTPUT = REPO_ROOT / "corpora/transitive/experiment_4_complex_np_core_role_recovery.csv"
-DEFAULT_JABBER_OUTPUT = REPO_ROOT / "corpora/transitive/experiment_4_complex_np_jabberwocky_role_recovery.csv"
+GENERATED_DIR = REPO_ROOT / "behavioral_results/generated_materials/experiment-4/complex_np"
+DEFAULT_CORE_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery.csv"
+DEFAULT_JABBER_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery.csv"
 DEFAULT_SUMMARY = REPO_ROOT / "corpora/transitive/experiment_4_complex_np_role_recovery_summary.json"
 
 TEXT_COLUMNS = ("pa", "pp", "ta", "tp")
 COMPLEXITY_CONDITIONS = ("agent_complex", "patient_complex", "both_complex")
 CONSONANTS = set("bcdfghjklmnpqrstvwxyz")
+
+
+def portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
 
 # Keep preposition meanings far apart inside both-complex targets. Prime sentences
 # are simple active/passive 1b sentences, so they contain no PP preposition except
@@ -465,8 +474,8 @@ def main() -> None:
             "patient_complex, and both_complex conditions. CORE is built first and "
             "Jabberwocky mirrors the same row/complexity/preposition plan."
         ),
-        "core_source": str(args.core_csv.relative_to(REPO_ROOT)),
-        "jabberwocky_source": str(args.jabber_csv.relative_to(REPO_ROOT)),
+        "core_source": portable_path(args.core_csv),
+        "jabberwocky_source": portable_path(args.jabber_csv),
         "constraints": [
             "Prime sentences are the existing strict 1b simple pa/pp sentences.",
             "Targets are complex variants of the existing strict ta/tp target sentences.",
@@ -479,8 +488,8 @@ def main() -> None:
             "Passive prime and passive target unavoidably share the English by-marker; this is audited separately.",
         ],
         "outputs": {
-            "core": str(args.core_output.relative_to(REPO_ROOT)),
-            "jabberwocky": str(args.jabber_output.relative_to(REPO_ROOT)),
+            "core": portable_path(args.core_output),
+            "jabberwocky": portable_path(args.jabber_output),
         },
         "core_audit": audit(core),
         "jabberwocky_audit": audit(jabber),

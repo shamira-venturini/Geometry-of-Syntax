@@ -33,6 +33,14 @@ DEFAULT_SUMMARY = (
     REPO_ROOT / "corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell_summary.json"
 )
 
+
+def portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
+
 TEXT_COLUMNS = ("pa", "pp", "ta", "tp")
 CONSONANTS = set("bcdfghjklmnpqrstvwxyz")
 TOKENIZER_COMPATIBILITY_EXCLUDES = {"rul"}
@@ -276,11 +284,11 @@ def main() -> None:
     prime_cells = Counter(cell_from_active_passive(row.pa, row.pp) for row in jabber.itertuples(index=False))
 
     summary = {
-        "source_core_csv": str(args.core_csv.resolve()),
-        "noun_candidates_csv": str(args.noun_candidates_csv.resolve()),
-        "output_csv": str(args.output_csv.resolve()),
-        "lexicon_json": str(args.lexicon_json.resolve()),
-        "summary_json": str(args.summary_json.resolve()),
+        "source_core_csv": portable_path(args.core_csv),
+        "noun_candidates_csv": portable_path(args.noun_candidates_csv),
+        "output_csv": portable_path(args.output_csv),
+        "lexicon_json": portable_path(args.lexicon_json),
+        "summary_json": portable_path(args.summary_json),
         "tokenizer_model": args.tokenizer_model,
         "row_count": int(len(jabber)),
         "manipulation": "GPT-2 one-token old-style nonce nouns plus standalone inflectional verb fragments s/ed",
@@ -310,7 +318,7 @@ def main() -> None:
                 "metadata": {
                     "description": "GPT-2-large one-token old-style monosyllabic Jabberwocky nouns for strict 4-cell corpus.",
                     "tokenizer_model": args.tokenizer_model,
-                    "source_candidates_csv": str(args.noun_candidates_csv.relative_to(REPO_ROOT)),
+                    "source_candidates_csv": portable_path(args.noun_candidates_csv),
                     "noun_count": len(nouns),
                 },
                 "nouns": list(nouns),

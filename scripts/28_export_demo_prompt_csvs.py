@@ -24,6 +24,14 @@ CORE_TARGETS_JABBERWOCKY_PRIMES = (
 DEMO_MODULE_PATH = REPO_ROOT / "scripts" / "24_demo_prompt_completion_experiment.py"
 
 
+def portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
+
+
 def load_demo_module():
     spec = importlib.util.spec_from_file_location("demo_prompt_completion_experiment", DEMO_MODULE_PATH)
     if spec is None or spec.loader is None:
@@ -81,7 +89,10 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--output-dir",
         type=Path,
-        default=REPO_ROOT / "corpora" / "transitive",
+        default=(
+            REPO_ROOT
+            / "behavioral_results/generated_materials/experiment-2/prompts"
+        ),
     )
     return parser.parse_args()
 
@@ -331,11 +342,11 @@ def main() -> None:
         "target_verb_cue": args.target_verb_cue,
         "max_items": int(args.max_items),
         "seed": int(args.seed),
-        "core_prompt_csv": str(core_path),
-        "jabberwocky_prompt_csv": str(jabber_path),
-        "core_targets_jabberwocky_primes_prompt_csv": str(mixed_path),
-        "jabberwocky_prime_pool_csv": str(JABBERWOCKY_PRIME_POOL),
-        "core_targets_jabberwocky_primes_csv": str(CORE_TARGETS_JABBERWOCKY_PRIMES),
+        "core_prompt_csv": portable_path(core_path),
+        "jabberwocky_prompt_csv": portable_path(jabber_path),
+        "core_targets_jabberwocky_primes_prompt_csv": portable_path(mixed_path),
+        "jabberwocky_prime_pool_csv": portable_path(JABBERWOCKY_PRIME_POOL),
+        "core_targets_jabberwocky_primes_csv": portable_path(CORE_TARGETS_JABBERWOCKY_PRIMES),
         "core_alignment_mode": core_alignment_mode,
         "jabberwocky_alignment_mode": jabber_alignment_mode,
         "core_targets_jabberwocky_primes_alignment_mode": mixed_alignment_mode,

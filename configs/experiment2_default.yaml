@@ -1,0 +1,32 @@
+schema_version: 1
+
+experiment:
+  id: exp2
+  seed: 13
+  output_dir: behavioral_results/experiment-2/default_run
+  prompt_output_dir: behavioral_results/generated_materials/experiment-2/prompts
+  max_items: 2048
+  conditions:
+    - core
+    - jabberwocky
+    - core_targets_jabberwocky_primes
+  core_prime_mode: lexically_controlled
+  event_style: involving_event
+  role_style: did_to
+  quote_style: mary_answered
+  role_order: counterbalanced
+  target_verb_cue: auto_real_targets
+  prompt_columns:
+    - prompt_active
+    - prompt_passive
+    - prompt_no_prime
+    - prompt_filler
+  max_new_tokens: 24
+
+models:
+  - name: gpt2-large
+    model_condition: gpt2_large
+    device: cuda
+    torch_dtype: auto
+    batch_size: 4
+    local_files_only: false

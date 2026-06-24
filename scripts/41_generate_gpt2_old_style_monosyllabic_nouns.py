@@ -24,6 +24,16 @@ DEFAULT_OUTPUT_JSON = (
 )
 
 MODEL_NAME = "gpt2-large"
+
+
+def portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
+
+
 FUNCTION_OR_MORPHEME_LIKE = {
     "a",
     "an",
@@ -86,13 +96,14 @@ def load_dictionary() -> set[str]:
     return {line.strip().lower() for line in path.open() if line.strip().isalpha()}
 
 
-def load_primelm_vocabulary() -> set[str]:
+def load_reference_vocabulary() -> set[str]:
     vocab = set()
+    vocabulary_dir = REPO_ROOT / "corpora/transitive/vocabulary_lists"
     for path in [
-        REPO_ROOT / "PrimeLM/vocabulary_lists/nounlist_usf_freq.csv",
-        REPO_ROOT / "PrimeLM/vocabulary_lists/verblist_T_usf_freq.csv",
-        REPO_ROOT / "PrimeLM/vocabulary_lists/verblist_DT_usf_freq.csv",
-        REPO_ROOT / "PrimeLM/vocabulary_lists/adjective_voc_list_USF.csv",
+        vocabulary_dir / "nounlist_usf_freq.csv",
+        vocabulary_dir / "verblist_T_usf_freq.csv",
+        vocabulary_dir / "verblist_DT_usf_freq.csv",
+        vocabulary_dir / "adjective_voc_list_USF.csv",
     ]:
         if not path.exists():
             continue
@@ -183,8 +194,8 @@ def main() -> None:
     old_vocab = json.loads(args.old_vocab_json.read_text())
     tokenizer = AutoTokenizer.from_pretrained(args.model_name, local_files_only=True)
     english_words = load_dictionary()
-    primelm_vocab = load_primelm_vocabulary()
-    lexicon = english_words | primelm_vocab
+    reference_vocab = load_reference_vocabulary()
+    lexicon = english_words | reference_vocab
 
     rows = []
     for candidate, source_template in candidate_stream(old_vocab, rng):
@@ -204,7 +215,7 @@ def main() -> None:
             risk_flags.append("function_or_morpheme_like")
         if candidate in english_words:
             risk_flags.append("exact_dictionary_word")
-        if candidate in primelm_vocab:
+        if candidate in reference_vocab:
             risk_flags.append("exact_primelm_word")
         if candidate.endswith(("ed", "ing", "s")):
             risk_flags.append("suffix_like")
@@ -258,8 +269,8 @@ def main() -> None:
 
     summary = {
         "model": args.model_name,
-        "source_vocab": str(args.old_vocab_json.relative_to(REPO_ROOT)),
-        "output_csv": str(args.output_csv.relative_to(REPO_ROOT)),
+        "source_vocab": portable_path(args.old_vocab_json),
+        "output_csv": portable_path(args.output_csv),
         "n_generated_candidates": int(len(frame)),
         "n_strict_candidates": int(frame["recommendation"].eq("strict_candidate").sum()),
         "n_review_candidates": int(frame["recommendation"].eq("review_candidate").sum()),
