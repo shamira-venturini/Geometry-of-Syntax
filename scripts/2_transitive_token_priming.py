@@ -15,7 +15,10 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "experiment-1" / "experiment-1a" / "transitive_token_profiles"
 LOCAL_PAPER_INPUTS = {
     "CORE": REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv",
-    "jabberwocky": REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv",
+    "jabberwocky": (
+        REPO_ROOT
+        / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+    ),
 }
 PRESETS = {
     "paper_main": LOCAL_PAPER_INPUTS,

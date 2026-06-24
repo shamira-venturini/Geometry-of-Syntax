@@ -11,7 +11,10 @@ RUNNER_SCRIPT = REPO_ROOT / "scripts" / "15_counterbalanced_processing_experimen
 CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED = (
     REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 )
-JABBERWOCKY_2048 = REPO_ROOT / "corpora" / "transitive" / "jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
+JABBERWOCKY_2048 = (
+    REPO_ROOT
+    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+)
 
 
 def parse_args() -> argparse.Namespace:

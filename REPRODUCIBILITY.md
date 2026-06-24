@@ -60,22 +60,23 @@ The canonical corpora are:
 
 - `corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv`:
   controlled real-word materials;
-- `corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv`:
+- `corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv`:
   Jabberwocky materials built on the same row structure;
-- `corpora/transitive/CORE_transitive_core_targets_jabberwocky_primes_2048.csv`:
+- `corpora/transitive/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv`:
   Jabberwocky primes paired with real-word targets.
 
-The corresponding `*_summary.json` files record balance, lexical-overlap,
-tokenization, and construction audits. Paths in tracked metadata are relative
-to the repository root.
+The corresponding files under `corpora/transitive/metadata/` record balance,
+lexical-overlap, tokenization, and construction audits. Paths in tracked
+metadata are relative to the repository root.
 
 ## Controlled vocabulary resources
 
 `corpora/transitive/vocabulary_lists/` contains the noun, verb, adjective, and
 frozen Jabberwocky lexicon required by the corpus builders. Historical nonce
 candidate pools are archived locally rather than published as active inputs.
-The USF association edge table records directed cue-target pairs used to
-exclude semantic associations during material construction and validation.
+`corpora/transitive/resources/` contains the USF association edge table. It
+records directed cue-target pairs used to exclude semantic associations during
+material construction and validation.
 
 ## Generated working artifacts
 

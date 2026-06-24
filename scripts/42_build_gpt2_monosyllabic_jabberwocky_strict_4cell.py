@@ -19,14 +19,16 @@ DEFAULT_CORE = (
     / "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv"
 )
 DEFAULT_OUTPUT = (
-    REPO_ROOT / "corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv"
+    REPO_ROOT
+    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
 DEFAULT_LEXICON = (
     REPO_ROOT
-    / "corpora/transitive/vocabulary_lists/jabberwocky_gpt2_monosyllabic_strict_4cell_lexicon.json"
+    / "corpora/transitive/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
 )
 DEFAULT_SUMMARY = (
-    REPO_ROOT / "corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell_summary.json"
+    REPO_ROOT
+    / "corpora/transitive/metadata/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced_summary.json"
 )
 
 

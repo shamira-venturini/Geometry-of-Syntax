@@ -12,7 +12,11 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 BUNDLED_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
 DEFAULT_VERB_LIST_PATH = BUNDLED_VOCAB_DIR / "verblist_T_usf_freq.csv"
 DEFAULT_ASSOCIATION_CSV_PATH = (
-    REPO_ROOT / "corpora" / "transitive" / "usf_association_edges_core_vocab.csv"
+    REPO_ROOT
+    / "corpora"
+    / "transitive"
+    / "resources"
+    / "usf_association_edges_core_vocab.csv"
 )
 
 

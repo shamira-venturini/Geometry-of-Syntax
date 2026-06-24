@@ -12,8 +12,16 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 DEFAULT_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
 DEFAULT_NOUNS = DEFAULT_VOCAB_DIR / "nounlist_usf_freq.csv"
 DEFAULT_VERBS = DEFAULT_VOCAB_DIR / "verblist_T_usf_freq.csv"
-DEFAULT_OUTPUT = REPO_ROOT / "corpora" / "transitive" / "usf_association_edges_core_vocab.csv"
-DEFAULT_SUMMARY = REPO_ROOT / "corpora" / "transitive" / "usf_association_edges_core_vocab_summary.json"
+DEFAULT_OUTPUT = (
+    REPO_ROOT / "corpora" / "transitive" / "resources" / "usf_association_edges_core_vocab.csv"
+)
+DEFAULT_SUMMARY = (
+    REPO_ROOT
+    / "corpora"
+    / "transitive"
+    / "metadata"
+    / "usf_association_edges_core_vocab_summary.json"
+)
 USF_APPENDIX_A_INDEX = "https://w3.usf.edu/FreeAssociation/AppendixA/index.html"
 USF_APPENDIX_A_BASE = "https://w3.usf.edu/FreeAssociation/AppendixA/"
 

@@ -1,7 +1,7 @@
 {
   "description": "Experiment 4 complex-NP role-recovery draft. Primes reuse the strict 1b simple-sentence backbone; targets add PP-complex NPs under agent_complex, patient_complex, and both_complex conditions. CORE is built first and Jabberwocky mirrors the same row/complexity/preposition plan.",
   "core_source": "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv",
-  "jabberwocky_source": "corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv",
+  "jabberwocky_source": "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv",
   "constraints": [
     "Prime sentences are the existing strict 1b simple pa/pp sentences.",
     "Targets are complex variants of the existing strict ta/tp target sentences.",

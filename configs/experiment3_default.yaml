@@ -25,13 +25,13 @@ experiment:
   filler_seed: 13
   filler_offset: 137
   verb_list_path: corpora/transitive/vocabulary_lists/verblist_T_usf_freq.csv
-  association_csv_path: corpora/transitive/usf_association_edges_core_vocab.csv
+  association_csv_path: corpora/transitive/resources/usf_association_edges_core_vocab.csv
   corpora:
     - name: lexically_controlled
       path: corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv
       lexicality_condition: real
     - name: jabberwocky
-      path: corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv
+      path: corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv
       lexicality_condition: nonce
 
 prompting:

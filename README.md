@@ -29,7 +29,7 @@ generation, continuation-scoring, and role-recovery tasks.
 
 ```text
 configs/        Experiment configuration files
-corpora/        Controlled experimental materials
+corpora/        Controlled materials, metadata, and lexical resources
 notebooks/      Colab and exploratory notebooks
 scripts/        Corpus construction, experiment, and analysis scripts
 src/            Shared experiment and scoring modules
