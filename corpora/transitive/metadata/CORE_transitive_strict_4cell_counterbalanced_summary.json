@@ -1,7 +1,7 @@
 {
   "noun_source": "corpora/transitive/vocabulary_lists/nounlist_usf_freq.csv",
   "verb_source": "corpora/transitive/vocabulary_lists/verblist_T_usf_freq.csv",
-  "association_csv": "corpora/transitive/resources/usf_association_edges_core_vocab.csv",
+  "association_csv": "corpora/transitive/vocabulary_lists/usf_association_edges_core_vocab.csv",
   "output_csv": "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv",
   "summary_json": "corpora/transitive/metadata/CORE_transitive_strict_4cell_counterbalanced_summary.json",
   "seed": 13,

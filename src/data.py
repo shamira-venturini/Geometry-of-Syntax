@@ -15,7 +15,7 @@ DEFAULT_ASSOCIATION_CSV_PATH = (
     REPO_ROOT
     / "corpora"
     / "transitive"
-    / "resources"
+    / "vocabulary_lists"
     / "usf_association_edges_core_vocab.csv"
 )
 

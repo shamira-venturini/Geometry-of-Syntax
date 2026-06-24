@@ -1,7 +1,7 @@
 {
   "noun_source": "corpora/transitive/vocabulary_lists/nounlist_usf_freq.csv",
   "verb_source": "corpora/transitive/vocabulary_lists/verblist_T_usf_freq.csv",
-  "output_csv": "corpora/transitive/resources/usf_association_edges_core_vocab.csv",
+  "output_csv": "corpora/transitive/vocabulary_lists/usf_association_edges_core_vocab.csv",
   "max_rank": 5000,
   "vocab": {
     "noun_rows_kept": 118,

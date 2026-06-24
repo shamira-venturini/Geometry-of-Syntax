@@ -74,9 +74,9 @@ metadata are relative to the repository root.
 `corpora/transitive/vocabulary_lists/` contains the noun, verb, adjective, and
 frozen Jabberwocky lexicon required by the corpus builders. Historical nonce
 candidate pools are archived locally rather than published as active inputs.
-`corpora/transitive/resources/` contains the USF association edge table. It
-records directed cue-target pairs used to exclude semantic associations during
-material construction and validation.
+The same folder contains the USF association edge table, which records directed
+cue-target pairs used to exclude semantic associations during material
+construction and validation.
 
 ## Generated working artifacts
 
