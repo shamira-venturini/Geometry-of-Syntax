@@ -1648,7 +1648,7 @@ pairs(
 
 But Sinclair et al. did not find stronger priming for the semantically implausible-prime corpus. They found the opposite. In their §7.2 semantic implausibility experiment, they built primes that were grammatical but nonsensical, e.g. “the iron threw the hero to the chocolate,” while preserving the no-overlap/no-semantic-similarity constraints from the core corpus. Their result was that PE became negative for active and PO constructions, while passive and DO PE decreased relative to core but remained positive. They conclude that structural encoding is not fully independent from semantic plausibility.
 
-That is very relevant to your argument. Sinclair et al. 2022 already show that making the prime semantically implausible does not simply make the structural signal stronger. Semantic disruption can weaken or distort priming.
+Sinclair et al. 2022 already show that making the prime semantically implausible does not simply make the structural signal stronger. Semantic disruption can weaken or distort priming.
 
 Objection: Whole-target log-probability PE is not a clean measure of structural priming. In active/passive alternations, it mixes baseline constructional bias, local morphosyntactic cue predictability, lexical-semantic predictability, and possible prime-induced updating. Therefore, sentence-level PE alone cannot distinguish priming from incremental surface form predictability.
 
@@ -1832,7 +1832,8 @@ ggplot(
 
 ## RQ2: Priming Effect
 
-RQ2.2: Do active and passive primes affect the probability that the model generates an active or passive sentence? H2.1: Active primes should increase active generation, whereas passive primes should increase passive generation. Passive priming may be more visible in Exp2 than in Exp1B because generation requires mapping event roles onto syntax. If passive difficulty lies less in surface-form prediction and more in event-role mapping, then passive primes may provide a stronger cue in this task than in fixed-target scoring. We treat IFE as an exploratory mechanism: if prime surprisal predicts generation shift, this would support an error-driven interpretation.
+RQ2.2: Do active and passive primes affect the probability that the model generates an active or passive sentence? 
+H2.1: Active primes should increase active generation, whereas passive primes should increase passive generation. Passive priming may be more visible in Exp2 than in Exp1B because generation requires mapping event roles onto syntax. If passive difficulty lies less in surface-form prediction and more in event-role mapping, then passive primes may provide a stronger cue in this task than in fixed-target scoring. We treat IFE as an exploratory mechanism: if prime surprisal predicts generation shift, this would support an error-driven interpretation.
 
 ```{r}
 exp2_prime <- exp2_generation %>%
@@ -2223,11 +2224,17 @@ drop1(m_exp2_ife2, test = "Chisq")
 
 NO IFE!!!! Exp2 shows strong structural priming in generation, but sentence-level prime surprisal does not predict congruent generation. This argues against a simple IFE account. However, because IFE effects in prior LLM work are closely tied to lexical/verb-specific and structural preferences, a more targeted semantic or event-role surprisal measure may be needed to test whether error-driven updating operates at the event-mapping level.
 
-Summary: \* baseline generation is strongly active-bias \* passive primes increase passive generation \* active prime increase active generation but does not move significantly the already active baseline \* jabber passive primes boost priming even more than core -\> structural signal becomes clearer when lexical semantics is attenuated \* active priming is stronger in core than jabber but baseline is already at ceiling
+Summary: 
+\* baseline generation is strongly active-bias 
+\* passive primes increase passive generation 
+\* active prime increase active generation but does not move significantly the already active baseline 
+\* jabber passive primes boost priming even more than core -\> structural signal becomes clearer when lexical semantics is attenuated 
+\* active priming is stronger in core than jabber but baseline is already at ceiling
 
 Exp2 is compatible with the idea that event-to-syntax mapping reveals stronger passive priming
 
-RQ2.3: Do Exp1B scoring preferences and Exp2 generation choices align? H2.3: We predict a dissociation: scored log-probability preference and free construction choice are not the same process. Exp1B may show passive preference because passive strings contain predictable morphosyntactic cues, whereas Exp2 may show active preference because generation favors canonical agent-first event expression. -\> supported by results
+RQ2.3: Do Exp1B scoring preferences and Exp2 generation choices align? 
+H2.3: We predict a dissociation: scored log-probability preference and free construction choice are not the same process. Exp1B may show passive preference because passive strings contain predictable morphosyntactic cues, whereas Exp2 may show active preference because generation favors canonical agent-first event expression. -\> supported by results
 
 # Experiment 3: event-to-syntax mapping with fix-target scoring
 
@@ -3016,7 +3023,10 @@ exp4_comp %>%
 
 RQ: Before priming, how well do models recover event roles from active and passive targets? H: we hypothesis a divergence between passive predictability (easier; higher summed/mean probabilities) and passive thematic-role recovering (lower than active overall). For the latter our prediction is nuanced: we expect easier agent recovery in both actives (=grammatical subject) and passives (the by-phrase is a strong cue) when lexico-semantics is present; when it is not (jabberwocky) we expect the expect lower accuracy for the agent in the active and higher in the passive. Then we expect easier patient recovering in the actives but not in the passive.
 
-Question Prediction doer / agent = active should be poor, because the model lacks semantic support for identifying the agent; -\> confirmed doer / agent = passive should be better because the by-phrase explicitly marks the doer -\> confirmed acted-on / patient = active should be better than passive; -\> confirmed acted-on / patient = passive patient recovery should be poor because the patient-as-subject mapping is less semantically supported -\> confirmed
+Question Prediction doer / agent = active should be poor, because the model lacks semantic support for identifying the agent; 
+-\> confirmed doer / agent = passive should be better because the by-phrase explicitly marks the doer 
+-\> confirmed acted-on / patient = active should be better than passive; 
+-\> confirmed acted-on / patient = passive patient recovery should be poor because the patient-as-subject mapping is less semantically supported -\> confirmed
 
 ```{r}
 exp4_baseline <- exp4_comp %>%
@@ -3039,7 +3049,7 @@ exp4_baseline %>%
 
 exp4_baseline %>%
   group_by(
-    model_condition,
+    #model_condition,
     lexicality_condition,
     target_voice
   ) %>%
@@ -3048,7 +3058,7 @@ exp4_baseline %>%
     accuracy = mean(is_correct),
     .groups = "drop"
   ) %>%
-  arrange(model_condition, lexicality_condition, target_voice) %>%
+  arrange(lexicality_condition, target_voice) %>%
   knitr::kable(digits = 3)
 ```
 
@@ -3129,6 +3139,91 @@ comprehension accuracy depends jointly on:
 - which role the question asks for
 
 Baseline comprehension accuracy showed a strong target voice × lexicality × question type interaction. \* In CORE, active targets were more accurate than passive targets for acted-on questions (patient recovery), but active and passive targets did not differ for doer questions (agent recovery). \* In jabberwocky, the pattern diverged sharply: active targets were more accurate for acted-on questions (direct object), whereas passive targets were dramatically more accurate for doer questions (by-phrase cue).
+
+##### aggregated results (not by model)
+```{r}
+# Aggregate baseline role-recovery estimates across model conditions
+# and complexity conditions
+emm_exp4_baseline_agg <- emmeans::emmeans(
+  m_exp4_baseline,
+  ~ target_voice * lexicality_condition * question_type,
+  type = "response",
+  weights = "equal"
+) %>%
+  as.data.frame()
+
+emm_exp4_baseline_agg
+```
+```{r}
+library(ggplot2)
+library(scales)
+
+pd <- position_dodge(width = 0.35)
+
+ggplot(
+  emm_exp4_baseline_agg,
+  aes(
+    x = target_voice,
+    y = prob,
+    colour = lexicality_condition,
+    group = lexicality_condition
+  )
+) +
+  geom_hline(
+    yintercept = 0.5,
+    linetype = "dashed",
+    linewidth = 0.6,
+    colour = "grey45"
+  ) +
+  geom_errorbar(
+    aes(
+      ymin = asymp.LCL,
+      ymax = asymp.UCL
+    ),
+    width = 0.12,
+    linewidth = 0.7,
+    position = pd
+  ) +
+  geom_point(
+    size = 3.5,
+    position = pd
+  ) +
+  geom_line(
+    linewidth = 0.7,
+    position = pd
+  ) +
+  facet_wrap(
+    ~ question_type,
+    labeller = labeller(
+      question_type = c(
+        "doer" = "Doer / agent recovery",
+        "acted_on" = "Acted-on / patient recovery"
+      )
+    )
+  ) +
+  scale_y_continuous(
+    limits = c(0, 1),
+    breaks = seq(0, 1, 0.2),
+    labels = percent_format(accuracy = 1)
+  ) +
+  labs(
+    title = "Experiment 4: baseline role-recovery accuracy",
+    subtitle = paste(
+      "No-prime condition; estimates aggregated across model",
+      "and complexity conditions"
+    ),
+    x = "Target voice",
+    y = "Estimated probability of correct role recovery",
+    colour = "Lexicality"
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"),
+    legend.position = "right"
+  )
+```
+
 
 #### baseline-centred comprehension priming effect
 
@@ -3272,6 +3367,176 @@ JABBERWOCKY PASSIVE:
 * patient qs: Both primes strongly improve comprehension, and congruent improves more.
 * agent qs: Both primes hurt comprehension, and congruent passive primes hurt more.
 For jabberwocky passive targets, priming helps patient/acted-on recovery but harms doer recovery. Congruent passive primes are especially harmful for doer questions.
+
+##### aggregated results
+```{r}
+ci_low_col <- intersect(
+  c("lower.CL", "asymp.LCL", "LCL"),
+  names(exp4_comp_baseline_plot_df)
+)[1]
+
+ci_high_col <- intersect(
+  c("upper.CL", "asymp.UCL", "UCL"),
+  names(exp4_comp_baseline_plot_df)
+)[1]
+
+if (is.na(ci_low_col) || is.na(ci_high_col)) {
+  stop("Could not identify confidence-interval columns.")
+}
+
+exp4_comp_baseline_plot_df <- exp4_comp_baseline_plot_df %>%
+  mutate(
+    ci_low = .data[[ci_low_col]],
+    ci_high = .data[[ci_high_col]],
+
+    contrast = factor(
+      contrast,
+      levels = c(
+        "Incongruent − no prime",
+        "Congruent − no prime"
+      )
+    ),
+
+    target_voice = factor(
+      target_voice,
+      levels = c("active", "passive")
+    )
+  )
+
+pd <- position_dodge(width = 0.45)
+
+ggplot(
+  exp4_comp_baseline_plot_df,
+  aes(
+    x = target_voice,
+    y = estimate,
+    colour = contrast,
+    group = contrast
+  )
+) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    linewidth = 0.6,
+    colour = "grey40"
+  ) +
+  geom_errorbar(
+    aes(
+      ymin = ci_low,
+      ymax = ci_high
+    ),
+    width = 0.12,
+    linewidth = 0.7,
+    position = pd
+  ) +
+  geom_point(
+    size = 3.4,
+    position = pd
+  ) +
+  geom_line(
+    linewidth = 0.7,
+    position = pd
+  ) +
+  facet_grid(
+    question_type ~ lexicality_condition,
+    labeller = labeller(
+      lexicality_condition = c(
+        core = "Core",
+        jabberwocky = "Jabberwocky"
+      ),
+      question_type = c(
+        doer = "Doer / agent recovery",
+        acted_on = "Acted-on / patient recovery"
+      )
+    )
+  ) +
+  scale_y_continuous(
+    labels = label_percent(accuracy = 1)
+  ) +
+  labs(
+    title = "Experiment 4: baseline-centred comprehension priming",
+    subtitle = paste(
+      "Estimated change in role-recovery accuracy relative to no prime;",
+      "aggregated across models and complexity conditions"
+    ),
+    x = "Target voice",
+    y = "Change in probability of correct role recovery",
+    colour = "Prime contrast"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold"),
+    legend.position = "bottom"
+  )
+```
+```{r}
+exp4_congruent_baseline_plot_df <-
+  exp4_comp_baseline_plot_df %>%
+  filter(contrast == "Congruent − no prime")
+
+pd <- position_dodge(width = 0.35)
+
+ggplot(
+  exp4_congruent_baseline_plot_df,
+  aes(
+    x = target_voice,
+    y = estimate,
+    colour = lexicality_condition,
+    group = lexicality_condition
+  )
+) +
+  geom_hline(
+    yintercept = 0,
+    linetype = "dashed",
+    linewidth = 0.6,
+    colour = "grey40"
+  ) +
+  geom_errorbar(
+    aes(
+      ymin = ci_low,
+      ymax = ci_high
+    ),
+    width = 0.12,
+    linewidth = 0.7,
+    position = pd
+  ) +
+  geom_point(
+    size = 3.5,
+    position = pd
+  ) +
+  geom_line(
+    linewidth = 0.7,
+    position = pd
+  ) +
+  facet_wrap(
+    ~ question_type,
+    labeller = labeller(
+      question_type = c(
+        doer = "Doer / agent recovery",
+        acted_on = "Acted-on / patient recovery"
+      )
+    )
+  ) +
+  scale_y_continuous(
+    labels = label_percent(accuracy = 1)
+  ) +
+  labs(
+    title = "Experiment 4: congruent-prime shift from baseline",
+    subtitle = paste(
+      "Congruent prime minus no-prime accuracy;",
+      "aggregated across models and complexity conditions"
+    ),
+    x = "Target voice",
+    y = "Change in probability of correct role recovery",
+    colour = "Lexicality"
+  ) +
+  theme_minimal(base_size = 13) +
+  theme(
+    panel.grid.minor = element_blank(),
+    strip.text = element_text(face = "bold")
+  )
+```
 
 #### The role of complexity
 
@@ -3854,6 +4119,202 @@ ggplot(
 Even within the same condition, the magnitude of structural PE usually does not explain the magnitude of comprehension priming.
 
 Whereas Sinclair et al. show that LM surprisal priming and human EEG priming only partially align, our study shows why that partial alignment may arise: LM priming can reflect surface morphosyntactic expectation rather than the integrated event-role representation that human comprehension ultimately requires.
+
+## The role of semantics: eventive vs stative verbs
+```{r}
+# Pick eventivity columns robustly
+eventivity_col_comp <- dplyr::case_when(
+  "target_verb_eventivity" %in% names(exp4_comprehension) ~ "target_verb_eventivity",
+  "verb_eventivity" %in% names(exp4_comprehension) ~ "verb_eventivity",
+  TRUE ~ NA_character_
+)
+
+eventivity_col_pe <- dplyr::case_when(
+  "target_verb_eventivity" %in% names(exp4_pe) ~ "target_verb_eventivity",
+  "verb_eventivity" %in% names(exp4_pe) ~ "verb_eventivity",
+  TRUE ~ NA_character_
+)
+
+stopifnot(!is.na(eventivity_col_comp))
+stopifnot(!is.na(eventivity_col_pe))
+
+```
+
+```{r}
+exp4_comp_ev_core <- exp4_comprehension %>%
+  mutate(
+    target_eventivity = .data[[eventivity_col_comp]],
+    target_eventivity = factor(
+      target_eventivity,
+      levels = c("eventive", "stative")
+    ),
+    is_correct = as.integer(is_correct),
+    target_voice = factor(target_voice, levels = c("active", "passive")),
+    prime_condition = factor(
+      prime_condition,
+      levels = c("no_prime", "filler", "active", "passive")
+    ),
+    lexicality_condition = factor(lexicality_condition),
+    question_type = factor(question_type),
+    complexity_condition = factor(
+      complexity_condition,
+      levels = c("agent_complex", "patient_complex", "both_complex")
+    ),
+    model_condition = factor(model_condition),
+    item_factor = factor(item_factor)
+  ) %>%
+  filter(
+    lexicality_condition == "core",
+    model_condition != "9B_base",
+    !is.na(target_eventivity),
+    target_eventivity %in% c("eventive", "stative")
+  ) %>%
+  droplevels()
+
+exp4_pe_ev_core <- exp4_pe %>%
+  mutate(
+    target_eventivity = .data[[eventivity_col_pe]],
+    target_eventivity = factor(
+      target_eventivity,
+      levels = c("eventive", "stative")
+    ),
+    lexicality_condition = factor(lexicality_condition),
+    complexity_condition = factor(
+      complexity_condition,
+      levels = c("agent_complex", "patient_complex", "both_complex")
+    ),
+    model_condition = factor(model_condition),
+    item_factor = factor(item_factor)
+  ) %>%
+  filter(
+    lexicality_condition == "core",
+    model_condition != "9B_base",
+    !is.na(target_eventivity),
+    target_eventivity %in% c("eventive", "stative")
+  ) %>%
+  droplevels()
+```
+
+RQ4.5: Do stative and eventive passives differ in baseline role recovery?
+H: Based on Paolazzi et al 2022, stative passives should be harder than eventive
+```{r}
+exp4_passive_baseline_ev <- exp4_comp_ev_core %>%
+  filter(
+    model_condition != "9B_base",
+    target_voice == "passive",
+    prime_condition == "no_prime",
+    lexicality_condition == "core",
+    !is.na(is_correct)
+  ) %>%
+  droplevels()
+
+exp4_passive_baseline_ev %>%
+  group_by(
+    target_eventivity,
+    lexicality_condition,
+    question_type,
+    complexity_condition
+  ) %>%
+  summarise(
+    n = n(),
+    accuracy = mean(is_correct),
+    .groups = "drop"
+  ) %>%
+  knitr::kable(digits = 3)
+
+exp4_passive_baseline_ev %>%
+  count(
+    target_eventivity,
+    lexicality_condition,
+    question_type,
+    matched_label
+  ) %>%
+  group_by(target_eventivity, lexicality_condition, question_type) %>%
+  mutate(prop = n / sum(n)) %>%
+  ungroup() %>%
+  knitr::kable(digits = 3)
+
+exp4_passive_baseline_ev_agg <- exp4_passive_baseline_ev %>%
+  group_by(
+    item_factor,
+    model_condition,
+    target_eventivity,
+    lexicality_condition,
+    question_type,
+    complexity_condition
+  ) %>%
+  summarise(
+    correct = sum(is_correct),
+    total = n(),
+    incorrect = total - correct,
+    .groups = "drop"
+  )
+```
+
+```{r}
+m_exp4_passive_baseline_ev <- lme4::glmer(
+  cbind(correct, incorrect) ~
+    target_eventivity * question_type +
+    complexity_condition +
+    model_condition +
+    (1 | item_factor),
+  data = exp4_passive_baseline_ev_agg,
+  family = binomial,
+  control = lme4::glmerControl(
+    optimizer = "bobyqa",
+    optCtrl = list(maxfun = 2e5)
+  )
+)
+
+drop1(m_exp4_passive_baseline_ev, test = "Chisq")
+```
+
+```{r}
+summary(m_exp4_passive_baseline_ev)
+```
+
+```{r}
+emm_exp4_passive_baseline_ev <- emmeans::emmeans(
+  m_exp4_passive_baseline_ev,
+  ~ target_eventivity | question_type,
+  type = "response"
+)
+
+emm_exp4_passive_baseline_ev
+
+pairs(
+  emm_exp4_passive_baseline_ev,
+  by = "question_type",
+  adjust = "holm"
+)
+```
+
+RQ4.6: Do stative and eventive passives differ in passive comprehension priming?
+
+```{r}
+exp4_passive_shift_ev_core <- exp4_comp_ev_core %>%
+  filter(
+    target_voice == "passive",
+    prime_condition %in% c("no_prime", "active", "passive"),
+    !is.na(is_correct)
+  ) %>%
+  mutate(
+    prime_relation = dplyr::case_when(
+      as.character(prime_condition) == "no_prime" ~ "no_prime",
+      as.character(prime_condition) == "passive" ~ "congruent",
+      as.character(prime_condition) == "active" ~ "incongruent",
+      TRUE ~ NA_character_
+    ),
+    prime_relation = factor(
+      prime_relation,
+      levels = c("no_prime", "incongruent", "congruent")
+    )
+  ) %>%
+  filter(!is.na(prime_relation)) %>%
+  droplevels()
+```
+
+
 
 # Interpretation Checklist
 
