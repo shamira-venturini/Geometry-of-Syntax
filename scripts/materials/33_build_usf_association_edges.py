@@ -9,7 +9,7 @@ import requests
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
+DEFAULT_VOCAB_DIR = REPO_ROOT / "materials" / "corpora" / "vocabulary_lists"
 DEFAULT_NOUNS = DEFAULT_VOCAB_DIR / "nounlist_usf_freq.csv"
 DEFAULT_VERBS = DEFAULT_VOCAB_DIR / "verblist_T_usf_freq.csv"
 DEFAULT_OUTPUT = (
@@ -17,8 +17,8 @@ DEFAULT_OUTPUT = (
 )
 DEFAULT_SUMMARY = (
     REPO_ROOT
+    / "materials"
     / "corpora"
-    / "transitive"
     / "metadata"
     / "usf_association_edges_core_vocab_summary.json"
 )

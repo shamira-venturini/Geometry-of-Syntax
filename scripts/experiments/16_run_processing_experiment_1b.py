@@ -9,11 +9,11 @@ from typing import Dict, List
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RUNNER_SCRIPT = REPO_ROOT / "scripts" / "experiments" / "15_counterbalanced_processing_experiment_1b.py"
 CORE_COUNTERBALANCED_LEXICALLY_CONTROLLED = (
-    REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
+    REPO_ROOT / "materials" / "corpora" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 )
 JABBERWOCKY_2048 = (
     REPO_ROOT
-    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+    / "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
 
 

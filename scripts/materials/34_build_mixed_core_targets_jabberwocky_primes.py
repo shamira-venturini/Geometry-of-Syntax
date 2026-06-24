@@ -14,18 +14,18 @@ if str(REPO_ROOT) not in sys.path:
 from src.production_priming_common import lexical_overlap_audit, normalize_transitive_frame  # noqa: E402
 
 
-STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
+STRICT_CORE = REPO_ROOT / "materials" / "corpora" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 JABBERWOCKY_POOL = (
     REPO_ROOT
-    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+    / "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
 DEFAULT_OUTPUT = (
     REPO_ROOT
-    / "corpora/transitive/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv"
+    / "materials/corpora/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv"
 )
 DEFAULT_SUMMARY = (
     REPO_ROOT
-    / "corpora/transitive/metadata/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048_summary.json"
+    / "materials/corpora/metadata/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048_summary.json"
 )
 
 

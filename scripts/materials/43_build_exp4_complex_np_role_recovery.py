@@ -13,19 +13,19 @@ import pandas as pd
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-DEFAULT_CORE = REPO_ROOT / "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv"
+DEFAULT_CORE = REPO_ROOT / "materials/corpora/CORE_transitive_strict_4cell_counterbalanced.csv"
 DEFAULT_JABBER = (
     REPO_ROOT
-    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+    / "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
-DEFAULT_NOUNS = REPO_ROOT / "corpora/transitive/vocabulary_lists/nounlist_usf_freq.csv"
+DEFAULT_NOUNS = REPO_ROOT / "materials/corpora/vocabulary_lists/nounlist_usf_freq.csv"
 DEFAULT_JABBER_LEXICON = (
-    REPO_ROOT / "corpora/transitive/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
+    REPO_ROOT / "materials/corpora/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
 )
 GENERATED_DIR = REPO_ROOT / "behavioral_results/generated_materials/experiment-4/complex_np"
 DEFAULT_CORE_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery.csv"
 DEFAULT_JABBER_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery.csv"
-DEFAULT_SUMMARY = REPO_ROOT / "corpora/transitive/metadata/experiment_4_complex_np_corpus_summary.json"
+DEFAULT_SUMMARY = REPO_ROOT / "materials/corpora/metadata/experiment_4_complex_np_corpus_summary.json"
 
 TEXT_COLUMNS = ("pa", "pp", "ta", "tp")
 COMPLEXITY_CONDITIONS = ("agent_complex", "patient_complex", "both_complex")

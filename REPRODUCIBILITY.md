@@ -58,20 +58,20 @@ Each four-column corpus stores matched sentence quartets:
 
 The canonical corpora are:
 
-- `corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv`:
+- `materials/corpora/CORE_transitive_strict_4cell_counterbalanced.csv`:
   controlled real-word materials;
-- `corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv`:
+- `materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv`:
   Jabberwocky materials built on the same row structure;
-- `corpora/transitive/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv`:
+- `materials/corpora/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv`:
   Jabberwocky primes paired with real-word targets.
 
-The corresponding files under `corpora/transitive/metadata/` record balance,
+The corresponding files under `materials/corpora/metadata/` record balance,
 lexical-overlap, tokenization, and construction audits. Paths in tracked
 metadata are relative to the repository root.
 
 ## Controlled vocabulary resources
 
-`corpora/transitive/vocabulary_lists/` contains the noun, verb, adjective, and
+`materials/corpora/vocabulary_lists/` contains the noun, verb, adjective, and
 frozen Jabberwocky lexicon required by the corpus builders. Historical nonce
 candidate pools are archived locally rather than published as active inputs.
 The same folder contains the USF association edge table, which records directed
@@ -79,7 +79,7 @@ cue-target pairs used to exclude semantic associations during material
 construction and validation.
 
 Model-specific vocabulary audits are reproducible local outputs under
-`corpora/transitive/validation/`. They are distinct from the tracked corpus
+`materials/corpora/validation/`. They are distinct from the tracked corpus
 metadata, which records prime-target lexical overlap and semantic-association
 checks for the canonical materials.
 
@@ -112,7 +112,7 @@ behavioral_results/generated_materials/experiment-2/prompts/
 behavioral_results/generated_materials/experiment-4/complex_np/
 ```
 
-Keeping generated tables outside `corpora/` prevents stale copies from being
+Keeping generated tables outside `materials/corpora/` prevents stale copies from being
 mistaken for canonical source materials while preserving one-command local use.
 
 ## Local design archive

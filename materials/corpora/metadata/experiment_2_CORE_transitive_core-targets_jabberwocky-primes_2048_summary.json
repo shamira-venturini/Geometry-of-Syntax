@@ -1,8 +1,8 @@
 {
-  "core_csv": "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv",
-  "jabberwocky_csv": "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv",
-  "output_csv": "corpora/transitive/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv",
-  "summary_json": "corpora/transitive/metadata/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048_summary.json",
+  "core_csv": "materials/corpora/CORE_transitive_strict_4cell_counterbalanced.csv",
+  "jabberwocky_csv": "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv",
+  "output_csv": "materials/corpora/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv",
+  "summary_json": "materials/corpora/metadata/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048_summary.json",
   "n_items": 2048,
   "seed": 13,
   "selected_prime_source_row_indices_preview": [

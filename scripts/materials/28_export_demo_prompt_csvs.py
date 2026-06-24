@@ -20,14 +20,14 @@ from src.production_priming_common import (  # noqa: E402
 )
 
 
-STRICT_CORE = REPO_ROOT / "corpora" / "transitive" / "CORE_transitive_strict_4cell_counterbalanced.csv"
+STRICT_CORE = REPO_ROOT / "materials" / "corpora" / "CORE_transitive_strict_4cell_counterbalanced.csv"
 JABBERWOCKY_PRIME_POOL = (
     REPO_ROOT
-    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+    / "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
 CORE_TARGETS_JABBERWOCKY_PRIMES = (
     REPO_ROOT
-    / "corpora/transitive/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv"
+    / "materials/corpora/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048.csv"
 )
 DEMO_MODULE_PATH = REPO_ROOT / "scripts" / "experiments" / "24_demo_prompt_completion_experiment.py"
 

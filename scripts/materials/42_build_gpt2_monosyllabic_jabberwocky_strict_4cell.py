@@ -16,19 +16,19 @@ from transformers import AutoTokenizer
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CORE = (
     REPO_ROOT
-    / "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv"
+    / "materials/corpora/CORE_transitive_strict_4cell_counterbalanced.csv"
 )
 DEFAULT_OUTPUT = (
     REPO_ROOT
-    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+    / "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
 DEFAULT_LEXICON = (
     REPO_ROOT
-    / "corpora/transitive/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
+    / "materials/corpora/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
 )
 DEFAULT_SUMMARY = (
     REPO_ROOT
-    / "corpora/transitive/metadata/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced_summary.json"
+    / "materials/corpora/metadata/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced_summary.json"
 )
 
 

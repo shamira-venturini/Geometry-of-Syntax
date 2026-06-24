@@ -16,8 +16,8 @@ DEFAULT_CORE = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery.csv"
 DEFAULT_JABBER = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery.csv"
 DEFAULT_CORE_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery_prompts.csv"
 DEFAULT_JABBER_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery_prompts.csv"
-DEFAULT_SUMMARY = REPO_ROOT / "corpora/transitive/metadata/experiment_4_complex_np_prompts_summary.json"
-VERB_LIST_PATH = REPO_ROOT / "corpora/transitive/vocabulary_lists/verblist_T_usf_freq.csv"
+DEFAULT_SUMMARY = REPO_ROOT / "materials/corpora/metadata/experiment_4_complex_np_prompts_summary.json"
+VERB_LIST_PATH = REPO_ROOT / "materials/corpora/vocabulary_lists/verblist_T_usf_freq.csv"
 
 
 def portable_path(path: Path) -> str:

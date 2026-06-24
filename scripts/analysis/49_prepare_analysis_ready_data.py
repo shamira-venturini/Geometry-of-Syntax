@@ -16,7 +16,7 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parents[2]
 RESULTS_ROOT = REPO_ROOT / "behavioral_results"
 OUTPUT_DIR = RESULTS_ROOT / "analysis_ready"
-VERB_LIST_PATH = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
+VERB_LIST_PATH = REPO_ROOT / "materials" / "corpora" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
 
 
 MODEL_METADATA: Dict[str, Dict[str, str]] = {

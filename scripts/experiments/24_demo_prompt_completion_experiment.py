@@ -31,7 +31,7 @@ from src.production_priming_common import (  # noqa: E402
 
 DEFAULT_JABBERWOCKY_PRIMES = (
     REPO_ROOT
-    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+    / "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "experiment-2" / "demo_prompt_completion"
 REAL_VERB_ING = {

@@ -1,8 +1,8 @@
 {
-  "source_core_csv": "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv",
-  "output_csv": "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv",
-  "lexicon_json": "corpora/transitive/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json",
-  "summary_json": "corpora/transitive/metadata/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced_summary.json",
+  "source_core_csv": "materials/corpora/CORE_transitive_strict_4cell_counterbalanced.csv",
+  "output_csv": "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv",
+  "lexicon_json": "materials/corpora/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json",
+  "summary_json": "materials/corpora/metadata/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced_summary.json",
   "tokenizer_model": "gpt2-large",
   "row_count": 2048,
   "manipulation": "Curated GPT-2 one-token monosyllabic nonce nouns plus standalone inflectional verb fragments s/ed",

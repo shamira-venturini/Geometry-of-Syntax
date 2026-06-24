@@ -9,11 +9,11 @@ import pandas as pd
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_CORPUS = (
     REPO_ROOT
-    / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
+    / "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
 DEFAULT_DICT = Path("/usr/share/dict/words")
 DEFAULT_OUTPUT_DIR = (
-    REPO_ROOT / "corpora" / "transitive" / "validation" / "jabberwocky_lexical_form"
+    REPO_ROOT / "materials" / "corpora" / "validation" / "jabberwocky_lexical_form"
 )
 FUNCTION_WORDS = {"the", "a", "is", "was", "by", "."}
 COMMON_SUFFIXES = ("ed", "es", "s", "ing")
@@ -42,7 +42,7 @@ def load_dictionary(path: Path) -> Set[str]:
 
 def load_primelm_vocabulary() -> Set[str]:
     vocab: Set[str] = set()
-    vocab_dir = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
+    vocab_dir = REPO_ROOT / "materials" / "corpora" / "vocabulary_lists"
     vocab_files = [
         vocab_dir / "nounlist_usf_freq.csv",
         vocab_dir / "verblist_T_usf_freq.csv",

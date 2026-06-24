@@ -35,7 +35,7 @@ from src.production_priming_common import (  # noqa: E402
 )
 
 
-DEFAULT_CORE_CSV = REPO_ROOT / "corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv"
+DEFAULT_CORE_CSV = REPO_ROOT / "materials/corpora/CORE_transitive_strict_4cell_counterbalanced.csv"
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results/experiment-1b_category_predictability"
 
 PASSIVE_ROIS = ("patient_np", "aux", "participle", "by", "agent_det", "agent_np")
