@@ -16,7 +16,9 @@ VOCAB_PATH = (
 )
 REFERENCE_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
 NOUN_REF_PATH = REFERENCE_VOCAB_DIR / "nounlist_usf_freq.csv"
-OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "jabberwocky_semantic_audit"
+OUTPUT_DIR = (
+    REPO_ROOT / "corpora" / "transitive" / "validation" / "jabberwocky_semantics"
+)
 
 
 def portable_path(path: Path) -> str:

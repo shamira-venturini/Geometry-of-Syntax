@@ -78,6 +78,11 @@ The same folder contains the USF association edge table, which records directed
 cue-target pairs used to exclude semantic associations during material
 construction and validation.
 
+Model-specific vocabulary audits are reproducible local outputs under
+`corpora/transitive/validation/`. They are distinct from the tracked corpus
+metadata, which records prime-target lexical overlap and semantic-association
+checks for the canonical materials.
+
 ## Generated working artifacts
 
 The following are reproducible outputs rather than source materials and are not

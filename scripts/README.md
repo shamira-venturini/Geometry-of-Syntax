@@ -25,3 +25,7 @@ script commands remain available for lower-level or specialized workflows.
   produces reviewed summaries.
 - `audits/47_exp2_master_review.py` builds and applies a deduplicated review
   file across Experiment 2 model runs.
+
+Generated vocabulary-validation outputs are written under
+`corpora/transitive/validation/` and remain local. Compact canonical corpus
+audits remain tracked under `corpora/transitive/metadata/`.

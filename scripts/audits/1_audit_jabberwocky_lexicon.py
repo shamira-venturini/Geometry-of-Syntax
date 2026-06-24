@@ -12,7 +12,9 @@ DEFAULT_CORPUS = (
     / "corpora/transitive/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
 DEFAULT_DICT = Path("/usr/share/dict/words")
-DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "jabberwocky_lexicon_audit"
+DEFAULT_OUTPUT_DIR = (
+    REPO_ROOT / "corpora" / "transitive" / "validation" / "jabberwocky_lexical_form"
+)
 FUNCTION_WORDS = {"the", "a", "is", "was", "by", "."}
 COMMON_SUFFIXES = ("ed", "es", "s", "ing")
 
