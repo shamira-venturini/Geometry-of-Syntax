@@ -41,7 +41,6 @@ def load_primelm_vocabulary() -> Set[str]:
     vocab_files = [
         vocab_dir / "nounlist_usf_freq.csv",
         vocab_dir / "verblist_T_usf_freq.csv",
-        vocab_dir / "verblist_DT_usf_freq.csv",
         vocab_dir / "adjective_voc_list_USF.csv",
     ]
     for path in vocab_files:
