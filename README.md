@@ -31,7 +31,7 @@ generation, continuation-scoring, and role-recovery tasks.
 configs/        Experiment configuration files
 corpora/        Controlled materials, metadata, and lexical resources
 colab_*.ipynb   Reproducible Colab workflow
-scripts/        Grouped experiment, material, audit, analysis, and reporting tools
+scripts/        Grouped experiment, material, audit, and analysis tools
 src/            Shared experiment and scoring modules
 tests/          Configuration and dispatch regression tests
 ```

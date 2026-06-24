@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: python-version test experiment-1a experiment-1b experiment-2 experiment-3 experiment-4 config-check transitive-priming transitive-report transitive-stats processing-experiment-1b-report emnlp-story-figures jabberwocky-lexicon-audit jabberwocky-semantic-audit regenerate-jabberwocky-transitive export-experiment-2-prompts export-experiment-4-materials generated-materials
+.PHONY: python-version test experiment-1a experiment-1b experiment-2 experiment-3 experiment-4 config-check transitive-priming transitive-report transitive-stats jabberwocky-lexicon-audit jabberwocky-semantic-audit regenerate-jabberwocky-transitive export-experiment-2-prompts export-experiment-4-materials generated-materials
 
 python-version:
 	$(PYTHON) --version
@@ -38,13 +38,6 @@ transitive-report:
 
 transitive-stats:
 	$(PYTHON) scripts/analysis/5_analyze_transitive_statistics.py
-
-processing-experiment-1b-report:
-	$(PYTHON) scripts/reporting/18_report_processing_experiment_1b.py
-
-emnlp-story-figures:
-	mkdir -p .cache/matplotlib
-	MPLCONFIGDIR=$(CURDIR)/.cache/matplotlib $(PYTHON) scripts/reporting/17_make_emnlp_story_figures.py
 
 jabberwocky-lexicon-audit:
 	$(PYTHON) scripts/audits/1_audit_jabberwocky_lexicon.py
