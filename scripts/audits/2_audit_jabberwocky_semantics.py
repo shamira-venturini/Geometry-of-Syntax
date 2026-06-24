@@ -16,21 +16,28 @@ VOCAB_PATH = (
 )
 REFERENCE_VOCAB_DIR = REPO_ROOT / "corpora" / "transitive" / "vocabulary_lists"
 NOUN_REF_PATH = REFERENCE_VOCAB_DIR / "nounlist_usf_freq.csv"
-VERB_REF_PATH = REFERENCE_VOCAB_DIR / "verblist_T_usf_freq.csv"
 OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "jabberwocky_semantic_audit"
+
+
+def portable_path(path: Path) -> str:
+    resolved = path.expanduser().resolve()
+    try:
+        return str(resolved.relative_to(REPO_ROOT))
+    except ValueError:
+        return str(resolved)
 
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Audit semantic leakage of strict Jabberwocky vocabulary with model representations."
+        description="Audit semantic leakage of canonical Jabberwocky nouns with model representations."
     )
     parser.add_argument("--model-name", default="gpt2-large")
     parser.add_argument("--device", default=None)
     parser.add_argument("--top-k", type=int, default=5)
     parser.add_argument(
         "--reference-mode",
-        choices=("primelm", "wordfreq", "wordlist"),
-        default="primelm",
+        choices=("bundled", "wordfreq", "wordlist"),
+        default="bundled",
         help="Reference vocabulary to compare against.",
     )
     parser.add_argument(
@@ -49,7 +56,7 @@ def parse_args() -> argparse.Namespace:
         "--contextual",
         choices=("auto", "on", "off"),
         default="auto",
-        help="Whether to compute contextual embeddings (auto=on for primelm only).",
+        help="Whether to compute contextual embeddings (auto=on for the bundled noun list).",
     )
     parser.add_argument(
         "--contextual-ref-limit",
@@ -59,6 +66,11 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--vocab-path", type=Path, default=VOCAB_PATH)
     parser.add_argument("--output-dir", type=Path, default=OUTPUT_DIR)
+    parser.add_argument(
+        "--local-files-only",
+        action="store_true",
+        help="Load the tokenizer/model only from the local Hugging Face cache.",
+    )
     return parser.parse_args()
 
 
@@ -72,43 +84,17 @@ def get_device(user_device: Optional[str]) -> str:
     return "cpu"
 
 
-def load_nonce_vocabulary(path: Path) -> Dict[str, List[str]]:
+def load_nonce_nouns(path: Path) -> List[str]:
     payload = json.loads(path.read_text())
-    nouns = payload["nouns"]
-
-    if "verb_stems" in payload:
-        verb_present = [stem + "s" for stem in payload["verb_stems"]]
-        verb_past = [stem + "ed" for stem in payload["verb_stems"]]
-    elif "verb_present" in payload and "verb_past" in payload:
-        verb_present = payload["verb_present"]
-        verb_past = payload["verb_past"]
-    elif payload.get("verb_fragments") == ["s", "ed"]:
-        verb_present = ["s"]
-        verb_past = ["ed"]
-    else:
-        raise ValueError(
-            "Vocabulary JSON must contain verb_stems, verb_present/verb_past, "
-            "or the canonical s/ed verb_fragments."
-        )
-
-    return {
-        "nouns": nouns,
-        "verb_present": verb_present,
-        "verb_past": verb_past,
-    }
+    nouns = [str(noun).strip().lower() for noun in payload.get("nouns", [])]
+    if not nouns or any(not noun for noun in nouns) or len(nouns) != len(set(nouns)):
+        raise ValueError("Vocabulary JSON must contain unique, non-empty nouns.")
+    return nouns
 
 
 def load_reference_nouns() -> List[str]:
     frame = pd.read_csv(NOUN_REF_PATH, sep=";")
     return sorted(frame["nouns"].str.strip().str.lower().unique().tolist())
-
-
-def load_reference_verbs() -> Dict[str, List[str]]:
-    frame = pd.read_csv(VERB_REF_PATH, sep=";")
-    return {
-        "present": sorted(frame["pres_3s"].str.strip().str.lower().unique().tolist()),
-        "past": sorted(frame["past_A"].str.strip().str.lower().unique().tolist()),
-    }
 
 
 def load_wordfreq_list(top_n: int) -> List[str]:
@@ -135,26 +121,14 @@ def load_wordlist(path: Path) -> List[str]:
     return sorted(set(words))
 
 
-def load_reference_sets(args: argparse.Namespace) -> Dict[str, List[str]]:
-    if args.reference_mode == "primelm":
-        nouns = load_reference_nouns()
-        verbs = load_reference_verbs()
-        return {
-            "nouns": nouns,
-            "verb_present": verbs["present"],
-            "verb_past": verbs["past"],
-            "label": "primelm",
-        }
+def load_reference_set(args: argparse.Namespace) -> Tuple[List[str], str]:
+    if args.reference_mode == "bundled":
+        return load_reference_nouns(), "bundled"
     if args.reference_mode == "wordfreq":
         words = load_wordfreq_list(args.wordfreq_top)
     else:
         words = load_wordlist(args.wordlist_path)
-    return {
-        "nouns": words,
-        "verb_present": words,
-        "verb_past": words,
-        "label": args.reference_mode,
-    }
+    return words, args.reference_mode
 
 
 def mean_pool_rows(tensor: torch.Tensor) -> torch.Tensor:
@@ -224,6 +198,7 @@ def similarity_table(
     top_k: int,
     category: str,
     representation_type: str,
+    query_type: str = "nonce",
 ) -> pd.DataFrame:
     ref_words = list(ref_reps.keys())
     ref_matrix = torch.stack([ref_reps[word] for word in ref_words], dim=0)
@@ -242,7 +217,8 @@ def similarity_table(
             {
                 "category": category,
                 "representation_type": representation_type,
-                "nonce_word": nonce_word,
+                "query_type": query_type,
+                "query_word": nonce_word,
                 "max_cosine": float(values[0]),
                 "mean_topk_cosine": float(values.mean()),
                 "nearest_neighbors": ";".join(neighbors),
@@ -251,11 +227,56 @@ def similarity_table(
     return pd.DataFrame(rows)
 
 
+def reference_baseline_table(
+    ref_reps: Dict[str, torch.Tensor],
+    top_k: int,
+    category: str,
+    representation_type: str,
+) -> pd.DataFrame:
+    words = list(ref_reps)
+    matrix = F.normalize(torch.stack([ref_reps[word] for word in words]), dim=1)
+    similarities = torch.matmul(matrix, matrix.T)
+    similarities.fill_diagonal_(-torch.inf)
+    rows = []
+    for row_index, word in enumerate(words):
+        values, indices = torch.topk(
+            similarities[row_index],
+            k=min(top_k, len(words) - 1),
+        )
+        neighbors = [
+            f"{words[index]}:{float(value):.4f}"
+            for value, index in zip(values.tolist(), indices.tolist())
+        ]
+        rows.append(
+            {
+                "category": category,
+                "representation_type": representation_type,
+                "query_type": "real_baseline",
+                "query_word": word,
+                "max_cosine": float(values[0]),
+                "mean_topk_cosine": float(values.mean()),
+                "nearest_neighbors": ";".join(neighbors),
+            }
+        )
+    return pd.DataFrame(rows)
+
+
+def centered_representations(
+    nonce_reps: Dict[str, torch.Tensor],
+    ref_reps: Dict[str, torch.Tensor],
+) -> Tuple[Dict[str, torch.Tensor], Dict[str, torch.Tensor]]:
+    center = torch.stack([*nonce_reps.values(), *ref_reps.values()]).mean(dim=0)
+    return (
+        {word: vector - center for word, vector in nonce_reps.items()},
+        {word: vector - center for word, vector in ref_reps.items()},
+    )
+
+
 def summary_table(frame: pd.DataFrame) -> pd.DataFrame:
     return (
-        frame.groupby(["category", "representation_type"], as_index=False)
+        frame.groupby(["category", "representation_type", "query_type"], as_index=False)
         .agg(
-            n_words=("nonce_word", "count"),
+            n_words=("query_word", "count"),
             mean_max_cosine=("max_cosine", "mean"),
             max_max_cosine=("max_cosine", "max"),
             mean_topk_cosine=("mean_topk_cosine", "mean"),
@@ -268,29 +289,30 @@ def main() -> None:
     args.output_dir.mkdir(parents=True, exist_ok=True)
 
     device = get_device(args.device)
-    tokenizer = AutoTokenizer.from_pretrained(args.model_name)
+    tokenizer = AutoTokenizer.from_pretrained(
+        args.model_name,
+        local_files_only=args.local_files_only,
+    )
     if tokenizer.pad_token is None:
         tokenizer.pad_token = tokenizer.eos_token
 
-    model = AutoModel.from_pretrained(args.model_name)
+    model = AutoModel.from_pretrained(
+        args.model_name,
+        local_files_only=args.local_files_only,
+    )
     model.to(device)
     model.eval()
     embedding_weight = model.get_input_embeddings().weight.detach().cpu()
 
-    nonce = load_nonce_vocabulary(args.vocab_path)
-    ref_sets = load_reference_sets(args)
-    ref_nouns = ref_sets["nouns"]
-    ref_verbs = {
-        "present": ref_sets["verb_present"],
-        "past": ref_sets["verb_past"],
-    }
+    nonce_nouns = load_nonce_nouns(args.vocab_path)
+    ref_nouns, reference_label = load_reference_set(args)
 
     contextual_setting = args.contextual
     include_contextual = (
         contextual_setting == "on"
-        or (contextual_setting == "auto" and args.reference_mode == "primelm")
+        or (contextual_setting == "auto" and args.reference_mode == "bundled")
     )
-    ref_size = max(len(ref_nouns), len(ref_verbs["present"]), len(ref_verbs["past"]))
+    ref_size = len(ref_nouns)
     if include_contextual and ref_size > args.contextual_ref_limit:
         print(
             f"Reference list size {ref_size} exceeds contextual limit "
@@ -298,59 +320,64 @@ def main() -> None:
         )
         include_contextual = False
 
-    noun_lex_nonce = lexical_representations(tokenizer, embedding_weight, nonce["nouns"])
+    noun_lex_nonce = lexical_representations(tokenizer, embedding_weight, nonce_nouns)
     noun_lex_ref = lexical_representations(tokenizer, embedding_weight, ref_nouns)
     if include_contextual:
         noun_ctx_nonce = batch_contextual_representations(
-            tokenizer, model, device, nonce["nouns"], prefix="the", suffix=" is here ."
+            tokenizer, model, device, nonce_nouns, prefix="the", suffix=" is here ."
         )
         noun_ctx_ref = batch_contextual_representations(
             tokenizer, model, device, ref_nouns, prefix="the", suffix=" is here ."
         )
 
-    nonce_verb_present = nonce["verb_present"]
-    nonce_verb_past = nonce["verb_past"]
-
-    verb_pres_lex_nonce = lexical_representations(tokenizer, embedding_weight, nonce_verb_present)
-    verb_pres_lex_ref = lexical_representations(tokenizer, embedding_weight, ref_verbs["present"])
-    if include_contextual:
-        verb_pres_ctx_nonce = batch_contextual_representations(
-            tokenizer, model, device, nonce_verb_present, prefix="they", suffix=" it ."
-        )
-        verb_pres_ctx_ref = batch_contextual_representations(
-            tokenizer, model, device, ref_verbs["present"], prefix="they", suffix=" it ."
-        )
-
-    verb_past_lex_nonce = lexical_representations(tokenizer, embedding_weight, nonce_verb_past)
-    verb_past_lex_ref = lexical_representations(tokenizer, embedding_weight, ref_verbs["past"])
-    if include_contextual:
-        verb_past_ctx_nonce = batch_contextual_representations(
-            tokenizer, model, device, nonce_verb_past, prefix="they", suffix=" it ."
-        )
-        verb_past_ctx_ref = batch_contextual_representations(
-            tokenizer, model, device, ref_verbs["past"], prefix="they", suffix=" it ."
-        )
-
     tables = [
         similarity_table(noun_lex_nonce, noun_lex_ref, args.top_k, "noun", "lexical"),
-        similarity_table(verb_pres_lex_nonce, verb_pres_lex_ref, args.top_k, "verb_present", "lexical"),
-        similarity_table(verb_past_lex_nonce, verb_past_lex_ref, args.top_k, "verb_past", "lexical"),
+        reference_baseline_table(noun_lex_ref, args.top_k, "noun", "lexical"),
     ]
     if include_contextual:
+        noun_ctx_nonce, noun_ctx_ref = centered_representations(noun_ctx_nonce, noun_ctx_ref)
         tables.extend(
             [
-                similarity_table(noun_ctx_nonce, noun_ctx_ref, args.top_k, "noun", "contextual"),
-                similarity_table(verb_pres_ctx_nonce, verb_pres_ctx_ref, args.top_k, "verb_present", "contextual"),
-                similarity_table(verb_past_ctx_nonce, verb_past_ctx_ref, args.top_k, "verb_past", "contextual"),
+                similarity_table(
+                    noun_ctx_nonce,
+                    noun_ctx_ref,
+                    args.top_k,
+                    "noun",
+                    "contextual_centered",
+                ),
+                reference_baseline_table(
+                    noun_ctx_ref,
+                    args.top_k,
+                    "noun",
+                    "contextual_centered",
+                ),
             ]
         )
 
     detail = pd.concat(tables, ignore_index=True)
     summary = summary_table(detail)
 
-    suffix = ref_sets["label"]
+    suffix = reference_label
     detail.to_csv(args.output_dir / f"semantic_leakage_detail_{suffix}.csv", index=False)
     summary.to_csv(args.output_dir / f"semantic_leakage_summary_{suffix}.csv", index=False)
+    metadata = {
+        "model_name": args.model_name,
+        "device": device,
+        "reference_mode": args.reference_mode,
+        "reference_noun_count": len(ref_nouns),
+        "nonce_noun_count": len(nonce_nouns),
+        "contextual_embeddings": include_contextual,
+        "contextual_centering": "joint mean of nonce and reference noun vectors"
+        if include_contextual
+        else None,
+        "reference_baseline": "leave-one-out nearest neighbors among real nouns",
+        "top_k": args.top_k,
+        "vocab_path": portable_path(args.vocab_path),
+    }
+    (args.output_dir / f"semantic_leakage_metadata_{suffix}.json").write_text(
+        json.dumps(metadata, indent=2) + "\n",
+        encoding="utf-8",
+    )
 
 
 if __name__ == "__main__":
