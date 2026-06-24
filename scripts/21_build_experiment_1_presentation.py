@@ -655,7 +655,7 @@ def build_presentation() -> Presentation:
     )
     add_footer(
         slide,
-        "Sources: project_status_handoff.md, 11_generate_counterbalanced_constrained_transitive.py, 17_build_lexically_controlled_core_transitive.py",
+        "Source: docs/corpus_control_counterbalancing.md and corpus metadata",
     )
 
     # Slide 6

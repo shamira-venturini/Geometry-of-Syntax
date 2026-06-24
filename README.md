@@ -1,196 +1,84 @@
-# Experiment 3 Demo-Prompt Continuation Pipeline
+# Geometry of Syntax
 
-This repository includes **Experiment 3**, a deterministic, teacher-forced continuation-scoring pipeline that uses an Experiment 2-style demo prompt and scores **active vs passive full-sentence continuations**.
+Research code for studying structural representations in language models through
+syntactic priming. The project compares real-word and Jabberwocky materials to
+investigate how active and passive structure is represented across processing,
+generation, continuation-scoring, and role-recovery tasks.
 
-The current Experiment 1b, Experiment 2, and Experiment 3 runners are configured to use the same strict prime/target templates:
+> **Project status:** Active research. The repository is currently being
+> reorganized for reproducibility and public release. Results and documentation
+> may change while analyses are finalized.
 
-- `corpora/transitive/CORE_transitive_strict_4cell_counterbalanced.csv`
-- `corpora/transitive/jabberwocky_transitive_gpt2_monosyllabic_strict_4cell.csv`
+## Research questions
 
-Experiment 2 prompt CSVs are rebuilt from those same corpora with the same item order, including the mixed Jabberwocky-prime/CORE-target condition. No toy dataset is used.
+- Can structural priming serve as a behavioral probe of latent syntactic
+  representations in language models?
+- Which priming effects remain when lexical-semantic information is reduced
+  using Jabberwocky materials?
+- How do processing-style and production-style measurements compare?
+- How strongly do baseline structural preferences influence apparent priming
+  effects?
 
-Experiments 2 and 3 now also counterbalance the order of role-description lines (`agent_first` vs `patient_first`) within each target determiner/tense cell, so the no-prime scaffold is not systematically patient-recency biased.
+## Experiment overview
 
-## Project Structure
+- **Experiment 1a:** Processing-based structural priming replication and
+  Jabberwocky extension.
+- **Experiment 1b:** Controlled active/passive target competition with explicit
+  baseline conditions.
+- **Experiment 2:** Full-sentence generation and structural annotation.
+- **Experiment 3:** Teacher-forced active/passive continuation scoring.
+- **Experiment 4:** Sentence-to-event role recovery.
 
-- `src/data.py` - corpus-driven dataset construction + optional table loader
-- `src/prompts.py` - demo-prime + target continuation prompt rendering
-- `src/models.py` - model wrapper with optional chat-template mode
-- `src/scoring.py` - full-candidate batched logprob scoring
-- `src/analysis.py` - baseline/priming contrasts, bootstrap CIs, paired tests
-- `src/plots.py` - PNG plots by prime/task/lexicality
-- `run_experiment.py` - CLI entry point
-- `configs/` - ready-to-run YAML configs
-- `docs/experiment_scoring_methods.md` - canonical scoring definitions for Experiments 1a-4
-- `docs/corpus_control_counterbalancing.md` - canonical corpus-control and counterbalancing ledger
-- `docs/analysis_plan_structural_priming.md` - planned baseline-centered, ROI, PE-percentage, and IFE-style diagnostics
+## Repository structure
+
+```text
+configs/        Experiment configuration files
+corpora/        Controlled experimental materials
+docs/           Methods and design documentation
+notebooks/      Colab and exploratory notebooks
+scripts/        Corpus construction, experiment, and analysis scripts
+src/            Shared experiment and scoring modules
+```
+
+Large raw outputs, model artifacts, temporary files, and working archives are
+being moved out of the public repository. A curated set of summary results and
+figures will be added when the analysis structure is finalized.
 
 ## Installation
 
+Python 3.10 or later is recommended.
+
 ```bash
+python -m venv .venv
+source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-## Core Design
+## Running the current pipelines
 
-The pipeline keeps **baseline preference** and **priming effect** separate.
-
-The analysis plan now requires four explicit diagnostics before strong theoretical interpretation:
-
-- baseline-centered log-odds shifts, `logP(passive target) - logP(active target)`, under active, passive, filler, and no-prime contexts;
-- ROI decomposition of passive PE into Initial NP, auxiliary/frame onset, participle, `by`, Agent DP, and residual material;
-- percentage-of-PE by ROI, to distinguish diffuse structural effects from local passive-cue predictability;
-- IFE-style prime-surprisal regressions testing whether less expected active/passive primes induce larger target shifts.
-
-See `docs/analysis_plan_structural_priming.md` for the canonical checklist.
-
-Prime conditions supported:
-
-- `active`
-- `passive`
-- `filler`
-- `no_prime`
-
-Lexicality conditions supported:
-
-- `real` (strict Sinclair-style core corpus)
-- `nonce` (Jabberwocky corpus)
-
-Filler behavior:
-
-- `filler` uses domain-matched **intransitive filler pools** by default (`real` vs `nonce`).
-- Legacy offset fillers can still be requested with `experiment.filler_mode: offset_target`.
-
-For each corpus row (`pa`, `pp`, `ta`, `tp`), Experiment 3 builds a demo prompt in the Experiment 2 discourse frame:
-
-- prime as solved example (`active`, `passive`, `filler`, or omitted for `no_prime`)
-- target event scaffold ending at `Mary answered, "`
-- continuation candidates: active target sentence vs passive target sentence
-- role-description order stored as `role_order` and balanced 50/50 within each target `def/indef x past/present` cell
-
-All scores are teacher-forced and deterministic.
-
-## Scoring Outputs
-
-For the full scoring conventions across Experiments 1a-4, see `docs/experiment_scoring_methods.md`.
-
-For each candidate, the pipeline stores:
-
-- total logprob
-- mean logprob per token
-- candidate token count
-- token IDs/tokens/token logprobs (debug)
-
-Primary preferences:
-
-- continuation preference: `active_minus_passive_logprob_total` and `_mean`
-- 1B-compatible deltas: `passive_minus_active_logprob_sum` and `passive_minus_active_logprob`
-
-1B-compatible item-level fields are also exported:
-
-- `active_choice_logprob`, `passive_choice_logprob`
-- `active_choice_logprob_sum`, `passive_choice_logprob_sum`
-- `active_target_token_count`, `passive_target_token_count`
-- `chosen_structure`, `passive_choice_indicator`
-
-Additional location/token-wise preference metrics are exported, including first/second/last-token, divergence-token, aligned-position means, and token-position summaries.
-
-## Running
-
-### Combined (GPT-2-large + Llama-3.2-3B-Instruct plain)
+Experiment 3:
 
 ```bash
-python run_experiment.py --config configs/experiment3_default.yaml
+python run_experiment.py --experiment exp3 --config configs/experiment3_default.yaml
 ```
 
-### GPT-2 only
-
-```bash
-python run_experiment.py --config configs/experiment3_gpt2.yaml
-```
-
-### Llama plain
-
-```bash
-python run_experiment.py --config configs/experiment3_llama_plain.yaml
-```
-
-### Llama chat-template
-
-```bash
-python run_experiment.py --config configs/experiment3_llama_chat.yaml
-```
-
-### Colab profile
-
-```bash
-python run_experiment.py --config configs/experiment3_colab.yaml
-```
-
-### Override output directory
-
-```bash
-python run_experiment.py --config configs/experiment3_default.yaml --output-dir behavioral_results/experiment-3/custom_run
-```
-
-## Required Outputs
-
-Each run writes:
-
-- `item_level_results.csv`
-- `summary_by_model_condition.csv`
-- `summary_by_prime_condition.csv`
-- `summary_by_lexicality.csv`
-- `summary_by_task.csv`
-- `summary_by_role_order.csv`
-- `priming_effects_relative_to_baseline.csv`
-- `paired_condition_tests.csv`
-- `bootstrap_by_prime_condition.csv`
-- `summary_by_measure_prime_condition.csv`
-- `priming_effects_all_measures.csv`
-- `paired_condition_tests_all_measures.csv`
-- `token_position_summary.csv`
-- `token_position_preference_summary.csv`
-- optional plots:
-  - `preference_by_prime_condition.png`
-  - `preference_by_task.png`
-  - `preference_by_lexicality.png`
-  - `interaction_prime_by_task.png`
-- reproducibility artifacts:
-  - `run.log`
-  - `run_metadata.json`
-  - `resolved_config.yaml`
-
-Planned analysis outputs to add:
-
-- `baseline_centered_logodds_shifts.csv`
-- `roi_pe_item_level.csv`
-- `roi_pe_summary.csv`
-- `roi_pe_percentage_summary.csv`
-- `ife_prime_surprisal_item_level.csv`
-- `ife_prime_surprisal_models.csv`
-
-## Caveats
-
-1. Total logprob can prefer shorter candidates; always inspect mean-per-token variants.
-2. Instruction/chat formatting can change scores materially; compare `plain` vs `chat_template` explicitly.
-3. Legacy labels (`active_prime`, `passive_prime`, `filler_prime`, `no_prime_eos`, `no_prime_empty`, `no_demo`) are normalized to canonical labels at load/analysis time.
-4. Tokenization boundary artifacts are logged in item-level debug fields.
-
-## Experiment 4
-
-Experiment 4 is a Ferreira-inspired free-answer role-recovery probe aligned to the same controlled active/passive backbone. It reverses the Experiment 2 mapping direction: the model reads a sentence and answers who was the doer or acted-on participant.
-
-Current run:
+Experiment 4:
 
 ```bash
 python run_experiment.py --experiment exp4 --config configs/exp4.yaml
 ```
 
-Toy smoke-test config:
+Additional experiment-specific runners are available in `scripts/`. See
+`docs/experiment_scoring_methods.md` for the current scoring definitions and
+`docs/corpus_control_counterbalancing.md` for corpus controls.
 
-```bash
-python run_experiment.py --experiment exp4 --config configs/exp4_toy.yaml
-```
+## Reproducibility note
 
-See [docs/experiment4.md](docs/experiment4.md) for prompt format, outputs, and diagnostics.
+The experiment configurations record model and task settings, while run outputs
+include resolved configurations and software metadata where supported. Model
+weights are not stored in this repository.
+
+## Citation and license
+
+Citation information and a project license will be added before the first
+archival release.

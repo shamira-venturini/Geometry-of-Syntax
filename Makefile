@@ -1,8 +1,4 @@
-ifeq ($(wildcard .venv312-mps/bin/python),.venv312-mps/bin/python)
-PYTHON ?= .venv312-mps/bin/python
-else
 PYTHON ?= .venv/bin/python
-endif
 
 .PHONY: python-version transitive-priming transitive-report transitive-stats colab-experiment-1a processing-experiment-1b processing-experiment-1b-suite processing-experiment-1b-report core-completion-choice-pilot counterbalanced-completion-choice counterbalanced-generation-choice counterbalanced-production-suite emnlp-story-figures jabberwocky-lexicon-audit jabberwocky-semantic-audit jabberwocky-tokenizer-filter regenerate-jabberwocky-transitive regenerate-jabberwocky-transitive-bpe export-experiment-2-prompts
 
