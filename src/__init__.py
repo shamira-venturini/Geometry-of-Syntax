@@ -6,7 +6,6 @@ __all__ = [
     "models",
     "scoring",
     "analysis",
-    "plots",
     "exp4_prompts",
     "exp4_generation",
     "exp4_scoring",

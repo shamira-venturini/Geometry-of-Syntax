@@ -12,7 +12,6 @@ experiment:
   no_prime_overrides: {}
   bootstrap_resamples: 2000
   bootstrap_ci: 95.0
-  create_plots: true
   question_template: "Who was the agent?"
   prime_conditions:
     - active

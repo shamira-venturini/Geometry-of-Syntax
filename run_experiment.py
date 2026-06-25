@@ -25,7 +25,6 @@ from src.config_dispatch import (
 )
 from src.data import DatasetBundle, ExperimentItem, load_dataset_from_experiment_config
 from src.models import CausalLMWrapper, ModelConfig
-from src.plots import save_all_default_plots
 from src.prompts import (
     render_experiment_2_continuation_prompt,
 )
@@ -460,7 +459,6 @@ def write_outputs(
     output_dir: Path,
     item_level: pd.DataFrame,
     analysis_outputs: Dict[str, pd.DataFrame],
-    create_plots: bool,
 ) -> None:
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -480,9 +478,6 @@ def write_outputs(
         output_dir / "summary_by_lexicality.csv", index=False
     )
     analysis_outputs["summary_by_task"].to_csv(output_dir / "summary_by_task.csv", index=False)
-
-    if create_plots:
-        save_all_default_plots(item_level=item_level, output_dir=output_dir)
 
 
 def main() -> None:
@@ -567,7 +562,6 @@ def main() -> None:
     item_level = pd.DataFrame(all_rows)
     n_bootstrap = int(experiment_cfg.get("bootstrap_resamples", 5000))
     bootstrap_ci = float(experiment_cfg.get("bootstrap_ci", 95.0))
-    create_plots = bool(experiment_cfg.get("create_plots", True))
 
     analysis_outputs = run_analysis(
         item_level=item_level,
@@ -580,7 +574,6 @@ def main() -> None:
         output_dir=output_dir,
         item_level=item_level,
         analysis_outputs=analysis_outputs,
-        create_plots=create_plots,
     )
 
     metadata = {
