@@ -1787,8 +1787,7 @@ exp2_baseline_plot_df <- exp2_baseline %>%
         "3B_base",
         "3B_instruct",
         "8B_base",
-        "8B_instruct",
-        "9B_base"
+        "8B_instruct"
       )
     )
   )
@@ -2283,7 +2282,7 @@ summary(m_exp3_baseline)
 ```
 
 - In CORE, most models are close to zero, with only modest passive bias.
-- In jabberwocky, most models show a clearer passive preference, except 9B_base, which reverses strongly. when lexical-semantic information is reduced, the structural/formal passive signal becomes more visible.
+- In jabberwocky, most models show a clearer passive preference. When lexical-semantic information is reduced, the structural/formal passive signal becomes more visible.
 - larger passive-active token-count differences are associated with higher passive log-odds. Event roles mapping engagement attenuates passive bias.
 
 ```{r}
@@ -2347,7 +2346,7 @@ ggplot(
 ```
 
 - core: most models are close to zero
-- jabberwocky: clearer passive preference than in core exept for gemma which has active preference at baseline This seems to suggest that the big passive bias in experiment 1 was tight to the scoring setup and passive surface form predictability. Exp3 makes event roles explicit. If the model is using those roles to map event participants onto syntax, then the canonical active mapping becomes more competitive.
+- jabberwocky: clearer passive preference than in core. This seems to suggest that the big passive bias in experiment 1 was tied to the scoring setup and passive surface form predictability. Exp3 makes event roles explicit. If the model is using those roles to map event participants onto syntax, then the canonical active mapping becomes more competitive.
 
 That reduces the passive advantage, especially in CORE.
 
@@ -3071,7 +3070,6 @@ exp4_baseline %>%
 
 ```{r}
 exp4_baseline_agg <- exp4_baseline %>%
-  filter(model_condition != "9B_base") %>%
   group_by(
     item_factor,
     model_condition,
@@ -3237,7 +3235,6 @@ RQ: Does an active or passive prime move comprehension accuracy away from the no
 # prepare baseline-centred data
 exp4_comp_analysis <- exp4_comp %>%
   filter(
-    model_condition != "9B_base",
     prime_condition %in% c("no_prime", "active", "passive"),
     target_voice %in% c("active", "passive"),
     !is.na(is_correct)
@@ -3674,7 +3671,6 @@ RQ: Does Exp4 show structural priming in probability space, independent of compr
 ```{r}
 exp4_pe_baseline <- exp4_pe %>%
   filter(
-    model_condition != "9B_base",
     lexicality_condition %in% c("core", "jabberwocky")
   ) %>%
   droplevels()
@@ -3731,7 +3727,6 @@ the scoring system is not simply measuring “better comprehension.” It is cap
 ```{r}
 exp4_pe_shift_long <- exp4_pe %>%
   filter(
-    model_condition != "9B_base",
     lexicality_condition %in% c("core", "jabberwocky")
   ) %>%
   select(
@@ -3868,7 +3863,6 @@ If probability priming and comprehension dissociate, PE will not reliably predic
 ```{r}
 exp4_prime_for_dissociation <- exp4_comp %>%
   filter(
-    model_condition != "9B_base",
     prime_condition %in% c("active", "passive"),
     target_voice %in% c("active", "passive"),
     !is.na(is_correct)
@@ -3943,7 +3937,6 @@ Prepare target-specific congruent PE:
 ```{r}
 exp4_pe_congruent <- exp4_pe %>%
   filter(
-    model_condition != "9B_base",
     lexicality_condition %in% c("core", "jabberwocky")
   ) %>%
   mutate(
@@ -4169,7 +4162,6 @@ exp4_comp_ev_core <- exp4_comprehension %>%
   ) %>%
   filter(
     lexicality_condition == "core",
-    model_condition != "9B_base",
     !is.na(target_eventivity),
     target_eventivity %in% c("eventive", "stative")
   ) %>%
@@ -4192,7 +4184,6 @@ exp4_pe_ev_core <- exp4_pe %>%
   ) %>%
   filter(
     lexicality_condition == "core",
-    model_condition != "9B_base",
     !is.na(target_eventivity),
     target_eventivity %in% c("eventive", "stative")
   ) %>%
@@ -4204,7 +4195,6 @@ H: Based on Paolazzi et al 2022, stative passives should be harder than eventive
 ```{r}
 exp4_passive_baseline_ev <- exp4_comp_ev_core %>%
   filter(
-    model_condition != "9B_base",
     target_voice == "passive",
     prime_condition == "no_prime",
     lexicality_condition == "core",

@@ -55,13 +55,6 @@ MODEL_METADATA: Dict[str, Dict[str, str]] = {
         "model_condition": "8B_instruct",
         "model_label": "Llama 3.1 8B Instruct",
     },
-    "colab_Gemma_2_9B": {
-        "model_size": "9B",
-        "model_family": "gemma",
-        "model_instruct": "base",
-        "model_condition": "9B_base",
-        "model_label": "Gemma 2 9B",
-    },
 }
 
 
