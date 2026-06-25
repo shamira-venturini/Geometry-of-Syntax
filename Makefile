@@ -34,10 +34,10 @@ transitive-priming:
 	$(PYTHON) scripts/experiments/2_transitive_token_priming.py --preset paper_main
 
 transitive-report:
-	$(PYTHON) scripts/analysis/3_summarize_transitive_priming.py
+	$(PYTHON) scripts/analysis/exp1a_exploratory_summarize_prediction_error.py
 
 transitive-stats:
-	$(PYTHON) scripts/analysis/5_analyze_transitive_statistics.py
+	$(PYTHON) scripts/analysis/exp1a_exploratory_prediction_error_stats.py
 
 jabberwocky-lexicon-audit:
 	$(PYTHON) scripts/audits/1_audit_jabberwocky_lexicon.py

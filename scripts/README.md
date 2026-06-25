@@ -1,12 +1,14 @@
 # Script organization
 
-The command-line tools are grouped by function. The numbered filenames are
-retained for provenance and to keep earlier run records interpretable.
+The command-line tools are grouped by function. Most historical numbered
+filenames are retained for provenance; files that need clearer public-facing
+status are named descriptively.
 
 - `experiments/`: model execution, generation, and scoring passes;
 - `materials/`: corpus, vocabulary-resource, and prompt construction;
 - `audits/`: material validation, generation annotation, and review tools;
-- `analysis/`: statistical preparation, summaries, and R Markdown analyses.
+- `analysis/`: statistical preparation, summaries, and R Markdown analyses,
+  including exploratory Experiment 1a prediction-error summaries.
 
 Shared Python functionality belongs in `src/`. The experiment configurations
 should normally be run through the repository-level `run_experiment.py`; direct

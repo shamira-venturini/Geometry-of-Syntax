@@ -8,8 +8,8 @@ from typing import Dict, List
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 PRIMING_SCRIPT = REPO_ROOT / "scripts" / "experiments" / "2_transitive_token_priming.py"
-REPORT_SCRIPT = REPO_ROOT / "scripts" / "analysis" / "3_summarize_transitive_priming.py"
-STATS_SCRIPT = REPO_ROOT / "scripts" / "analysis" / "5_analyze_transitive_statistics.py"
+REPORT_SCRIPT = REPO_ROOT / "scripts" / "analysis" / "exp1a_exploratory_summarize_prediction_error.py"
+STATS_SCRIPT = REPO_ROOT / "scripts" / "analysis" / "exp1a_exploratory_prediction_error_stats.py"
 
 
 def parse_args() -> argparse.Namespace:
@@ -39,12 +39,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument(
         "--skip-report",
         action="store_true",
-        help="Skip scripts/analysis/3_summarize_transitive_priming.py",
+        help="Skip scripts/analysis/exp1a_exploratory_summarize_prediction_error.py",
     )
     parser.add_argument(
         "--skip-stats",
         action="store_true",
-        help="Skip scripts/analysis/5_analyze_transitive_statistics.py",
+        help="Skip scripts/analysis/exp1a_exploratory_prediction_error_stats.py",
     )
     parser.add_argument(
         "--local-files-only",
