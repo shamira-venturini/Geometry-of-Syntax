@@ -14,7 +14,7 @@ import pandas as pd
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 DEFAULT_RESULTS_ROOT = REPO_ROOT / "behavioral_results"
-DEFAULT_REVIEW_DIR = REPO_ROOT / "behavioral_results/analysis_ready/experiment_2/review_provenance"
+DEFAULT_REVIEW_DIR = REPO_ROOT / "behavioral_results/analysis_ready/experiment_2/manual_scoring"
 DEFAULT_REVIEW_CSV = DEFAULT_REVIEW_DIR / "exp2_master_generation_review.csv"
 DEFAULT_APPLY_SUMMARY = DEFAULT_REVIEW_DIR / "exp2_master_generation_review_apply_summary.csv"
 
