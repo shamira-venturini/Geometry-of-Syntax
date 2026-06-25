@@ -14,8 +14,8 @@
     "Passive prime and passive target unavoidably share the English by-marker; this is audited separately."
   ],
   "outputs": {
-    "core": "behavioral_results/generated_materials/experiment-4/complex_np/experiment_4_complex_np_core_role_recovery.csv",
-    "jabberwocky": "behavioral_results/generated_materials/experiment-4/complex_np/experiment_4_complex_np_jabberwocky_role_recovery.csv"
+    "core": "materials/prompts/experiment-4/complex_np/experiment_4_complex_np_core_role_recovery.csv",
+    "jabberwocky": "materials/prompts/experiment-4/complex_np/experiment_4_complex_np_jabberwocky_role_recovery.csv"
   },
   "core_audit": {
     "row_count": 6144,

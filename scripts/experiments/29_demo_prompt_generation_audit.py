@@ -22,7 +22,7 @@ from src.production_priming_common import (  # noqa: E402
 
 DEFAULT_PROMPT_CSV = (
     REPO_ROOT
-    / "behavioral_results/generated_materials/experiment-2/prompts"
+    / "materials/prompts/experiment-2/prompts"
     / "experiment_2_core_demo_prompts_lexically_controlled.csv"
 )
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results" / "_smoke_demo_prompt_generation_audit"

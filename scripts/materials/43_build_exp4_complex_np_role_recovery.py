@@ -18,14 +18,14 @@ DEFAULT_JABBER = (
     REPO_ROOT
     / "materials/corpora/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced.csv"
 )
-DEFAULT_NOUNS = REPO_ROOT / "materials/corpora/vocabulary_lists/nounlist_usf_freq.csv"
+DEFAULT_NOUNS = REPO_ROOT / "materials/vocabulary_lists/nounlist_usf_freq.csv"
 DEFAULT_JABBER_LEXICON = (
-    REPO_ROOT / "materials/corpora/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
+    REPO_ROOT / "materials/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
 )
-GENERATED_DIR = REPO_ROOT / "behavioral_results/generated_materials/experiment-4/complex_np"
+GENERATED_DIR = REPO_ROOT / "materials/prompts/experiment-4/complex_np"
 DEFAULT_CORE_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery.csv"
 DEFAULT_JABBER_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery.csv"
-DEFAULT_SUMMARY = REPO_ROOT / "materials/corpora/metadata/experiment_4_complex_np_corpus_summary.json"
+DEFAULT_SUMMARY = REPO_ROOT / "materials/metadata/experiment_4_complex_np_corpus_summary.json"
 
 TEXT_COLUMNS = ("pa", "pp", "ta", "tp")
 COMPLEXITY_CONDITIONS = ("agent_complex", "patient_complex", "both_complex")

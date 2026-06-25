@@ -4,7 +4,7 @@ experiment:
   id: exp2
   seed: 13
   output_dir: behavioral_results/experiment-2/default_run
-  prompt_output_dir: behavioral_results/generated_materials/experiment-2/prompts
+  prompt_dir: materials/prompts/experiment-2/prompts
   max_items: 2048
   conditions:
     - core

@@ -24,11 +24,11 @@ DEFAULT_OUTPUT = (
 )
 DEFAULT_LEXICON = (
     REPO_ROOT
-    / "materials/corpora/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
+    / "materials/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
 )
 DEFAULT_SUMMARY = (
     REPO_ROOT
-    / "materials/corpora/metadata/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced_summary.json"
+    / "materials/metadata/jabberwocky_transitive_monosyllabic_strict_4cell-counterbalanced_summary.json"
 )
 
 

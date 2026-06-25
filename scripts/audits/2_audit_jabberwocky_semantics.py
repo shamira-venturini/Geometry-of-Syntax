@@ -12,7 +12,7 @@ from transformers import AutoModel, AutoTokenizer
 REPO_ROOT = Path(__file__).resolve().parents[2]
 VOCAB_PATH = (
     REPO_ROOT
-    / "materials/corpora/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
+    / "materials/vocabulary_lists/jabberwocky_lexicon_monosyllabic.json"
 )
 REFERENCE_VOCAB_DIR = REPO_ROOT / "materials" / "corpora" / "vocabulary_lists"
 NOUN_REF_PATH = REFERENCE_VOCAB_DIR / "nounlist_usf_freq.csv"

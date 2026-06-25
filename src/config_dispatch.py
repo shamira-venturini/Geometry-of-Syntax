@@ -251,13 +251,10 @@ def _build_exp2_plan(
         "behavioral_results/experiment-2/default_run",
         output_dir_override,
     )
-    prompt_dir = (
-        base / "_prompts"
-        if output_dir_override is not None
-        else _resolved_path(
-            experiment.get(
-                "prompt_output_dir", "behavioral_results/generated_materials/experiment-2/prompts"
-            )
+    prompt_dir = _resolved_path(
+        experiment.get(
+            "prompt_dir",
+            experiment.get("prompt_output_dir", "materials/prompts/experiment-2/prompts"),
         )
     )
     conditions_raw = experiment.get(
@@ -279,30 +276,18 @@ def _build_exp2_plan(
     if not isinstance(prompt_columns, list) or not prompt_columns:
         raise ValueError("experiment.prompt_columns must be a non-empty list.")
 
-    export_command = [
-        sys.executable,
-        str(REPO_ROOT / "scripts/materials/28_export_demo_prompt_csvs.py"),
-        "--core-prime-mode",
-        mode,
-        "--max-items",
-        str(max_items),
-        "--seed",
-        str(int(experiment.get("seed", 13))),
-        "--event-style",
-        str(experiment.get("event_style", "involving_event")),
-        "--role-style",
-        str(experiment.get("role_style", "did_to")),
-        "--quote-style",
-        str(experiment.get("quote_style", "mary_answered")),
-        "--role-order",
-        str(experiment.get("role_order", "counterbalanced")),
-        "--target-verb-cue",
-        str(experiment.get("target_verb_cue", "auto_real_targets")),
-        "--output-dir",
-        str(prompt_dir),
-    ]
-    plans = [CommandPlan("exp2:export-prompts", export_command, prompt_dir)]
+    plans: List[CommandPlan] = []
     prompt_paths = _exp2_prompt_paths(prompt_dir, mode)
+    missing_prompt_paths = [
+        str(path)
+        for condition, path in prompt_paths.items()
+        if condition in conditions and not path.exists()
+    ]
+    if missing_prompt_paths:
+        raise FileNotFoundError(
+            "Bundled Experiment 2 prompt CSVs are missing: "
+            + ", ".join(missing_prompt_paths)
+        )
 
     for model in models:
         model_root = _model_output_dir(base, model, len(models))

@@ -54,15 +54,14 @@ class ConfigDispatchTests(unittest.TestCase):
         self.assertEqual(command[which_index + 1], "both")
         self.assertIn("--prime-conditions", command)
 
-    def test_exp2_plan_exports_prompts_before_generation(self) -> None:
+    def test_exp2_plan_uses_bundled_prompts(self) -> None:
         config = load_config(REPO_ROOT / "configs/experiment2_default.yaml")
         _, plans = build_legacy_plan(experiment_id="exp2", config=config)
-        self.assertEqual(plans[0].label, "exp2:export-prompts")
         self.assertEqual(
-            [plan.label.rsplit(":", 1)[-1] for plan in plans[1:]],
+            [plan.label.rsplit(":", 1)[-1] for plan in plans],
             ["core", "jabberwocky", "core_targets_jabberwocky_primes"],
         )
-        for plan in plans[1:]:
+        for plan in plans:
             self.assertIn("--prompt-csv", plan.command)
             self.assertIn("--prompt-columns", plan.command)
 

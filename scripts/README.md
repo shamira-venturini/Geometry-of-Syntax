@@ -29,5 +29,5 @@ script commands remain available for lower-level or specialized workflows.
   file across Experiment 2 model runs.
 
 Generated vocabulary-validation outputs are written under
-`materials/corpora/validation/` and remain local. Compact canonical corpus
-audits remain tracked under `materials/corpora/metadata/`.
+`materials/validation/` and remain local. Compact canonical corpus
+audits remain tracked under `materials/metadata/`.

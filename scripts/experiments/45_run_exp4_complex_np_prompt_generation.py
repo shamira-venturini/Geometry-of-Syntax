@@ -24,7 +24,7 @@ from src.exp4_scoring import evaluate_generated_answer  # noqa: E402
 
 DEFAULT_PROMPT_CSV = (
     REPO_ROOT
-    / "behavioral_results/generated_materials/experiment-4/complex_np"
+    / "materials/prompts/experiment-4/complex_np"
     / "experiment_4_complex_np_core_role_recovery_prompts.csv"
 )
 DEFAULT_OUTPUT_DIR = REPO_ROOT / "behavioral_results/experiment-4/complex_np_prompt_generation"

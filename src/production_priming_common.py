@@ -15,7 +15,7 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 VERB_LIST_PATH = (
-    REPO_ROOT / "materials" / "corpora" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
+    REPO_ROOT / "materials" / "vocabulary_lists" / "verblist_T_usf_freq.csv"
 )
 LEXICALLY_CONTROLLED_CORE_CSV = (
     REPO_ROOT / "materials" / "corpora" / "CORE_transitive_strict_4cell_counterbalanced.csv"

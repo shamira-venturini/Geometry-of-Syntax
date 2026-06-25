@@ -99,7 +99,7 @@ def parse_args() -> argparse.Namespace:
         type=Path,
         default=(
             REPO_ROOT
-            / "behavioral_results/generated_materials/experiment-2/prompts"
+            / "materials/prompts/experiment-2/prompts"
         ),
     )
     return parser.parse_args()

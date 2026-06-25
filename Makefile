@@ -1,6 +1,6 @@
 PYTHON ?= .venv/bin/python
 
-.PHONY: python-version test experiment-1a experiment-1b experiment-2 experiment-3 experiment-4 config-check transitive-priming transitive-report transitive-stats jabberwocky-lexicon-audit jabberwocky-semantic-audit regenerate-jabberwocky-transitive export-experiment-2-prompts export-experiment-4-materials generated-materials
+.PHONY: python-version test experiment-1a experiment-1b experiment-2 experiment-3 experiment-4 config-check transitive-priming transitive-report transitive-stats jabberwocky-lexicon-audit jabberwocky-semantic-audit regenerate-jabberwocky-transitive
 
 python-version:
 	$(PYTHON) --version
@@ -47,12 +47,3 @@ jabberwocky-semantic-audit:
 
 regenerate-jabberwocky-transitive:
 	$(PYTHON) scripts/materials/42_build_gpt2_monosyllabic_jabberwocky_strict_4cell.py
-
-export-experiment-2-prompts:
-	$(PYTHON) scripts/materials/28_export_demo_prompt_csvs.py
-
-export-experiment-4-materials:
-	$(PYTHON) scripts/materials/43_build_exp4_complex_np_role_recovery.py
-	$(PYTHON) scripts/materials/44_export_exp4_complex_np_prompts.py
-
-generated-materials: export-experiment-2-prompts export-experiment-4-materials

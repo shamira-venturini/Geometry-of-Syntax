@@ -11,13 +11,13 @@ import pandas as pd
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
-GENERATED_DIR = REPO_ROOT / "behavioral_results/generated_materials/experiment-4/complex_np"
+GENERATED_DIR = REPO_ROOT / "materials/prompts/experiment-4/complex_np"
 DEFAULT_CORE = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery.csv"
 DEFAULT_JABBER = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery.csv"
 DEFAULT_CORE_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_core_role_recovery_prompts.csv"
 DEFAULT_JABBER_OUTPUT = GENERATED_DIR / "experiment_4_complex_np_jabberwocky_role_recovery_prompts.csv"
-DEFAULT_SUMMARY = REPO_ROOT / "materials/corpora/metadata/experiment_4_complex_np_prompts_summary.json"
-VERB_LIST_PATH = REPO_ROOT / "materials/corpora/vocabulary_lists/verblist_T_usf_freq.csv"
+DEFAULT_SUMMARY = REPO_ROOT / "materials/metadata/experiment_4_complex_np_prompts_summary.json"
+VERB_LIST_PATH = REPO_ROOT / "materials/vocabulary_lists/verblist_T_usf_freq.csv"
 
 
 def portable_path(path: Path) -> str:

@@ -25,7 +25,7 @@ DEFAULT_OUTPUT = (
 )
 DEFAULT_SUMMARY = (
     REPO_ROOT
-    / "materials/corpora/metadata/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048_summary.json"
+    / "materials/metadata/experiment_2_CORE_transitive_core-targets_jabberwocky-primes_2048_summary.json"
 )
 
 
