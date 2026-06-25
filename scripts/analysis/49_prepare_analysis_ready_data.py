@@ -1187,21 +1187,21 @@ def main() -> None:
     exp4_pe = build_exp4_pe()
 
     outputs = {
-        "item_level_master.csv": item_level,
-        "baseline_centered_logodds_shifts.csv": baseline_shifts,
-        "token_level_probabilities.csv": token_level,
-        "token_roi_summary.csv": token_roi_summary,
-        "exp2_generation_item_level.csv": exp2_generation,
-        "exp2_prime_surprisal_item_level.csv": exp2_prime_surprisal,
-        "exp3_prime_surprisal_item_level.csv": exp3_prime_surprisal,
-        "ife_prime_surprisal_item_level.csv": exp3_prime_surprisal,
-        "exp1b_exp3_scored_candidate_baseline_bias_item_level.csv": scored_candidate_baseline_bias,
-        "exp1b_exp3_scored_candidate_baseline_bias_by_verb.csv": scored_candidate_baseline_bias_summary,
-        "exp2_no_prime_generation_bias_item_level.csv": exp2_no_prime_generation_bias,
-        "exp2_no_prime_generation_bias_by_verb.csv": exp2_no_prime_generation_bias_summary,
-        "prime_event_structure_bias_item_level.csv": prime_event_structure_bias,
-        "exp4_comprehension_item_level.csv": exp4_comprehension,
-        "exp4_sinclair_pe_item_level.csv": exp4_pe,
+        "exp1b_exp3/item_level_master.csv": item_level,
+        "exp1b_exp3/baseline_centered_logodds_shifts.csv": baseline_shifts,
+        "exp1b_exp3/exp1b_exp3_scored_candidate_baseline_bias_item_level.csv": scored_candidate_baseline_bias,
+        "exp1b_exp3/exp1b_exp3_scored_candidate_baseline_bias_by_verb.csv": scored_candidate_baseline_bias_summary,
+        "token_level/token_level_probabilities.csv": token_level,
+        "token_level/token_roi_summary.csv": token_roi_summary,
+        "experiment_2/exp2_generation_item_level.csv": exp2_generation,
+        "experiment_2/exp2_prime_surprisal_item_level.csv": exp2_prime_surprisal,
+        "experiment_2/exp2_no_prime_generation_bias_item_level.csv": exp2_no_prime_generation_bias,
+        "experiment_2/exp2_no_prime_generation_bias_by_verb.csv": exp2_no_prime_generation_bias_summary,
+        "experiment_2/prime_event_structure_bias_item_level.csv": prime_event_structure_bias,
+        "experiment_3/exp3_prime_surprisal_item_level.csv": exp3_prime_surprisal,
+        "experiment_3/ife_prime_surprisal_item_level.csv": exp3_prime_surprisal,
+        "experiment_4/exp4_comprehension_item_level.csv": exp4_comprehension,
+        "experiment_4/exp4_sinclair_pe_item_level.csv": exp4_pe,
     }
     for filename, frame in outputs.items():
         write_csv(frame, OUTPUT_DIR / filename)

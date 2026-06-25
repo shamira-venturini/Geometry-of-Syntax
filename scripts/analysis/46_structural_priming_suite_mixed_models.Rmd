@@ -13,14 +13,18 @@ params:
   repo_root: '.'
   input_dir: behavioral_results/analysis_ready
   output_dir: behavioral_results/r_mixed_models
-  item_level_path: item_level_master.csv
-  baseline_shifts_path: baseline_centered_logodds_shifts.csv
+  item_level_path: exp1b_exp3/item_level_master.csv
+  baseline_shifts_path: exp1b_exp3/baseline_centered_logodds_shifts.csv
   roi_long_path: roi_pe_item_level.csv
   roi_percentage_path: roi_pe_percentage_summary.csv
-  ife_path: ife_prime_surprisal_item_level.csv
-  exp2_generation_path: exp2_generation_item_level.csv
-  exp4_comprehension_path: exp4_comprehension_item_level.csv
-  exp4_pe_path: exp4_sinclair_pe_item_level.csv
+  token_level_path: token_level/token_level_probabilities.csv
+  token_roi_summary_path: token_level/token_roi_summary.csv
+  ife_path: experiment_3/ife_prime_surprisal_item_level.csv
+  exp2_generation_path: experiment_2/exp2_generation_item_level.csv
+  exp2_prime_surprisal_path: experiment_2/exp2_prime_surprisal_item_level.csv
+  exp3_prime_surprisal_path: experiment_3/exp3_prime_surprisal_item_level.csv
+  exp4_comprehension_path: experiment_4/exp4_comprehension_item_level.csv
+  exp4_pe_path: experiment_4/exp4_sinclair_pe_item_level.csv
   model_condition_reference: 774M_base
   model_size_reference: 774M
   lexicality_reference: core
@@ -322,14 +326,14 @@ write_model_table <- function(rows, filename) {
 
 Expected analysis-ready files:
 
-- `item_level_master.csv`: item-level log-probability and/or choice measures.
-- `baseline_centered_logodds_shifts.csv`: one row per item/model/baseline-centered shift.
+- `exp1b_exp3/item_level_master.csv`: item-level log-probability and/or choice measures.
+- `exp1b_exp3/baseline_centered_logodds_shifts.csv`: one row per item/model/baseline-centered shift.
 - `roi_pe_item_level.csv`: long ROI-level PE table.
 - `roi_pe_percentage_summary.csv`: region percentage summaries.
-- `ife_prime_surprisal_item_level.csv`: IFE-style surprisal and target shifts.
-- `exp2_generation_item_level.csv`: generation labels for Experiment 2, if not included in master.
-- `exp4_comprehension_item_level.csv`: comprehension/role-recovery accuracy for Experiment 4, if not included in master.
-- `exp4_sinclair_pe_item_level.csv`: Experiment 4 target-processing PE, exported separately because it is already contrast-level rather than prime-condition-level.
+- `experiment_3/ife_prime_surprisal_item_level.csv`: IFE-style surprisal and target shifts.
+- `experiment_2/exp2_generation_item_level.csv`: generation labels for Experiment 2, if not included in master.
+- `experiment_4/exp4_comprehension_item_level.csv`: comprehension/role-recovery accuracy for Experiment 4, if not included in master.
+- `experiment_4/exp4_sinclair_pe_item_level.csv`: Experiment 4 target-processing PE, exported separately because it is already contrast-level rather than prime-condition-level.
 
 ```{r load-data}
 item_level <- read_optional_csv(path_from_param(params$item_level_path), "item-level master") %>%
@@ -356,12 +360,12 @@ exp4_pe <- read_optional_csv(path_from_param(params$exp4_pe_path), "Experiment 4
   canonicalize_common()
 
 token_level <- readr::read_csv(
-  file.path(input_dir, "token_level_probabilities.csv"),
+  path_from_param(params$token_level_path),
   show_col_types = FALSE
 )
 
 token_roi_summary <- readr::read_csv(
-  file.path(input_dir, "token_roi_summary.csv"),
+  path_from_param(params$token_roi_summary_path),
   show_col_types = FALSE
 )
 
@@ -1361,7 +1365,7 @@ Premise: previous results show how passive structures, though less frequent as a
 
 ```{r}
 token_roi <- readr::read_csv(
-  file.path(input_dir, "token_roi_summary.csv"),
+  path_from_param(params$token_roi_summary_path),
   show_col_types = FALSE
 ) %>%
   canonicalize_common()
@@ -1509,7 +1513,7 @@ item_level <- item_level %>%
   )
 
 prime_token_level <- readr::read_csv(
-  file.path(input_dir, "token_level_probabilities.csv"),
+  path_from_param(params$token_level_path),
   show_col_types = FALSE
 ) %>%
   canonicalize_common()
@@ -2103,7 +2107,7 @@ That is exactly the kind of situation where an inverse frequency / inverse prefe
 
 ```{r}
 exp2_prime_surprisal <- readr::read_csv(
-  file.path(input_dir, "exp2_prime_surprisal_item_level.csv"),
+  path_from_param(params$exp2_prime_surprisal_path),
   show_col_types = FALSE
 ) %>%
   canonicalize_common()
@@ -2870,7 +2874,7 @@ ggplot(
 
 ```{r}
 exp3_ife <- readr::read_csv(
-  file.path(input_dir, "exp3_prime_surprisal_item_level.csv"),
+  path_from_param(params$exp3_prime_surprisal_path),
   show_col_types = FALSE
 ) %>%
   canonicalize_common()
