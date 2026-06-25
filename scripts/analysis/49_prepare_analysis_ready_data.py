@@ -1158,7 +1158,8 @@ def write_manifest(outputs: Dict[str, pd.DataFrame]) -> None:
         }
         for name, frame in outputs.items()
     }
-    path = OUTPUT_DIR / "analysis_ready_manifest.json"
+    path = OUTPUT_DIR / "experiment_2" / "analysis_ready_manifest.json"
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
     print(f"Wrote {path.relative_to(REPO_ROOT)}")
 
@@ -1194,8 +1195,8 @@ def main() -> None:
         "exp2_prime_surprisal_item_level.csv": exp2_prime_surprisal,
         "exp3_prime_surprisal_item_level.csv": exp3_prime_surprisal,
         "ife_prime_surprisal_item_level.csv": exp3_prime_surprisal,
-        "scored_candidate_baseline_bias_item_level.csv": scored_candidate_baseline_bias,
-        "scored_candidate_baseline_bias_by_verb.csv": scored_candidate_baseline_bias_summary,
+        "exp1b_exp3_scored_candidate_baseline_bias_item_level.csv": scored_candidate_baseline_bias,
+        "exp1b_exp3_scored_candidate_baseline_bias_by_verb.csv": scored_candidate_baseline_bias_summary,
         "exp2_no_prime_generation_bias_item_level.csv": exp2_no_prime_generation_bias,
         "exp2_no_prime_generation_bias_by_verb.csv": exp2_no_prime_generation_bias_summary,
         "prime_event_structure_bias_item_level.csv": prime_event_structure_bias,
